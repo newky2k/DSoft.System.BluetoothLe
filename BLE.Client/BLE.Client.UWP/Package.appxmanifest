@@ -8,7 +8,7 @@
 
   <Identity
     Name="94efadeb-c35f-4e8b-8771-0e583097454c"
-    Publisher="CN=Adrian"
+    Publisher="CN=User"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="94efadeb-c35f-4e8b-8771-0e583097454c" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
