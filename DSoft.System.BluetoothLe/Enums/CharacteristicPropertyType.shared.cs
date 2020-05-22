@@ -1,6 +1,6 @@
 using System;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     /// <summary>
     /// Represents the properties of a characteristic.

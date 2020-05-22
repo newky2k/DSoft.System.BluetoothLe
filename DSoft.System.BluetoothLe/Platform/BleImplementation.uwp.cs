@@ -1,10 +1,10 @@
 ﻿using Windows.Devices.Bluetooth;
 using Microsoft.Toolkit.Uwp.Connectivity;
 
-using Plugin.BLE;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe;
+using System.BluetoothLe.Contracts;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class BleImplementation : BleImplementationBase
     {

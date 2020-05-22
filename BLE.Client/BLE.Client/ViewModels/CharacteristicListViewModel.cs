@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Acr.UserDialogs;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe.Contracts;
 
 namespace BLE.Client.ViewModels
 {

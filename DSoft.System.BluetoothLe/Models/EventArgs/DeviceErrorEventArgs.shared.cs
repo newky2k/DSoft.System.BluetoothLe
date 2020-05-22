@@ -1,4 +1,4 @@
-namespace Plugin.BLE.EventArgs
+namespace System.BluetoothLe.EventArgs
 {
     public class DeviceErrorEventArgs : DeviceEventArgs
     { 

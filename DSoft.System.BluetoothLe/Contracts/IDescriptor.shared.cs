@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 
-namespace Plugin.BLE.Contracts
+namespace System.BluetoothLe.Contracts
 {
     /// <summary>
     /// A descriptor for a GATT characteristic.

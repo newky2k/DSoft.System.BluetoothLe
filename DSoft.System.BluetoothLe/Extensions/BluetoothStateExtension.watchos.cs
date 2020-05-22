@@ -1,7 +1,7 @@
 using CoreBluetooth;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe.Contracts;
 
-namespace Plugin.BLE.Extensions
+namespace System.BluetoothLe.Extensions
 {
     public static class BluetoothStateExtension
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     static class DefaultTrace
     {

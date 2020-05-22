@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 using Microsoft.Toolkit.Uwp.Connectivity;
 using Windows.Devices.Bluetooth;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Extensions;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Extensions;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class Device : DeviceBase<ObservableBluetoothLEDevice>
     {

@@ -2,7 +2,7 @@
 using CoreBluetooth;
 using Foundation;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public interface IBleCentralManagerDelegate
     {

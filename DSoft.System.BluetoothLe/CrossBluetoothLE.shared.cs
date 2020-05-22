@@ -1,8 +1,8 @@
 ﻿using System;
-using Plugin.BLE;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe;
+using System.BluetoothLe.Contracts;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     /// <summary>
     /// Cross platform bluetooth LE implemenation.

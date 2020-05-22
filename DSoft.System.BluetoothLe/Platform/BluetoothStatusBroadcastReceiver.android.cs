@@ -1,10 +1,10 @@
 using System;
 using Android.Bluetooth;
 using Android.Content;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Extensions;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Extensions;
 
-namespace Plugin.BLE.BroadcastReceivers
+namespace System.BluetoothLe.BroadcastReceivers
 {
     public class BluetoothStatusBroadcastReceiver : BroadcastReceiver
     {

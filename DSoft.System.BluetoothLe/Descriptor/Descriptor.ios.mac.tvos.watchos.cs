@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using CoreBluetooth;
-using Plugin.BLE;
+using System.BluetoothLe;
 using Foundation;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Utils;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Utils;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class Descriptor : DescriptorBase<CBDescriptor>
     {

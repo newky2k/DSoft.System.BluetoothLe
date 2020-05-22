@@ -4,13 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.EventArgs;
-using Plugin.BLE.Exceptions;
-using Plugin.BLE.Extensions;
-using Plugin.BLE.Utils;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.EventArgs;
+using System.BluetoothLe.Exceptions;
+using System.BluetoothLe.Extensions;
+using System.BluetoothLe.Utils;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class Characteristic : CharacteristicBase<CBCharacteristic>
     {

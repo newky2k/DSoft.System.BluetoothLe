@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Bluetooth;
-using Plugin.BLE;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe;
+using System.BluetoothLe.Contracts;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class Service : ServiceBase<BluetoothGattService>
     {

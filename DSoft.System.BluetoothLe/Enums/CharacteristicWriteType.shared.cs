@@ -1,4 +1,4 @@
-﻿namespace Plugin.BLE
+﻿namespace System.BluetoothLe
 {
     /// <summary>
     /// Specifies how a value should be written.

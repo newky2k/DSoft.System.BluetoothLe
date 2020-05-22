@@ -1,10 +1,10 @@
-﻿using Plugin.BLE;
-using Plugin.BLE.Contracts;
+﻿using System.BluetoothLe;
+using System.BluetoothLe.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class BleImplementation : BleImplementationBase
     {

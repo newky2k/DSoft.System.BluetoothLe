@@ -1,9 +1,9 @@
 ﻿using System;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.EventArgs;
-using Plugin.BLE.Utils;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.EventArgs;
+using System.BluetoothLe.Utils;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public abstract class BleImplementationBase : IBluetoothLE
     {

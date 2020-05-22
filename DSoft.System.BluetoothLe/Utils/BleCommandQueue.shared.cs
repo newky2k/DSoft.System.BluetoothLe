@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Plugin.BLE.Utils
+namespace System.BluetoothLe.Utils
 {
     public class BleCommandQueue
     {

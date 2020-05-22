@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Plugin.BLE.Utils
+namespace System.BluetoothLe.Utils
 {
     public static class TaskBuilder
     {

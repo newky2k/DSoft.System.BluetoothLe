@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe.Contracts;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class Adapter : AdapterBase
     {

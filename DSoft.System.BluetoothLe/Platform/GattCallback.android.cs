@@ -1,9 +1,9 @@
 ﻿using System;
 using Android.Bluetooth;
-using Plugin.BLE.Extensions;
-using Plugin.BLE.CallbackEventArgs;
+using System.BluetoothLe.Extensions;
+using System.BluetoothLe.CallbackEventArgs;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public interface IGattCallback
     {

@@ -4,8 +4,8 @@ using Plugin.Permissions;
 using Plugin.Settings;
 using MvvmCross;
 using MvvmCross.Forms.Platforms.Uap.Core;
-using Plugin.BLE;
-using Trace = Plugin.BLE.Trace;
+using System.BluetoothLe;
+using Trace = System.BluetoothLe.Trace;
 
 namespace BLE.Client.UWP
 {

@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.EventArgs;
-using Plugin.BLE.Exceptions;
-using Plugin.BLE.Utils;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.EventArgs;
+using System.BluetoothLe.Exceptions;
+using System.BluetoothLe.Utils;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public abstract class AdapterBase : IAdapter
     {

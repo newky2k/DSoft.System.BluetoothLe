@@ -1,4 +1,4 @@
-namespace Plugin.BLE.Contracts
+namespace System.BluetoothLe.Contracts
 {
     /// <summary>
     /// Defines how Scans are performed.

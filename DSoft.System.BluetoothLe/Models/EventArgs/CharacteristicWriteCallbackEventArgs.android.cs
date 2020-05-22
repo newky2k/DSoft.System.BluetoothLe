@@ -1,7 +1,7 @@
 using System;
 using Android.Bluetooth;
 
-namespace Plugin.BLE.CallbackEventArgs
+namespace System.BluetoothLe.CallbackEventArgs
 {
     public class CharacteristicWriteCallbackEventArgs
     {

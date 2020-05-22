@@ -3,14 +3,14 @@ using Android.Bluetooth;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Utils;
-using Plugin.BLE.BroadcastReceivers;
-using Plugin.BLE.Extensions;
-using Adapter = Plugin.BLE.Adapter;
-using IAdapter = Plugin.BLE.Contracts.IAdapter;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Utils;
+using System.BluetoothLe.BroadcastReceivers;
+using System.BluetoothLe.Extensions;
+using Adapter = System.BluetoothLe.Adapter;
+using IAdapter = System.BluetoothLe.Contracts.IAdapter;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class BleImplementation : BleImplementationBase
     {

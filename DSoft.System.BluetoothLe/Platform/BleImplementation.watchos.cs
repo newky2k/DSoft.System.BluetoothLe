@@ -1,10 +1,10 @@
 using CoreBluetooth;
 using CoreFoundation;
 
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Extensions;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Extensions;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class BleImplementation : BleImplementationBase
     {

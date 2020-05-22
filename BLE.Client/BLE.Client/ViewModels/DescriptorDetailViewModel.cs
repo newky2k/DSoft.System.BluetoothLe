@@ -6,9 +6,9 @@ using MvvmCross;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.EventArgs;
-using Plugin.BLE.Extensions;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.EventArgs;
+using System.BluetoothLe.Extensions;
 
 namespace BLE.Client.ViewModels
 {

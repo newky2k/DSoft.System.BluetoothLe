@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe.Contracts;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public abstract class DescriptorBase<TNativeDescriptor> : IDescriptor
     {

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
-using Plugin.BLE;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Extensions;
+using System.BluetoothLe;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Extensions;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class Service : ServiceBase<GattDeviceService>
     {

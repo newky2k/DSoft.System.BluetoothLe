@@ -6,14 +6,14 @@ using Android.App;
 using Android.OS;
 using Android.Bluetooth;
 using Android.Content;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Utils;
-using Plugin.BLE.CallbackEventArgs;
-using Trace = Plugin.BLE.Trace;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Utils;
+using System.BluetoothLe.CallbackEventArgs;
+using Trace = System.BluetoothLe.Trace;
 using System.Threading;
 using Java.Util;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class Device : DeviceBase<BluetoothDevice>
     {

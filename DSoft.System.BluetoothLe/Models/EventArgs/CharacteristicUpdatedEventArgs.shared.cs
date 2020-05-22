@@ -1,6 +1,6 @@
-using Plugin.BLE.Contracts;
+using System.BluetoothLe.Contracts;
 
-namespace Plugin.BLE.EventArgs
+namespace System.BluetoothLe.EventArgs
 {
     public class CharacteristicUpdatedEventArgs : System.EventArgs
     {

@@ -1,7 +1,7 @@
 using Android.Bluetooth;
-using Plugin.BLE;
+using System.BluetoothLe;
 
-namespace Plugin.BLE.Extensions
+namespace System.BluetoothLe.Extensions
 {
     internal static class GattWriteTypeExtension
     {

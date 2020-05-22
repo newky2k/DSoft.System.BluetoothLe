@@ -1,10 +1,10 @@
 using System;
 using Android.Bluetooth;
 using Android.Content;
-using Plugin.BLE;
-using Plugin.BLE.EventArgs;
+using System.BluetoothLe;
+using System.BluetoothLe.EventArgs;
 
-namespace Plugin.BLE.BroadcastReceivers
+namespace System.BluetoothLe.BroadcastReceivers
 {
     //[BroadcastReceiver]
     public class BondStatusBroadcastReceiver : BroadcastReceiver

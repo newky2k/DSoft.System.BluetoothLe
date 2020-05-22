@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Plugin.BLE.Contracts
+namespace System.BluetoothLe.Contracts
 {
     /// <summary>
     /// A bluetooth LE GATT service.

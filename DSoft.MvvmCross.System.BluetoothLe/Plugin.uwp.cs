@@ -2,8 +2,8 @@ using MvvmCross;
 using MvvmCross.IoC;
 using MvvmCross.Logging;
 using MvvmCross.Plugin;
-using Plugin.BLE;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe;
+using System.BluetoothLe.Contracts;
 
 [assembly: Preserve]
 

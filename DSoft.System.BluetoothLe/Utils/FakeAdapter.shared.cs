@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe.Contracts;
 
-namespace Plugin.BLE.Utils
+namespace System.BluetoothLe.Utils
 {
     internal class FakeAdapter : AdapterBase
     {

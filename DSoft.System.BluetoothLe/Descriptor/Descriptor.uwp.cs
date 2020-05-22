@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
-using Plugin.BLE;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe;
+using System.BluetoothLe.Contracts;
 using Windows.Security.Cryptography;
-using Plugin.BLE.Extensions;
+using System.BluetoothLe.Extensions;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class Descriptor : DescriptorBase<GattDescriptor>
     {

@@ -8,13 +8,13 @@ using Android.Bluetooth;
 using Android.Bluetooth.LE;
 using Android.OS;
 using Java.Util;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Extensions;
-using Object = Java.Lang.Object;
-using Trace = Plugin.BLE.Trace;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Extensions;
+using Trace = System.BluetoothLe.Trace;
 using Android.App;
+using Java.Lang;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class Adapter : AdapterBase
     {
@@ -182,7 +182,7 @@ namespace Plugin.BLE
         }
 
 
-        public class Api18BleScanCallback : Object, BluetoothAdapter.ILeScanCallback
+        public class Api18BleScanCallback : Java.Lang.Object, BluetoothAdapter.ILeScanCallback
         {
             private readonly Adapter _adapter;
 

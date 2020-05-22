@@ -1,4 +1,4 @@
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public enum DeviceBondState
     {

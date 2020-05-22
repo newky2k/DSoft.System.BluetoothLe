@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public struct KnownDescriptor
     {

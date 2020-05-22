@@ -3,10 +3,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Microsoft.Toolkit.Uwp.Connectivity;
-using Plugin.BLE;
-using Plugin.BLE.Exceptions;
+using System.BluetoothLe;
+using System.BluetoothLe.Exceptions;
 
-namespace Plugin.BLE.Extensions
+namespace System.BluetoothLe.Extensions
 {
     public static class GattResultExtensions
     {

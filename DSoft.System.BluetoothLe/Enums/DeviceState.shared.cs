@@ -1,4 +1,4 @@
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     /// <summary>
     /// Determines the connection state of the device.

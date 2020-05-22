@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.EventArgs;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.EventArgs;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public abstract class CharacteristicBase<TNativeCharacteristic> : ICharacteristic
     {

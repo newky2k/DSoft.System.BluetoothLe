@@ -1,11 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using Android.Bluetooth;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Utils;
-using Plugin.BLE.CallbackEventArgs;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Utils;
+using System.BluetoothLe.CallbackEventArgs;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class Descriptor : DescriptorBase<BluetoothGattDescriptor>
     {

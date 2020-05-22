@@ -10,11 +10,11 @@ using Microsoft.Toolkit.Uwp.Connectivity;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Advertisement;
 
-using Plugin.BLE;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Extensions;
+using System.BluetoothLe;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Extensions;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public class Adapter : AdapterBase
     {
