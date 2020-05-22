@@ -171,7 +171,7 @@
       <Version>7.0.4</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.8</Version>
+      <Version>6.2.10</Version>
     </PackageReference>
     <PackageReference Include="MvvmCross">
       <Version>6.3.1</Version>
