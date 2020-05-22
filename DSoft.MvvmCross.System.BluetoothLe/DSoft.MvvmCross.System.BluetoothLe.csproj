@@ -18,7 +18,7 @@
     <PackageLicenseExpression>Apache-2.0+</PackageLicenseExpression>
     <Description>Cross-platform Bluetooth Low Energy library, based on Plugin.BLE,  for iOS, Android, UWP, Mac, TVOS(Preview) and WatchOS(Preview)</Description>
     <AssemblyName>MvvmCross.System.BluetoothLe</AssemblyName>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>DSoft.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
