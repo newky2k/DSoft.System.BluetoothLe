@@ -3,7 +3,14 @@
 # Add steps that publish symbols, save build artifacts, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
 
-trigger: none
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - '*.yml'
 
 pool:
   vmImage: 'windows-latest'
@@ -13,6 +20,7 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
+name: 0.9.$(date:yyMM).$(date:dd)$(rev:r)
 steps:
 - task: UseDotNet@2
   displayName: Install Latest .Net Core 3.1.x
@@ -22,7 +30,7 @@ steps:
 
 - task: NuGetToolInstaller@1
   displayName: Install Latest Nuget
-
+  
 - task: NuGetCommand@2
   displayName: Nuget Restore
   inputs:
@@ -32,6 +40,21 @@ steps:
   displayName: Build Solution
   inputs:
     solution: '$(solution)'
+    msbuildArgs: '/p:Version=$(Build.BuildNumber)$(ReleaseSuffix) /p:AssemblyVersion=$(Build.BuildNumber) /p:FileVersion=$(Build.BuildNumber)'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
+- task: CopyFiles@2
+  displayName: Copy Files to $(build.artifactstagingdirectory)
+  inputs:
+    SourceFolder: '$(system.defaultworkingdirectory)'
+    Contents: '**/DSoft.*.nupkg'
+    TargetFolder: '$(build.artifactstagingdirectory)'
+    flattenFolders: true
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifacts drop
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
