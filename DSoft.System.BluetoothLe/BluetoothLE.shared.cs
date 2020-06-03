@@ -7,7 +7,7 @@ namespace System.BluetoothLe
     /// <summary>
     /// Cross platform bluetooth LE implemenation.
     /// </summary>
-    public static class CrossBluetoothLE
+    public static class BluetoothLE
     {
         static readonly Lazy<IBluetoothLE> Implementation = new Lazy<IBluetoothLE>(CreateImplementation, System.Threading.LazyThreadSafetyMode.PublicationOnly);
 

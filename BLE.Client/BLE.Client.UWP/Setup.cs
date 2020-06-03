@@ -18,8 +18,8 @@ namespace BLE.Client.UWP
             Mvx.IoCProvider.RegisterSingleton(() => UserDialogs.Instance);
             Mvx.IoCProvider.RegisterSingleton(() => CrossSettings.Current);
             Mvx.IoCProvider.RegisterSingleton(() => CrossPermissions.Current);
-            Mvx.IoCProvider.RegisterSingleton(() => CrossBluetoothLE.Current);
-            Mvx.IoCProvider.RegisterSingleton(() => CrossBluetoothLE.Current.Adapter);
+            Mvx.IoCProvider.RegisterSingleton(() => BluetoothLE.Current);
+            Mvx.IoCProvider.RegisterSingleton(() => BluetoothLE.Current.Adapter);
 
             Trace.TraceImplementation = (s, objects) => Debug.WriteLine(s, objects);
         }
