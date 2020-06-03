@@ -6,7 +6,7 @@ using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe
 {
-    public class BleImplementation : BleImplementationBase
+    public partial class BleImplementation
     {
         private static string _restorationIdentifier;
         private static bool _showPowerAlert = true;
@@ -24,7 +24,7 @@ namespace System.BluetoothLe
             _showPowerAlert = showPowerAlert;
         }
 
-        protected override void InitializeNative()
+        protected void InitializeNative()
         {
             var cmDelegate = new BleCentralManagerDelegate();
             _bleCentralManagerDelegate = cmDelegate;
@@ -35,12 +35,12 @@ namespace System.BluetoothLe
             _bleCentralManagerDelegate.UpdatedState += (s, e) => State = GetState();
         }
 
-        protected override BluetoothState GetInitialStateNative()
+        protected BluetoothState GetInitialStateNative()
         {
             return GetState();
         }
 
-        protected override IAdapter CreateNativeAdapter()
+        protected IAdapter CreateNativeAdapter()
         {
             return new Adapter(_centralManager, _bleCentralManagerDelegate);
         }

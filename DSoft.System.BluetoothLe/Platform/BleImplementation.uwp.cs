@@ -6,7 +6,7 @@ using System.BluetoothLe.Contracts;
 
 namespace System.BluetoothLe
 {
-    public class BleImplementation : BleImplementationBase
+    public partial class BleImplementation
     {
         public static BluetoothCacheMode CacheModeCharacteristicRead { get; set; } = BluetoothCacheMode.Uncached;
         public static BluetoothCacheMode CacheModeDescriptorRead { get; set; } = BluetoothCacheMode.Uncached;
@@ -16,12 +16,12 @@ namespace System.BluetoothLe
 
         private BluetoothLEHelper _bluetoothHelper;
 
-        protected override IAdapter CreateNativeAdapter()
+        protected IAdapter CreateNativeAdapter()
         {
             return new Adapter(_bluetoothHelper);
         }
 
-        protected override BluetoothState GetInitialStateNative()
+        protected BluetoothState GetInitialStateNative()
         {
             //The only way to get the state of bluetooth through windows is by
             //getting the radios for a device. This operation is asynchronous
@@ -34,7 +34,7 @@ namespace System.BluetoothLe
             return BluetoothState.On;
         }
 
-        protected override void InitializeNative()
+        protected void InitializeNative()
         {
             //create local helper using the app context
             var localHelper = BluetoothLEHelper.Context;

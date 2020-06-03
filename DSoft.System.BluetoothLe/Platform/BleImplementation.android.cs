@@ -12,7 +12,7 @@ using IAdapter = System.BluetoothLe.Contracts.IAdapter;
 
 namespace System.BluetoothLe
 {
-    public class BleImplementation : BleImplementationBase
+    public partial class BleImplementation
     {
         private static volatile Handler _handler;
 
@@ -37,7 +37,7 @@ namespace System.BluetoothLe
         private BluetoothManager _bluetoothManager;
 
 
-        protected override void InitializeNative()
+        protected void InitializeNative()
         {
             var ctx = Application.Context;
             if (!ctx.PackageManager.HasSystemFeature(PackageManager.FeatureBluetoothLe))
@@ -70,10 +70,10 @@ namespace System.BluetoothLe
             }
         }
 
-        protected override BluetoothState GetInitialStateNative()
+        protected BluetoothState GetInitialStateNative()
             => _bluetoothManager?.Adapter.State.ToBluetoothState() ?? BluetoothState.Unavailable;
 
-        protected override IAdapter CreateNativeAdapter()
+        protected IAdapter CreateNativeAdapter()
             => new Adapter(_bluetoothManager);
     }
 }

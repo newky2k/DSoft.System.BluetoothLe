@@ -21,7 +21,7 @@ namespace System.BluetoothLe
                 var ret = Implementation.Value;
                 if (ret == null)
                 {
-                    throw NotImplementedInReferenceAssembly();
+                    throw new PlatformNotSupportedException();
                 }
                 return ret;
             }
@@ -34,9 +34,5 @@ namespace System.BluetoothLe
             return implementation;
         }
 
-        internal static Exception NotImplementedInReferenceAssembly()
-        {
-            return new NotImplementedException("This functionality is not implemented in the portable version of this assembly.  You should reference the NuGet package from your main application project in order to reference the platform-specific implementation.");
-        }
     }
 }

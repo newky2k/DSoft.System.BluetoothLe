@@ -5,7 +5,7 @@ using System.BluetoothLe.Utils;
 
 namespace System.BluetoothLe
 {
-    public abstract class BleImplementationBase : IBluetoothLE
+    public partial class BleImplementation : IBluetoothLE
     {
         private readonly Lazy<IAdapter> _adapter;
         private BluetoothState _state;
@@ -30,7 +30,7 @@ namespace System.BluetoothLe
             }
         }
 
-        protected BleImplementationBase()
+        internal BleImplementation()
         {
             _adapter = new Lazy<IAdapter>(CreateAdapter, System.Threading.LazyThreadSafetyMode.PublicationOnly);
         }
@@ -48,9 +48,5 @@ namespace System.BluetoothLe
 
             return CreateNativeAdapter();
         }
-
-        protected abstract void InitializeNative();
-        protected abstract BluetoothState GetInitialStateNative();
-        protected abstract IAdapter CreateNativeAdapter();
     }
 }
