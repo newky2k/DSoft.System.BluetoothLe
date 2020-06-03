@@ -1,22 +1,27 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System;
 using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
 using System.BluetoothLe.Exceptions;
 using System.BluetoothLe.Utils;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace System.BluetoothLe
 {
-    public abstract class AdapterBase : IAdapter
+    public partial class Adapter : IAdapter
     {
+        #region Fields
         private CancellationTokenSource _scanCancellationTokenSource;
         private volatile bool _isScanning;
         private Func<IDevice, bool> _currentScanDeviceFilter;
 
+        #endregion
+
+        #region Events
         public event EventHandler<DeviceEventArgs> DeviceAdvertised;
         public event EventHandler<DeviceEventArgs> DeviceDiscovered;
         public event EventHandler<DeviceEventArgs> DeviceConnected;
@@ -25,6 +30,9 @@ namespace System.BluetoothLe
         public event EventHandler<DeviceErrorEventArgs> DeviceConnectionError;
         public event EventHandler ScanTimeoutElapsed;
 
+        #endregion
+
+        #region Properties
         public bool IsScanning
         {
             get => _isScanning;
@@ -45,6 +53,9 @@ namespace System.BluetoothLe
 
         public IReadOnlyList<IDevice> ConnectedDevices => ConnectedDeviceRegistry.Values.ToList();
 
+        #endregion
+
+        #region Methods
         public async Task StartScanningForDevicesAsync(Guid[] serviceUuids = null, Func<IDevice, bool> deviceFilter = null, bool allowDuplicatesKey = false, CancellationToken cancellationToken = default)
         {
             if (IsScanning)
@@ -232,12 +243,8 @@ namespace System.BluetoothLe
             });
         }
 
-        protected abstract Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken);
-        protected abstract void StopScanNative();
-        protected abstract Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters, CancellationToken cancellationToken);
-        protected abstract void DisconnectDeviceNative(IDevice device);
+        #endregion
 
-        public abstract Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default);
-        public abstract IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null);
+
     }
 }

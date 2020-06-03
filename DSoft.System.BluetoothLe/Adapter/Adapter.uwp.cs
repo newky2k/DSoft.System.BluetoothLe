@@ -16,7 +16,7 @@ using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe
 {
-    public class Adapter : AdapterBase
+    public partial class Adapter
     {
         private BluetoothLEHelper _bluetoothHelper;
         private BluetoothLEAdvertisementWatcher _bleWatcher;
@@ -26,7 +26,7 @@ namespace System.BluetoothLe
             _bluetoothHelper = bluetoothHelper;
         }
 
-        protected override Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
+        protected Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
         {
             var hasFilter = serviceUuids?.Any() ?? false;
 
@@ -51,7 +51,7 @@ namespace System.BluetoothLe
             return Task.FromResult(true);
         }
 
-        protected override void StopScanNative()
+        protected void StopScanNative()
         {
             if (_bleWatcher != null)
             {
@@ -61,7 +61,7 @@ namespace System.BluetoothLe
             }
         }
 
-        protected override async Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters, CancellationToken cancellationToken)
+        protected async Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
             Trace.Message($"Connecting to device with ID:  {device.Id.ToString()}");
 
@@ -101,7 +101,7 @@ namespace System.BluetoothLe
             }
         }
 
-        protected override void DisconnectDeviceNative(IDevice device)
+        protected void DisconnectDeviceNative(IDevice device)
         {
             // Windows doesn't support disconnecting, so currently just dispose of the device
             Trace.Message($"Disconnected from device with ID:  {device.Id.ToString()}");
@@ -115,7 +115,7 @@ namespace System.BluetoothLe
 
         }
 
-        public override async Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default)
+        public async Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default)
         {
             //convert GUID to string and take last 12 characters as MAC address
             var guidString = deviceGuid.ToString("N").Substring(20);
@@ -127,7 +127,7 @@ namespace System.BluetoothLe
             return knownDevice;
         }
 
-        public override IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null)
+        public IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null)
         {
             //currently no way to retrieve paired and connected devices on windows without using an
             //async method. 
