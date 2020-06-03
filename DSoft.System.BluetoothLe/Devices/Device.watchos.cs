@@ -9,9 +9,11 @@ using System.BluetoothLe.Utils;
 
 namespace System.BluetoothLe
 {
-    public class Device : DeviceBase<CBPeripheral>
+    public partial class Device
     {
         private readonly IBleCentralManagerDelegate _bleCentralManagerDelegate;
+
+        public CBPeripheral NativeDevice { get; private set; }
 
         public Device(Adapter adapter, CBPeripheral nativeDevice, IBleCentralManagerDelegate bleCentralManagerDelegate)
             : this(adapter, nativeDevice, bleCentralManagerDelegate, nativeDevice.Name, 0,
@@ -19,9 +21,10 @@ namespace System.BluetoothLe
         {
         }
 
-        public Device(Adapter adapter, CBPeripheral nativeDevice, IBleCentralManagerDelegate bleCentralManagerDelegate, string name, int rssi, List<AdvertisementRecord> advertisementRecords)
-            : base(adapter, nativeDevice)
+        public Device(Adapter adapter, CBPeripheral nativeDevice, IBleCentralManagerDelegate bleCentralManagerDelegate, string name, int rssi, List<AdvertisementRecord> advertisementRecords) : this(adapter)
         {
+            NativeDevice = nativeDevice;
+
             _bleCentralManagerDelegate = bleCentralManagerDelegate;
 
             Id = Guid.ParseExact(NativeDevice.Identifier.AsString(), "d");
@@ -41,12 +44,12 @@ namespace System.BluetoothLe
             Trace.Message("Device changed name: {0}", Name);
         }
 
-        protected override Task<IReadOnlyList<IService>> GetServicesNativeAsync()
+        protected Task<IReadOnlyList<IService>> GetServicesNativeAsync()
         {
             return GetServicesInternal();
         }
 
-        protected override async Task<IService> GetServiceNativeAsync(Guid id)
+        protected async Task<IService> GetServiceNativeAsync(Guid id)
         {
             var cbuuid = CBUUID.FromString(id.ToString());
             var nativeService = NativeDevice.Services?.FirstOrDefault(service => service.UUID.Equals(cbuuid));
@@ -109,7 +112,7 @@ namespace System.BluetoothLe
                     unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
         }
 
-        public override Task<bool> UpdateRssiAsync()
+        public Task<bool> UpdateRssiAsync()
         {
             return TaskBuilder.FromEvent<bool, EventHandler<CBRssiEventArgs>, EventHandler<CBPeripheralErrorEventArgs>>(
                 execute: () => NativeDevice.ReadRSSI(),
@@ -136,7 +139,7 @@ namespace System.BluetoothLe
                 unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
         }
 
-        protected override DeviceState GetState()
+        protected DeviceState GetState()
         {
             switch (NativeDevice.State)
             {
@@ -161,13 +164,13 @@ namespace System.BluetoothLe
             //Name = nativeDevice.Name; 
         }
 
-        protected override async Task<int> RequestMtuNativeAsync(int requestValue)
+        protected async Task<int> RequestMtuNativeAsync(int requestValue)
         {
             Trace.Message($"Request MTU is not supported on iOS.");
             return await Task.FromResult((int)NativeDevice.GetMaximumWriteValueLength(CBCharacteristicWriteType.WithoutResponse));
         }
 
-        protected override bool UpdateConnectionIntervalNative(ConnectionInterval interval)
+        protected bool UpdateConnectionIntervalNative(ConnectionInterval interval)
         {
             Trace.Message("Cannot update connection inteval on iOS.");
             return false;

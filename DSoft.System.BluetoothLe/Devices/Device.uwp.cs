@@ -10,11 +10,14 @@ using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe
 {
-    public class Device : DeviceBase<ObservableBluetoothLEDevice>
+    public partial class Device
     {
-        public Device(Adapter adapter, BluetoothLEDevice nativeDevice, int rssi, Guid id, IReadOnlyList<AdvertisementRecord> advertisementRecords = null) 
-            : base(adapter, new ObservableBluetoothLEDevice(nativeDevice.DeviceInformation))
+        public ObservableBluetoothLEDevice NativeDevice { get; private set; }
+
+        public Device(Adapter adapter, BluetoothLEDevice nativeDevice, int rssi, Guid id, IReadOnlyList<AdvertisementRecord> advertisementRecords = null) : this(adapter)
         {
+            NativeDevice = new ObservableBluetoothLEDevice(nativeDevice.DeviceInformation);
+
             Rssi = rssi;
             Id = id;
             Name = nativeDevice.Name;
@@ -27,7 +30,7 @@ namespace System.BluetoothLe
             this.AdvertisementRecords = advertisementData;
         }
 
-        public override Task<bool> UpdateRssiAsync()
+        public Task<bool> UpdateRssiAsync()
         {
             //No current method to update the Rssi of a device
             //In future implementations, maybe listen for device's advertisements
@@ -37,7 +40,7 @@ namespace System.BluetoothLe
             return Task.FromResult(true);
         }
 
-        protected override async Task<IReadOnlyList<IService>> GetServicesNativeAsync()
+        protected async Task<IReadOnlyList<IService>> GetServicesNativeAsync()
         {
             var result = await NativeDevice.BluetoothLEDevice.GetGattServicesAsync(BleImplementation.CacheModeGetServices);
             result.ThrowIfError();
@@ -48,7 +51,7 @@ namespace System.BluetoothLe
                 .ToList();
         }
 
-        protected override async Task<IService> GetServiceNativeAsync(Guid id)
+        protected async Task<IService> GetServiceNativeAsync(Guid id)
         {
             var result = await NativeDevice.BluetoothLEDevice.GetGattServicesForUuidAsync(id, BleImplementation.CacheModeGetServices);
             result.ThrowIfError();
@@ -57,7 +60,7 @@ namespace System.BluetoothLe
             return nativeService != null ? new Service(nativeService, this) : null;
         }
 
-        protected override DeviceState GetState()
+        protected DeviceState GetState()
         {
             if (NativeDevice.IsConnected)
             {
@@ -67,13 +70,13 @@ namespace System.BluetoothLe
             return NativeDevice.IsPaired ? DeviceState.Limited : DeviceState.Disconnected;
         }
 
-        protected override Task<int> RequestMtuNativeAsync(int requestValue)
+        protected Task<int> RequestMtuNativeAsync(int requestValue)
         {
             Trace.Message("Request MTU not supported in UWP");
             return Task.FromResult(-1);
         }
 
-        protected override bool UpdateConnectionIntervalNative(ConnectionInterval interval)
+        protected bool UpdateConnectionIntervalNative(ConnectionInterval interval)
         {
             Trace.Message("Update Connection Interval not supported in UWP");
             return false;

@@ -15,7 +15,7 @@ using Java.Util;
 
 namespace System.BluetoothLe
 {
-    public class Device : DeviceBase<BluetoothDevice>
+    public partial class Device
     {
         /// <summary>
         /// we have to keep a reference to this because Android's api is weird and requires
@@ -34,8 +34,12 @@ namespace System.BluetoothLe
         /// </summary>
         private CancellationTokenRegistration _connectCancellationTokenRegistration;
 
-        public Device(Adapter adapter, BluetoothDevice nativeDevice, BluetoothGatt gatt, int rssi, byte[] advertisementData = null) : base(adapter, nativeDevice)
+        public BluetoothDevice NativeDevice { get; private set; }
+
+        public Device(Adapter adapter, BluetoothDevice nativeDevice, BluetoothGatt gatt, int rssi, byte[] advertisementData = null) : this(adapter)
         {
+            NativeDevice = nativeDevice;
+
             Update(nativeDevice, gatt);
             Rssi = rssi;
             AdvertisementRecords = ParseScanRecord(advertisementData);
@@ -57,7 +61,7 @@ namespace System.BluetoothLe
 
         internal bool IsOperationRequested { get; set; }
 
-        protected override async Task<IReadOnlyList<IService>> GetServicesNativeAsync()
+        protected async Task<IReadOnlyList<IService>> GetServicesNativeAsync()
         {
             if (_gattCallback == null || _gatt == null)
             {
@@ -73,7 +77,7 @@ namespace System.BluetoothLe
             return await DiscoverServicesInternal();
         }
 
-        protected override async Task<IService> GetServiceNativeAsync(Guid id)
+        protected async Task<IService> GetServiceNativeAsync(Guid id)
         {
             if (_gattCallback == null || _gatt == null)
             {
@@ -199,7 +203,7 @@ namespace System.BluetoothLe
             DisposeServices();
         }
 
-        protected override DeviceState GetState()
+        protected DeviceState GetState()
         {
             var manager = (BluetoothManager)Application.Context.GetSystemService(Context.BluetoothService);
             var state = manager.GetConnectionState(NativeDevice, ProfileType.Gatt);
@@ -294,7 +298,7 @@ namespace System.BluetoothLe
             return records;
         }
 
-        public override async Task<bool> UpdateRssiAsync()
+        public async Task<bool> UpdateRssiAsync()
         {
             if (_gatt == null || _gattCallback == null)
             {
@@ -328,7 +332,7 @@ namespace System.BluetoothLe
               unsubscribeReject: handler => _gattCallback.ConnectionInterrupted -= handler);
         }
 
-        protected override async Task<int> RequestMtuNativeAsync(int requestValue)
+        protected async Task<int> RequestMtuNativeAsync(int requestValue)
         {
             if (_gatt == null || _gattCallback == null)
             {
@@ -367,7 +371,7 @@ namespace System.BluetoothLe
             );
         }
 
-        protected override bool UpdateConnectionIntervalNative(ConnectionInterval interval)
+        protected bool UpdateConnectionIntervalNative(ConnectionInterval interval)
         {
             if (_gatt == null || _gattCallback == null)
             {

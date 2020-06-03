@@ -251,7 +251,7 @@ namespace BLE.Client.ViewModels
 
         private void CharacteristicOnValueUpdated(object sender, CharacteristicUpdatedEventArgs characteristicUpdatedEventArgs)
         {
-            Device.InvokeOnMainThreadAsync(() =>
+            Xamarin.Forms.Device.InvokeOnMainThreadAsync(() =>
             {
                 Messages.Insert(0, $"[{DateTime.Now.TimeOfDay}] - Updated: {CharacteristicValue}");
                 RaisePropertyChanged(() => CharacteristicValue);

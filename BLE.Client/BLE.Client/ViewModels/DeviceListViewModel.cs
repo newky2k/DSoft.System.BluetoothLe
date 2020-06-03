@@ -233,7 +233,7 @@ namespace BLE.Client.ViewModels
 
         private async void TryStartScanning(bool refresh = false)
         {
-            if (Xamarin.Forms.Device.RuntimePlatform == Device.Android)
+            if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.Android)
             {
                 var status = await _permissions.CheckPermissionStatusAsync(Permission.Location);
                 if (status != PermissionStatus.Granted)
