@@ -27,10 +27,10 @@ namespace System.BluetoothLe
             //getting the radios for a device. This operation is asynchronous
             //and thus cannot be called in this method. Thus, we are just
             //returning "On" as long as the BluetoothLEHelper is initialized
-            //if (_bluetoothHelper == null)
-            //{
-            //    return BluetoothState.Unavailable;
-            //}
+            if (_bluetoothadapter == null)
+            {
+                return BluetoothState.Unavailable;
+            }
             return BluetoothState.On;
         }
 
