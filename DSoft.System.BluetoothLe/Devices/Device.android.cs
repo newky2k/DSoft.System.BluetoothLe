@@ -12,11 +12,13 @@ using System.BluetoothLe.CallbackEventArgs;
 using Trace = System.BluetoothLe.Trace;
 using System.Threading;
 using Java.Util;
+using Android.Graphics;
 
 namespace System.BluetoothLe
 {
     public partial class Device
     {
+        #region Fields
         /// <summary>
         /// we have to keep a reference to this because Android's api is weird and requires
         /// the GattServer in order to do nearly anything, including enumerating services
@@ -34,9 +36,18 @@ namespace System.BluetoothLe
         /// </summary>
         private CancellationTokenRegistration _connectCancellationTokenRegistration;
 
-        public BluetoothDevice NativeDevice { get; private set; }
+        #endregion
 
-        public Device(Adapter adapter, BluetoothDevice nativeDevice, BluetoothGatt gatt, int rssi, byte[] advertisementData = null) : this(adapter)
+        #region Properties
+
+        internal BluetoothDevice NativeDevice { get; private set; }
+
+        internal bool IsOperationRequested { get; set; }
+
+        #endregion
+
+        #region Constructors
+        internal Device(Adapter adapter, BluetoothDevice nativeDevice, BluetoothGatt gatt, int rssi, byte[] advertisementData = null) : this(adapter)
         {
             NativeDevice = nativeDevice;
 
@@ -45,6 +56,10 @@ namespace System.BluetoothLe
             AdvertisementRecords = ParseScanRecord(advertisementData);
             _gattCallback = new GattCallback(adapter, this);
         }
+
+        #endregion
+
+        #region Methods
 
         public void Update(BluetoothDevice nativeDevice, BluetoothGatt gatt)
         {
@@ -58,8 +73,6 @@ namespace System.BluetoothLe
             Id = ParseDeviceId();
             Name = NativeDevice.Name;
         }
-
-        internal bool IsOperationRequested { get; set; }
 
         protected async Task<IReadOnlyList<IService>> GetServicesNativeAsync()
         {
@@ -396,5 +409,7 @@ namespace System.BluetoothLe
                 throw new Exception($"Update Connection Interval fails with error. {ex.Message}");
             }
         }
+
+        #endregion
     }
 }

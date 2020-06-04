@@ -9,8 +9,12 @@ namespace System.BluetoothLe
 {
     public partial class Device : IDevice, ICancellationMaster
     {
-        protected readonly IAdapter Adapter;
+        #region Fields
+        protected readonly Adapter Adapter;
         protected readonly Dictionary<Guid, IService> KnownServices = new Dictionary<Guid, IService>();
+        #endregion
+
+        #region Properties
         public Guid Id { get; protected set; }
         public string Name { get; protected set; }
         public int Rssi { get; protected set; }
@@ -20,11 +24,18 @@ namespace System.BluetoothLe
 
         object IDevice.NativeDevice => NativeDevice;
 
-        private Device(IAdapter adapter)
+        #endregion
+
+        #region Constructors
+
+        private Device(Adapter adapter)
         {
             Adapter = adapter;
             
         }
+        #endregion
+
+        #region Methods
 
         public async Task<IReadOnlyList<IService>> GetServicesAsync(CancellationToken cancellationToken = default)
         {
@@ -115,5 +126,6 @@ namespace System.BluetoothLe
             return Id.GetHashCode();
         }
 
+        #endregion
     }
 }

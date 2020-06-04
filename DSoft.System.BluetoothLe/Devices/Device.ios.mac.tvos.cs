@@ -11,17 +11,24 @@ namespace System.BluetoothLe
 {
     public partial class Device
     {
+        #region Fields
         private readonly IBleCentralManagerDelegate _bleCentralManagerDelegate;
 
-        public CBPeripheral NativeDevice { get; private set; }
+        #endregion
 
-        public Device(Adapter adapter, CBPeripheral nativeDevice, IBleCentralManagerDelegate bleCentralManagerDelegate)
-            : this(adapter, nativeDevice, bleCentralManagerDelegate, nativeDevice.Name, nativeDevice.RSSI?.Int32Value ?? 0,
-                new List<AdvertisementRecord>())
+        #region Properties
+        internal CBPeripheral NativeDevice { get; private set; }
+
+        #endregion
+
+        #region Constructors
+        internal Device(Adapter adapter, CBPeripheral nativeDevice, IBleCentralManagerDelegate bleCentralManagerDelegate)
+            : this(adapter, nativeDevice, bleCentralManagerDelegate, nativeDevice.Name, nativeDevice.RSSI?.Int32Value ?? 0, new List<AdvertisementRecord>())
         {
+
         }
 
-        public Device(Adapter adapter, CBPeripheral nativeDevice, IBleCentralManagerDelegate bleCentralManagerDelegate, string name, int rssi, List<AdvertisementRecord> advertisementRecords) : this(adapter)
+        internal Device(Adapter adapter, CBPeripheral nativeDevice, IBleCentralManagerDelegate bleCentralManagerDelegate, string name, int rssi, List<AdvertisementRecord> advertisementRecords) : this(adapter)
         {
             NativeDevice = nativeDevice;
 
@@ -38,6 +45,9 @@ namespace System.BluetoothLe
             //_nativeDevice.UpdatedName += OnNameUpdated;
         }
 
+        #endregion
+
+        #region Methods
         private void OnNameUpdated(object sender, System.EventArgs e)
         {
             Name = ((CBPeripheral)sender).Name;
@@ -174,5 +184,7 @@ namespace System.BluetoothLe
             Trace.Message("Cannot update connection inteval on iOS.");
             return false;
         }
+
+        #endregion
     }
 }

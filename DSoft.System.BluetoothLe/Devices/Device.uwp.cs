@@ -12,9 +12,13 @@ namespace System.BluetoothLe
 {
     public partial class Device
     {
-        public ObservableBluetoothLEDevice NativeDevice { get; private set; }
+        #region Properties
+        internal ObservableBluetoothLEDevice NativeDevice { get; private set; }
 
-        public Device(Adapter adapter, BluetoothLEDevice nativeDevice, int rssi, Guid id, IReadOnlyList<AdvertisementRecord> advertisementRecords = null) : this(adapter)
+        #endregion
+
+        #region Constructors
+        internal Device(Adapter adapter, BluetoothLEDevice nativeDevice, int rssi, Guid id, IReadOnlyList<AdvertisementRecord> advertisementRecords = null) : this(adapter)
         {
             NativeDevice = new ObservableBluetoothLEDevice(nativeDevice.DeviceInformation);
 
@@ -23,6 +27,9 @@ namespace System.BluetoothLe
             Name = nativeDevice.Name;
             AdvertisementRecords = advertisementRecords;
         }
+        #endregion
+
+        #region Methods
 
         internal void Update(short btAdvRawSignalStrengthInDBm, IReadOnlyList<AdvertisementRecord> advertisementData)
         {
@@ -81,5 +88,7 @@ namespace System.BluetoothLe
             Trace.Message("Update Connection Interval not supported in UWP");
             return false;
         }
+
+        #endregion
     }
 }
