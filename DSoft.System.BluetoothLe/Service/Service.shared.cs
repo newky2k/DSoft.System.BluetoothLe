@@ -6,20 +6,21 @@ using System.BluetoothLe.Contracts;
 
 namespace System.BluetoothLe
 {
-    public abstract class ServiceBase<TNativeService> : IService
+    public partial class Service : IService
     {
         private readonly List<ICharacteristic> _characteristics = new List<ICharacteristic>();
 
         public string Name => KnownServices.Lookup(Id).Name;
-        public abstract Guid Id { get; }
-        public abstract bool IsPrimary { get; }
-        public IDevice Device { get; }
-        protected TNativeService NativeService { get; }
 
-        protected ServiceBase(IDevice device, TNativeService nativeService)
+        public Guid Id => NativeGuid;
+
+        public bool IsPrimary => NativeIsPrimary;
+
+        public IDevice Device { get; }
+
+        protected Service(IDevice device)
         {
             Device = device;
-            NativeService = nativeService;
         }
 
         public async Task<IReadOnlyList<ICharacteristic>> GetCharacteristicsAsync()
@@ -39,11 +40,5 @@ namespace System.BluetoothLe
             return characteristics.FirstOrDefault(c => c.Id == id);
         }
 
-        protected abstract Task<IList<ICharacteristic>> GetCharacteristicsNativeAsync();
-
-        public virtual void Dispose()
-        {
-
-        }
     }
 }

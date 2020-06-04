@@ -9,22 +9,37 @@ using System.BluetoothLe.Utils;
 
 namespace System.BluetoothLe
 {
-    public class Service : ServiceBase<CBService>
+    public partial class Service
     {
+        #region Fields
         private readonly CBPeripheral _device;
         private readonly IBleCentralManagerDelegate _bleCentralManagerDelegate;
 
-        public override Guid Id => NativeService.UUID.GuidFromUuid();
-        public override bool IsPrimary => NativeService.Primary;
+        #endregion
 
-        public Service(CBService nativeService, IDevice device, IBleCentralManagerDelegate bleCentralManagerDelegate) 
-            : base(device, nativeService)
+        #region Properties
+        protected Guid NativeGuid => NativeService.UUID.GuidFromUuid();
+
+        protected bool NativeIsPrimary => NativeService.Primary;
+
+        protected CBService NativeService { get; private set; }
+
+        #endregion
+
+        #region Constructors
+        public Service(CBService nativeService, IDevice device, IBleCentralManagerDelegate bleCentralManagerDelegate) : this(device)
         {
+            NativeService = nativeService;
+
             _device = device.NativeDevice as CBPeripheral;
             _bleCentralManagerDelegate = bleCentralManagerDelegate;
         }
 
-        protected override Task<IList<ICharacteristic>> GetCharacteristicsNativeAsync()
+        #endregion
+
+
+        #region Methods
+        protected Task<IList<ICharacteristic>> GetCharacteristicsNativeAsync()
         {
             var exception = new Exception($"Device '{Device.Id}' disconnected while fetching characteristics for service with {Id}.");
 
@@ -65,5 +80,14 @@ namespace System.BluetoothLe
                 subscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral += handler,
                 unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
         }
+
+        public virtual void Dispose()
+        {
+
+        }
+
+        #endregion
+
+
     }
 }

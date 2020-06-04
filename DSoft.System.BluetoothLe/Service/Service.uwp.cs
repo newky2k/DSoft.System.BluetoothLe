@@ -9,19 +9,31 @@ using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe
 {
-    public class Service : ServiceBase<GattDeviceService>
+    public partial class Service
     {
-        public override Guid Id => NativeService.Uuid;
+        #region Properties
+        protected Guid NativeGuid => NativeService.Uuid;
 
         //method to get parent devices to check if primary is obsolete
         //return true as a placeholder
-        public override bool IsPrimary => true;
+        protected bool NativeIsPrimary => true;
 
-        public Service(GattDeviceService nativeService, IDevice device) : base(device, nativeService)
+        protected GattDeviceService NativeService  {get; private set;}
+
+        #endregion
+
+        #region Constructors
+
+        internal Service(GattDeviceService nativeService, IDevice device) : this(device)
         {
+            NativeService = nativeService;
         }
 
-        protected override async Task<IList<ICharacteristic>> GetCharacteristicsNativeAsync()
+        #endregion
+
+        #region Methods
+
+        protected async Task<IList<ICharacteristic>> GetCharacteristicsNativeAsync()
         {
             var result = await NativeService.GetCharacteristicsAsync(BleImplementation.CacheModeGetCharacteristics);
             result.ThrowIfError();
@@ -32,10 +44,11 @@ namespace System.BluetoothLe
                 .ToList();
         }
 
-        public override void Dispose()
+        public virtual void Dispose()
         {
-            base.Dispose();
+            
             NativeService?.Dispose();
         }
+        #endregion
     }
 }

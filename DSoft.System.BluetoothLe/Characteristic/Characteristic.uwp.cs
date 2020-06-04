@@ -11,30 +11,44 @@ using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe
 {
-    public class Characteristic : CharacteristicBase<GattCharacteristic>
+    public partial class Characteristic
     {
+        #region Fields
         /// <summary>
         /// Value of the characteristic to be stored locally after
         /// update notification or read
         /// </summary>
         private byte[] _value;
-        public override Guid Id => NativeCharacteristic.Uuid;
-        public override string Uuid => NativeCharacteristic.Uuid.ToString();
-        public override CharacteristicPropertyType Properties => (CharacteristicPropertyType)(int)NativeCharacteristic.CharacteristicProperties;
 
-        public override event EventHandler<CharacteristicUpdatedEventArgs> ValueUpdated;
-        public override byte[] Value => _value ?? new byte[0]; // return empty array if value is equal to null
+        #endregion
 
-        public override string Name => string.IsNullOrEmpty(NativeCharacteristic.UserDescription)
-            ? base.Name
-            : NativeCharacteristic.UserDescription;
+        #region Properties
+        protected Guid NativeGuid => NativeCharacteristic.Uuid;
 
-        public Characteristic(GattCharacteristic nativeCharacteristic, IService service) 
-            : base(service, nativeCharacteristic)
+        protected string NativeUuid => NativeCharacteristic.Uuid.ToString();
+
+        protected byte[] NativeValue => _value ?? new byte[0]; // return empty array if value is equal to null
+
+        protected string NativeName => string.IsNullOrEmpty(NativeCharacteristic.UserDescription) ? KnownCharacteristics.Lookup(Id).Name : NativeCharacteristic.UserDescription;
+
+        protected CharacteristicPropertyType NativeProperties => (CharacteristicPropertyType)(int)NativeCharacteristic.CharacteristicProperties;
+
+        protected GattCharacteristic NativeCharacteristic { get; private set; }
+
+        #endregion
+
+        #region Constructors
+
+        public Characteristic(GattCharacteristic nativeCharacteristic, IService service) : this(service)
         {
+            NativeCharacteristic = nativeCharacteristic;
         }
 
-        protected override async Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync()
+        #endregion
+
+        #region Methods
+
+        protected async Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync()
         {
             var descriptorsResult = await NativeCharacteristic.GetDescriptorsAsync(BleImplementation.CacheModeGetDescriptors);
             descriptorsResult.ThrowIfError();
@@ -45,13 +59,13 @@ namespace System.BluetoothLe
                 .ToList();
         }
 
-        protected override async Task<byte[]> ReadNativeAsync()
+        protected async Task<byte[]> ReadNativeAsync()
         {
             var readResult = await NativeCharacteristic.ReadValueAsync(BleImplementation.CacheModeCharacteristicRead);
             return _value = readResult.GetValueOrThrowIfError();
         }
 
-        protected override async Task StartUpdatesNativeAsync()
+        protected async Task StartUpdatesNativeAsync()
         {
             NativeCharacteristic.ValueChanged -= OnCharacteristicValueChanged;
             NativeCharacteristic.ValueChanged += OnCharacteristicValueChanged;
@@ -60,7 +74,7 @@ namespace System.BluetoothLe
             result.ThrowIfError();
         }
 
-        protected override async Task StopUpdatesNativeAsync()
+        protected async Task StopUpdatesNativeAsync()
         {
             NativeCharacteristic.ValueChanged -= OnCharacteristicValueChanged;
 
@@ -68,7 +82,7 @@ namespace System.BluetoothLe
             result.ThrowIfError();
         }
 
-        protected override async Task<bool> WriteNativeAsync(byte[] data, CharacteristicWriteType writeType)
+        protected async Task<bool> WriteNativeAsync(byte[] data, CharacteristicWriteType writeType)
         {
             var result = await NativeCharacteristic.WriteValueWithResultAsync(
                 CryptographicBuffer.CreateFromByteArray(data),
@@ -87,5 +101,8 @@ namespace System.BluetoothLe
             _value = e.CharacteristicValue?.ToArray(); //add value to array
             ValueUpdated?.Invoke(this, new CharacteristicUpdatedEventArgs(this));
         }
+
+        #endregion
+
     }
 }

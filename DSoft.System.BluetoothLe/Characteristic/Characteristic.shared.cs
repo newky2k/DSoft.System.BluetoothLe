@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,21 +9,30 @@ using System.BluetoothLe.EventArgs;
 
 namespace System.BluetoothLe
 {
-    public abstract class CharacteristicBase<TNativeCharacteristic> : ICharacteristic
+    public partial class Characteristic : ICharacteristic
     {
+        #region Fields
         private IReadOnlyList<IDescriptor> _descriptors;
         private CharacteristicWriteType _writeType = CharacteristicWriteType.Default;
 
-        protected TNativeCharacteristic NativeCharacteristic { get; }
+        #endregion
 
-        public abstract event EventHandler<CharacteristicUpdatedEventArgs> ValueUpdated;
+        #region Events
+        public event EventHandler<CharacteristicUpdatedEventArgs> ValueUpdated;
 
-        public abstract Guid Id { get; }
-        public abstract string Uuid { get; }
-        public abstract byte[] Value { get; }
-        public virtual string Name => KnownCharacteristics.Lookup(Id).Name;
-        public abstract CharacteristicPropertyType Properties { get; }
+        #endregion
+
+        #region Properties
+        public Guid Id => NativeGuid;
+        public string Uuid => NativeUuid;
+        public byte[] Value => NativeValue;
+
+        public CharacteristicPropertyType Properties => NativeProperties;
+
+        public string Name => NativeName;
+
         public IService Service { get; }
+
 
         public CharacteristicWriteType WriteType
         {
@@ -60,12 +69,19 @@ namespace System.BluetoothLe
             }
         }
 
-        protected CharacteristicBase(IService service, TNativeCharacteristic nativeCharacteristic)
+        #endregion
+
+        #region Constructors
+        protected Characteristic(IService service)
         {
             Service = service;
-            NativeCharacteristic = nativeCharacteristic;
         }
 
+        #endregion
+
+        #region Methods
+
+        
         public async Task<byte[]> ReadAsync(CancellationToken cancellationToken = default)
         {
             if (!CanRead)
@@ -137,10 +153,6 @@ namespace System.BluetoothLe
             return descriptors.FirstOrDefault(d => d.Id == id);
         }
 
-        protected abstract Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync();
-        protected abstract Task<byte[]> ReadNativeAsync();
-        protected abstract Task<bool> WriteNativeAsync(byte[] data, CharacteristicWriteType writeType);
-        protected abstract Task StartUpdatesNativeAsync();
-        protected abstract Task StopUpdatesNativeAsync();
+        #endregion
     }
 }

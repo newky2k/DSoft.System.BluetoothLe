@@ -12,35 +12,47 @@ using System.BluetoothLe.Utils;
 
 namespace System.BluetoothLe
 {
-    public class Characteristic : CharacteristicBase<BluetoothGattCharacteristic>
+    public partial class Characteristic
     {
         //https://developer.android.com/samples/BluetoothLeGatt/src/com.example.android.bluetoothlegatt/SampleGattAttributes.html
 
+        #region Fields
         private static readonly Guid ClientCharacteristicConfigurationDescriptorId = Guid.Parse("00002902-0000-1000-8000-00805f9b34fb");
 
         private readonly BluetoothGatt _gatt;
         private readonly IGattCallback _gattCallback;
 
-        public override event EventHandler<CharacteristicUpdatedEventArgs> ValueUpdated;
+        #endregion
 
-        public override Guid Id => Guid.Parse(NativeCharacteristic.Uuid.ToString());
-        public override string Uuid => NativeCharacteristic.Uuid.ToString();
-        public override byte[] Value => NativeCharacteristic.GetValue() ?? new byte[0];
-        public override CharacteristicPropertyType Properties => (CharacteristicPropertyType)(int)NativeCharacteristic.Properties;
 
-        public Characteristic(BluetoothGattCharacteristic nativeCharacteristic, BluetoothGatt gatt,
-            IGattCallback gattCallback, IService service) : base(service, nativeCharacteristic)
+        #region Properties
+        protected Guid NativeGuid => Guid.Parse(NativeCharacteristic.Uuid.ToString());
+        protected string NativeUuid => NativeCharacteristic.Uuid.ToString();
+        protected byte[] NativeValue => NativeCharacteristic.GetValue() ?? new byte[0];
+        protected CharacteristicPropertyType NativeProperties => (CharacteristicPropertyType)(int)NativeCharacteristic.Properties;
+        protected BluetoothGattCharacteristic NativeCharacteristic { get; private set; }
+
+        protected string NativeName => KnownCharacteristics.Lookup(Id).Name;
+
+        #endregion
+
+        #region Constructors
+        public Characteristic(BluetoothGattCharacteristic nativeCharacteristic, BluetoothGatt gatt, IGattCallback gattCallback, IService service) : this(service)
         {
+            NativeCharacteristic = nativeCharacteristic;
+
             _gatt = gatt;
             _gattCallback = gattCallback;
         }
+        #endregion
 
-        protected override Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync()
+        #region Methods
+        protected Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync()
         {
             return Task.FromResult<IReadOnlyList<IDescriptor>>(NativeCharacteristic.Descriptors.Select(item => new Descriptor(item, _gatt, _gattCallback, this)).Cast<IDescriptor>().ToList());
         }
 
-        protected override async Task<byte[]> ReadNativeAsync()
+        protected async Task<byte[]> ReadNativeAsync()
         {
             return await TaskBuilder.FromEvent<byte[], EventHandler<CharacteristicReadCallbackEventArgs>, EventHandler>(
                 execute: ReadInternal,
@@ -69,7 +81,7 @@ namespace System.BluetoothLe
             }
         }
 
-        protected override async Task<bool> WriteNativeAsync(byte[] data, CharacteristicWriteType writeType)
+        protected async Task<bool> WriteNativeAsync(byte[] data, CharacteristicWriteType writeType)
         {
             NativeCharacteristic.WriteType = writeType.ToNative();
 
@@ -107,7 +119,7 @@ namespace System.BluetoothLe
             }
         }
 
-        protected override async Task StartUpdatesNativeAsync()
+        protected async Task StartUpdatesNativeAsync()
         {
             // wire up the characteristic value updating on the gattcallback for event forwarding
             _gattCallback.CharacteristicValueUpdated -= OnCharacteristicValueChanged;
@@ -151,7 +163,7 @@ namespace System.BluetoothLe
             Trace.Message("Characteristic.StartUpdates, successful!");
         }
 
-        protected override async Task StopUpdatesNativeAsync()
+        protected async Task StopUpdatesNativeAsync()
         {
             _gattCallback.CharacteristicValueUpdated -= OnCharacteristicValueChanged;
 
@@ -186,5 +198,7 @@ namespace System.BluetoothLe
                 ValueUpdated?.Invoke(this, new CharacteristicUpdatedEventArgs(this));
             }
         }
+
+        #endregion
     }
 }
