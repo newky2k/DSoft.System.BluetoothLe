@@ -11,10 +11,17 @@ namespace System.BluetoothLe
 {
     public partial class Device
     {
+        #region Fields
         private readonly IBleCentralManagerDelegate _bleCentralManagerDelegate;
 
-        public CBPeripheral NativeDevice { get; private set; }
+        #endregion
 
+        #region Properties
+        internal CBPeripheral NativeDevice { get; private set; }
+
+        #endregion
+
+        #region Constructors
         public Device(Adapter adapter, CBPeripheral nativeDevice, IBleCentralManagerDelegate bleCentralManagerDelegate)
             : this(adapter, nativeDevice, bleCentralManagerDelegate, nativeDevice.Name, 0,
                 new List<AdvertisementRecord>())
@@ -38,6 +45,9 @@ namespace System.BluetoothLe
             //_nativeDevice.UpdatedName += OnNameUpdated;
         }
 
+        #endregion
+
+        #region Methods
         private void OnNameUpdated(object sender, System.EventArgs e)
         {
             Name = ((CBPeripheral)sender).Name;
@@ -175,5 +185,7 @@ namespace System.BluetoothLe
             Trace.Message("Cannot update connection inteval on iOS.");
             return false;
         }
+
+        #endregion
     }
 }
