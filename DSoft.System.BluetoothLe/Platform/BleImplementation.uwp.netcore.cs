@@ -1,8 +1,8 @@
 ﻿using Windows.Devices.Bluetooth;
-using Microsoft.Toolkit.Uwp.Connectivity;
 
 using System.BluetoothLe;
 using System.BluetoothLe.Contracts;
+using System.Threading.Tasks;
 
 namespace System.BluetoothLe
 {
@@ -14,11 +14,11 @@ namespace System.BluetoothLe
         public static BluetoothCacheMode CacheModeGetCharacteristics { get; set; } = BluetoothCacheMode.Cached;
         public static BluetoothCacheMode CacheModeGetServices { get; set; } = BluetoothCacheMode.Cached;
 
-        private BluetoothLEHelper _bluetoothHelper;
+        private BluetoothAdapter _bluetoothadapter;
 
         protected IAdapter CreateNativeAdapter()
         {
-            return new Adapter(_bluetoothHelper);
+            return new Adapter();
         }
 
         protected BluetoothState GetInitialStateNative()
@@ -27,18 +27,26 @@ namespace System.BluetoothLe
             //getting the radios for a device. This operation is asynchronous
             //and thus cannot be called in this method. Thus, we are just
             //returning "On" as long as the BluetoothLEHelper is initialized
-            if (_bluetoothHelper == null)
-            {
-                return BluetoothState.Unavailable;
-            }
+            //if (_bluetoothHelper == null)
+            //{
+            //    return BluetoothState.Unavailable;
+            //}
             return BluetoothState.On;
         }
 
+
         protected void InitializeNative()
         {
-            //create local helper using the app context
-            var localHelper = BluetoothLEHelper.Context;
-            _bluetoothHelper = localHelper;
+
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            InitAdapter();
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
+        }
+
+        public async Task InitAdapter()
+        {
+            _bluetoothadapter = await BluetoothAdapter.GetDefaultAsync();
         }
     }
 

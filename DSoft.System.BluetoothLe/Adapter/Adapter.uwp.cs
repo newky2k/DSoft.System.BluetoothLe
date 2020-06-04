@@ -18,12 +18,11 @@ namespace System.BluetoothLe
 {
     public partial class Adapter
     {
-        private BluetoothLEHelper _bluetoothHelper;
         private BluetoothLEAdvertisementWatcher _bleWatcher;
 
-        public Adapter(BluetoothLEHelper bluetoothHelper)
+        public Adapter()
         {
-            _bluetoothHelper = bluetoothHelper;
+            
         }
 
         protected Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
