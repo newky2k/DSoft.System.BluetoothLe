@@ -5,24 +5,21 @@ using System.BluetoothLe.Contracts;
 
 namespace System.BluetoothLe
 {
-    public abstract class DescriptorBase<TNativeDescriptor> : IDescriptor
+    public partial class Descriptor : IDescriptor
     {
         private string _name;
 
-        protected TNativeDescriptor NativeDescriptor { get; }
-
-        public abstract Guid Id { get; }
-
         public string Name => _name ?? (_name = KnownDescriptors.Lookup(Id).Name);
 
-        public abstract byte[] Value { get; }
+        public byte[] Value => NativeValue;
+
+        public Guid Id => NativeGuid;
 
         public ICharacteristic Characteristic { get; }
 
-        protected DescriptorBase(ICharacteristic characteristic, TNativeDescriptor nativeDescriptor)
+        protected Descriptor(ICharacteristic characteristic)
         {
             Characteristic = characteristic;
-            NativeDescriptor = nativeDescriptor;
         }
 
         public Task<byte[]> ReadAsync(CancellationToken cancellationToken = default)
@@ -30,7 +27,7 @@ namespace System.BluetoothLe
             return ReadNativeAsync();
         }
 
-        protected abstract Task<byte[]> ReadNativeAsync();
+
 
         public Task WriteAsync(byte[] data, CancellationToken cancellationToken = default)
         {
@@ -42,6 +39,7 @@ namespace System.BluetoothLe
             return WriteNativeAsync(data);
         }
 
-        protected abstract Task WriteNativeAsync(byte[] data);
+
+
     }
 }

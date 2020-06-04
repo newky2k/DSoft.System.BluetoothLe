@@ -8,11 +8,14 @@ using System.BluetoothLe.Utils;
 
 namespace System.BluetoothLe
 {
-    public class Descriptor : DescriptorBase<CBDescriptor>
+    public partial class Descriptor
     {
-        public override Guid Id => NativeDescriptor.UUID.GuidFromUuid();
 
-        public override byte[] Value
+        protected Guid NativeGuid => NativeDescriptor.UUID.GuidFromUuid();
+
+        protected CBDescriptor NativeDescriptor { get; private set; }
+
+        public byte[] NativeValue
         {
             get
             {
@@ -35,14 +38,15 @@ namespace System.BluetoothLe
         private readonly CBPeripheral _parentDevice;
         private readonly IBleCentralManagerDelegate _bleCentralManagerDelegate;
 
-        public Descriptor(CBDescriptor nativeDescriptor, CBPeripheral parentDevice, ICharacteristic characteristic, IBleCentralManagerDelegate bleCentralManagerDelegate) 
-            : base(characteristic, nativeDescriptor)
+        public Descriptor(CBDescriptor nativeDescriptor, CBPeripheral parentDevice, ICharacteristic characteristic, IBleCentralManagerDelegate bleCentralManagerDelegate) : this(characteristic)
         {
+            NativeDescriptor = nativeDescriptor;
+
             _parentDevice = parentDevice;
             _bleCentralManagerDelegate = bleCentralManagerDelegate;
         }
 
-        protected override Task<byte[]> ReadNativeAsync()
+        protected Task<byte[]> ReadNativeAsync()
         {
             var exception = new Exception($"Device '{Characteristic.Service.Device.Id}' disconnected while reading descriptor with {Id}.");
 
@@ -75,7 +79,7 @@ namespace System.BluetoothLe
                    unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
         }
 
-        protected override Task WriteNativeAsync(byte[] data)
+        protected Task WriteNativeAsync(byte[] data)
         {
             var exception = new Exception($"Device '{Characteristic.Service.Device.Id}' disconnected while writing descriptor with {Id}.");
 
