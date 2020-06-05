@@ -1,7 +1,7 @@
 using System;
 using System.BluetoothLe.EventArgs;
 
-namespace System.BluetoothLe.Contracts
+namespace System.BluetoothLe
 {
     /// <summary>
     /// Manages the bluetooth LE functionality of the device (usually your smartphone).

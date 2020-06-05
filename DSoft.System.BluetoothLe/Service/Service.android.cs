@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Android.Bluetooth;
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
+
 
 namespace System.BluetoothLe
 {

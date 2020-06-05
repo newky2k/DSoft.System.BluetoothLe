@@ -3,7 +3,6 @@ using MvvmCross.IoC;
 using MvvmCross.Logging;
 using MvvmCross.Plugin;
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 
 [assembly: Preserve]
 

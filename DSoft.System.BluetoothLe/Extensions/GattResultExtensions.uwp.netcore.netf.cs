@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using System.BluetoothLe;
-using System.BluetoothLe.Exceptions;
 
 namespace System.BluetoothLe.Extensions
 {

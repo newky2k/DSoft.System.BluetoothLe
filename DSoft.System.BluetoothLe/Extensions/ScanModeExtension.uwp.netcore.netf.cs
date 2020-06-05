@@ -1,6 +1,6 @@
 using System;
 using Windows.Devices.Bluetooth.Advertisement;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 using Trace = System.BluetoothLe.Trace;
 
 namespace System.BluetoothLe.Extensions

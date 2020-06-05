@@ -6,7 +6,7 @@ using MvvmCross;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 using System.BluetoothLe.EventArgs;
 using System.BluetoothLe.Extensions;
 

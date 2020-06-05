@@ -2,9 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
-using System.BluetoothLe.Exceptions;
 using System.BluetoothLe.Utils;
 
 namespace System.BluetoothLe.Extensions

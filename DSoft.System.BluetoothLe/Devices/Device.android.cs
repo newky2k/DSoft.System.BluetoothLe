@@ -6,13 +6,12 @@ using Android.App;
 using Android.OS;
 using Android.Bluetooth;
 using Android.Content;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.Utils;
-using System.BluetoothLe.CallbackEventArgs;
 using Trace = System.BluetoothLe.Trace;
 using System.Threading;
 using Java.Util;
 using Android.Graphics;
+using System.BluetoothLe.EventArgs;
 
 namespace System.BluetoothLe
 {

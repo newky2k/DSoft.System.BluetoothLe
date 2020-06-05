@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
-using System.BluetoothLe.Contracts;
+
 
 namespace System.BluetoothLe
 {

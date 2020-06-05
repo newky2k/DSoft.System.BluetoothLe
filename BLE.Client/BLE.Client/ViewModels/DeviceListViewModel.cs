@@ -8,7 +8,6 @@ using Acr.UserDialogs;
 using BLE.Client.Extensions;
 using MvvmCross.ViewModels;
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
 using System.BluetoothLe.Extensions;
 using Plugin.Permissions.Abstractions;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 
 namespace System.BluetoothLe
 {

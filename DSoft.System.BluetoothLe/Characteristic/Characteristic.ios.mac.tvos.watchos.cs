@@ -4,9 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
-using System.BluetoothLe.Exceptions;
 using System.BluetoothLe.Extensions;
 using System.BluetoothLe.Utils;
 

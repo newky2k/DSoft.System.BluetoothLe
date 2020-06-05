@@ -7,7 +7,6 @@ using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 
 namespace BLE.Client.ViewModels
 {

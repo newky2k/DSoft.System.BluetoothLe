@@ -1,7 +1,5 @@
 ﻿using System;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
-using System.BluetoothLe.Exceptions;
 using System.BluetoothLe.Utils;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

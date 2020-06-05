@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Bluetooth;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
-using System.BluetoothLe.Exceptions;
-using System.BluetoothLe.CallbackEventArgs;
 using System.BluetoothLe.Extensions;
 using System.BluetoothLe.Utils;
 

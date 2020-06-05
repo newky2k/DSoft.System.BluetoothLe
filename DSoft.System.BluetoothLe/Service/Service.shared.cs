@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.BluetoothLe.Contracts;
 
 namespace System.BluetoothLe
 {

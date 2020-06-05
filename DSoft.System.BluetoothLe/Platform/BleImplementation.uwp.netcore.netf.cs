@@ -1,7 +1,6 @@
 ﻿using Windows.Devices.Bluetooth;
 
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 using System.Threading.Tasks;
 
 namespace System.BluetoothLe

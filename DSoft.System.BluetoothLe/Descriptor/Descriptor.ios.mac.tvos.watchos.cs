@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using CoreBluetooth;
 using System.BluetoothLe;
 using Foundation;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.Utils;
 
 namespace System.BluetoothLe

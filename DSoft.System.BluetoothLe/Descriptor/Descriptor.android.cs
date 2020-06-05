@@ -1,9 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using Android.Bluetooth;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.Utils;
-using System.BluetoothLe.CallbackEventArgs;
+using System.BluetoothLe.EventArgs;
 
 namespace System.BluetoothLe
 {

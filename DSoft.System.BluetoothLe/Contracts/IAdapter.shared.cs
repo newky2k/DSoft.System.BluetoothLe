@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.BluetoothLe.EventArgs;
-using System.BluetoothLe.Exceptions;
 
-namespace System.BluetoothLe.Contracts
+namespace System.BluetoothLe
 {
     /// <summary>
     /// The bluetooth LE Adapter.

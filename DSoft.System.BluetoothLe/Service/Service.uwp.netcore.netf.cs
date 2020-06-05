@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
-using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe

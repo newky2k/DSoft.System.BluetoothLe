@@ -1,5 +1,4 @@
 ﻿using System;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
 using System.BluetoothLe.Utils;
 

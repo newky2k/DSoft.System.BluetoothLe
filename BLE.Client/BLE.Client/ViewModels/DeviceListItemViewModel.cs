@@ -1,7 +1,6 @@
 ﻿using System;
 using MvvmCross.ViewModels;
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 
 namespace BLE.Client.ViewModels
 {

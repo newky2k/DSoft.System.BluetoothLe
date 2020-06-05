@@ -12,7 +12,6 @@ using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 using Xamarin.Forms;
 using System.BluetoothLe.EventArgs;
 using System.BluetoothLe.Extensions;

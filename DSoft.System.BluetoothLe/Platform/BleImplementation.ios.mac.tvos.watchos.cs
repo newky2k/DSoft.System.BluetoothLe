@@ -1,7 +1,7 @@
 using CoreBluetooth;
 using CoreFoundation;
 
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe

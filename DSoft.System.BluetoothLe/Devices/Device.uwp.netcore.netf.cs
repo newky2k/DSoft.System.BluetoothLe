@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Windows.Devices.Bluetooth;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 using System.BluetoothLe.Extensions;
 
 

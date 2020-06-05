@@ -3,12 +3,12 @@ using Android.Bluetooth;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 using System.BluetoothLe.Utils;
 using System.BluetoothLe.BroadcastReceivers;
 using System.BluetoothLe.Extensions;
 using Adapter = System.BluetoothLe.Adapter;
-using IAdapter = System.BluetoothLe.Contracts.IAdapter;
+using IAdapter = System.BluetoothLe.IAdapter;
 
 namespace System.BluetoothLe
 {

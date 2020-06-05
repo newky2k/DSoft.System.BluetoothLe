@@ -10,7 +10,6 @@ using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Advertisement;
 
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe

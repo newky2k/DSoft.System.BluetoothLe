@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
 
 namespace System.BluetoothLe.Utils

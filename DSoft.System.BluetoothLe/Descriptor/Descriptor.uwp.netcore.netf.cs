@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 using Windows.Security.Cryptography;
 using System.BluetoothLe.Extensions;
 

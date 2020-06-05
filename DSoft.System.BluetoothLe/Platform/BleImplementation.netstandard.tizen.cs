@@ -1,5 +1,4 @@
 ﻿using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Text;

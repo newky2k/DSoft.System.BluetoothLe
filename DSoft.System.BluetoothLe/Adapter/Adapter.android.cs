@@ -8,7 +8,6 @@ using Android.Bluetooth;
 using Android.Bluetooth.LE;
 using Android.OS;
 using Java.Util;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.Extensions;
 using Trace = System.BluetoothLe.Trace;
 using Android.App;
