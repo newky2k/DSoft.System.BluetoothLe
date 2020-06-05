@@ -14,12 +14,18 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageId>DSoft.System.BluetoothLe</PackageId>
-    <Authors>newky2k, Adrian Seceleanu, Sven-Michael Stübe</Authors>
+    <Authors>newky2k</Authors>
     <PackageLicenseExpression>Apache-2.0+</PackageLicenseExpression>
-    <Description>Cross-platform Bluetooth Low Energy library, based on Plugin.BLE,  for iOS, Android, UWP, Mac, TVOS(Preview) and WatchOS(Preview)</Description>
+    <Description>Cross-platform Bluetooth Low Energy library, based on Plugin.BLE, for Xamarin.iOS, Xamarin.Android, Mac, UWP(Preview), .Net Core 3.x(Preview - Windows 10 only - WPF and Windows.Forms), TVOS(Preview) and WatchOS(Preview), Tizen(coming soon)</Description>
     <AssemblyName>System.BluetoothLe</AssemblyName>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>DSoft.snk</AssemblyOriginatorKeyFile>
+    <RepositoryUrl>https://github.com/newky2k/DSoft.System.BluetoothLe</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/newky2k/DSoft.System.BluetoothLe</PackageProjectUrl>
+    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+    <PackageTags>BluetoothLe xamarin mac ios android uwp wpf netcore</PackageTags>
+    <Copyright>Copyright © 2020 DSoft</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
