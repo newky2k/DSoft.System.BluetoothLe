@@ -17,16 +17,16 @@ namespace System.BluetoothLe
         #endregion
 
         #region Properties
-        protected Guid NativeGuid => NativeService.UUID.GuidFromUuid();
+        internal Guid NativeGuid => NativeService.UUID.GuidFromUuid();
 
-        protected bool NativeIsPrimary => NativeService.Primary;
+        internal bool NativeIsPrimary => NativeService.Primary;
 
-        protected CBService NativeService { get; private set; }
+        internal CBService NativeService { get; private set; }
 
         #endregion
 
         #region Constructors
-        public Service(CBService nativeService, IDevice device, IBleCentralManagerDelegate bleCentralManagerDelegate) : this(device)
+        internal Service(CBService nativeService, Device device, IBleCentralManagerDelegate bleCentralManagerDelegate) : this(device)
         {
             NativeService = nativeService;
 
@@ -38,11 +38,11 @@ namespace System.BluetoothLe
 
 
         #region Methods
-        protected Task<IList<ICharacteristic>> GetCharacteristicsNativeAsync()
+        internal Task<IList<Characteristic>> GetCharacteristicsNativeAsync()
         {
             var exception = new Exception($"Device '{Device.Id}' disconnected while fetching characteristics for service with {Id}.");
 
-            return TaskBuilder.FromEvent<IList<ICharacteristic>, EventHandler<CBServiceEventArgs>, EventHandler<CBPeripheralErrorEventArgs>>(
+            return TaskBuilder.FromEvent<IList<Characteristic>, EventHandler<CBServiceEventArgs>, EventHandler<CBPeripheralErrorEventArgs>>(
                 execute: () =>
                 {
                     if (_device.State != CBPeripheralState.Connected)
@@ -65,7 +65,7 @@ namespace System.BluetoothLe
                     {
                         var characteristics = args.Service.Characteristics
                                                   .Select(characteristic => new Characteristic(characteristic, _device, this, _bleCentralManagerDelegate))
-                                                  .Cast<ICharacteristic>().ToList();
+                                                  .Cast<Characteristic>().ToList();
                         complete(characteristics);
                     }
                 },

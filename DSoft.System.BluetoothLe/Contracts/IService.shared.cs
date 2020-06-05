@@ -28,13 +28,13 @@ namespace System.BluetoothLe
         /// <summary>
         /// Returns the parent device.
         /// </summary>
-        IDevice Device { get; }
+        Device Device { get; }
 
         /// <summary>
         /// Gets the characteristics of the service.
         /// </summary>
         /// <returns>A task that represents the asynchronous read operation. The Result property will contain a list of characteristics.</returns>
-        Task<IReadOnlyList<ICharacteristic>> GetCharacteristicsAsync();
+        Task<IReadOnlyList<Characteristic>> GetCharacteristicsAsync();
 
         /// <summary>
         /// Gets the first characteristic with the Id <paramref name="id"/>. 
@@ -45,6 +45,6 @@ namespace System.BluetoothLe
         /// The Result property will contain the characteristic with the specified <paramref name="id"/>.
         /// If the characteristic doesn't exist, the Result will be null.
         /// </returns>
-        Task<ICharacteristic> GetCharacteristicAsync(Guid id);
+        Task<Characteristic> GetCharacteristicAsync(Guid id);
     }
 }
