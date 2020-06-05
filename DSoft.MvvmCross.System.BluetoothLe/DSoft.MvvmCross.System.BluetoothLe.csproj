@@ -11,7 +11,7 @@
     <Configurations>Debug;Release;</Configurations>
     <DebugType>portable</DebugType>
     <RootNamespace>System.Bluetooth.MvvmCrossLE</RootNamespace>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageId>DSoft.System.Bluetooth.MvvmCrossLe</PackageId>
     <Authors>newky2k, Adrian Seceleanu, Sven-Michael Stübe</Authors>
