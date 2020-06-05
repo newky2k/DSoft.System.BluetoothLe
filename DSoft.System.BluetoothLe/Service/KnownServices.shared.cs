@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     // Source: https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx
     public static class KnownServices

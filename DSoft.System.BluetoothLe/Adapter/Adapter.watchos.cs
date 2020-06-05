@@ -6,12 +6,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe.Contracts;
 
-namespace Plugin.BLE
+
+namespace System.BluetoothLe
 {
-    public class Adapter : AdapterBase
+    public partial class Adapter
     {
+        #region Fields
+
+
         private readonly AutoResetEvent _stateChanged = new AutoResetEvent(false);
         private readonly CBCentralManager _centralManager;
         private readonly IBleCentralManagerDelegate _bleCentralManagerDelegate;
@@ -22,6 +26,9 @@ namespace Plugin.BLE
         /// </summary>
         private readonly IDictionary<string, IDevice> _deviceOperationRegistry = new ConcurrentDictionary<string, IDevice>();
 
+        #endregion
+
+        #region Constructors
         public Adapter(CBCentralManager centralManager, IBleCentralManagerDelegate bleCentralManagerDelegate)
         {
             _centralManager = centralManager;
@@ -141,7 +148,10 @@ namespace Plugin.BLE
                 };
         }
 
-        protected override async Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
+        #endregion
+
+        #region Methods
+        protected async Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
         {
             // Wait for the PoweredOn state
             await WaitForState(CBManagerState.PoweredOn, scanCancellationToken).ConfigureAwait(false);
@@ -161,18 +171,18 @@ namespace Plugin.BLE
             _centralManager.ScanForPeripherals(serviceCbuuids, new PeripheralScanningOptions { AllowDuplicatesKey = allowDuplicatesKey });
         }
 
-        protected override void DisconnectDeviceNative(IDevice device)
+        protected void DisconnectDeviceNative(IDevice device)
         {
             _deviceOperationRegistry[device.Id.ToString()] = device;
             _centralManager.CancelPeripheralConnection(device.NativeDevice as CBPeripheral);
         }
 
-        protected override void StopScanNative()
+        protected void StopScanNative()
         {
             _centralManager.StopScan();
         }
 
-        protected override Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters, CancellationToken cancellationToken)
+        protected Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
             if (connectParameters.AutoConnect)
             {
@@ -195,11 +205,6 @@ namespace Plugin.BLE
             return Task.FromResult(true);
         }
 
-        private static Guid ParseDeviceGuid(CBPeripheral peripherial)
-        {
-            return Guid.ParseExact(peripherial.Identifier.AsString(), "d");
-        }
-
         /// <summary>
         /// Connects to known device async.
         /// 
@@ -208,7 +213,7 @@ namespace Plugin.BLE
         /// </summary>
         /// <returns>The to known device async.</returns>
         /// <param name="deviceGuid">Device GUID.</param>
-        public override async Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken))
         {
             // Wait for the PoweredOn state
             await WaitForState(CBManagerState.PoweredOn, cancellationToken, true);
@@ -249,7 +254,7 @@ namespace Plugin.BLE
             return device;
         }
 
-        public override IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null)
+        public IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null)
         {
             CBUUID[] serviceUuids = null;
             if (services != null)
@@ -374,5 +379,12 @@ namespace Plugin.BLE
 
             return records;
         }
+
+        private static Guid ParseDeviceGuid(CBPeripheral peripherial)
+        {
+            return Guid.ParseExact(peripherial.Identifier.AsString(), "d");
+        }
+
+        #endregion
     }
 }

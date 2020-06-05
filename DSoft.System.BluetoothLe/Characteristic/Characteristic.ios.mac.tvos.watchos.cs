@@ -4,25 +4,29 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.EventArgs;
-using Plugin.BLE.Exceptions;
-using Plugin.BLE.Extensions;
-using Plugin.BLE.Utils;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.EventArgs;
+using System.BluetoothLe.Exceptions;
+using System.BluetoothLe.Extensions;
+using System.BluetoothLe.Utils;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
-    public class Characteristic : CharacteristicBase<CBCharacteristic>
+    public partial class Characteristic
     {
+        #region Fields
         private readonly CBPeripheral _parentDevice;
         private readonly IBleCentralManagerDelegate _bleCentralManagerDelegate;
 
-        public override event EventHandler<CharacteristicUpdatedEventArgs> ValueUpdated;
+        #endregion
 
-        public override Guid Id => NativeCharacteristic.UUID.GuidFromUuid();
-        public override string Uuid => NativeCharacteristic.UUID.ToString();
+        #region Properties
 
-        public override byte[] Value
+        protected Guid NativeGuid => NativeCharacteristic.UUID.GuidFromUuid();
+
+        protected string NativeUuid => NativeCharacteristic.UUID.ToString();
+
+        protected byte[] NativeValue
         {
             get
             {
@@ -31,21 +35,34 @@ namespace Plugin.BLE
                 {
                     return new byte[0];
                 }
-                    
+
                 return value.ToArray();
             }
-        } 
+        }
 
-        public override CharacteristicPropertyType Properties => (CharacteristicPropertyType)(int)NativeCharacteristic.Properties;
+        protected CharacteristicPropertyType NativeProperties => (CharacteristicPropertyType)(int)NativeCharacteristic.Properties;
 
-        public Characteristic(CBCharacteristic nativeCharacteristic, CBPeripheral parentDevice, IService service, IBleCentralManagerDelegate bleCentralManagerDelegate) 
-            : base(service, nativeCharacteristic)
+        protected CBCharacteristic NativeCharacteristic { get; private set; }
+
+        protected string NativeName => KnownCharacteristics.Lookup(Id).Name;
+
+        #endregion
+
+        #region Constructors
+
+        public Characteristic(CBCharacteristic nativeCharacteristic, CBPeripheral parentDevice, IService service, IBleCentralManagerDelegate bleCentralManagerDelegate)  : this(service)
         {
+            NativeCharacteristic = nativeCharacteristic;
+
             _parentDevice = parentDevice;
             _bleCentralManagerDelegate = bleCentralManagerDelegate;
         }
 
-        protected override Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync()
+        #endregion
+
+        #region Methods
+
+        protected Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync()
         {
             var exception = new Exception($"Device '{Service.Device.Id}' disconnected while fetching descriptors for characteristic with {Id}.");
 
@@ -82,7 +99,7 @@ namespace Plugin.BLE
                 unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
         }
 
-        protected override Task<byte[]> ReadNativeAsync()
+        protected Task<byte[]> ReadNativeAsync()
         {
             var exception = new Exception($"Device '{Service.Device.Id}' disconnected while reading characteristic with {Id}.");
 
@@ -120,7 +137,7 @@ namespace Plugin.BLE
                     unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
         }
 
-        protected override Task<bool> WriteNativeAsync(byte[] data, CharacteristicWriteType writeType)
+        protected Task<bool> WriteNativeAsync(byte[] data, CharacteristicWriteType writeType)
         {
             var exception = new Exception($"Device {Service.Device.Id} disconnected while writing characteristic with {Id}.");
 
@@ -161,7 +178,7 @@ namespace Plugin.BLE
             return task;
         }
 
-        protected override Task StartUpdatesNativeAsync()
+        protected Task StartUpdatesNativeAsync()
         {
             var exception = new Exception($"Device {Service.Device.Id} disconnected while starting updates for characteristic with {Id}.");
 
@@ -203,7 +220,7 @@ namespace Plugin.BLE
                   unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
         }
 
-        protected override Task StopUpdatesNativeAsync()
+        protected Task StopUpdatesNativeAsync()
         {
             var exception = new Exception($"Device {Service.Device.Id} disconnected while stopping updates for characteristic with {Id}.");
 
@@ -250,5 +267,8 @@ namespace Plugin.BLE
                 ValueUpdated?.Invoke(this, new CharacteristicUpdatedEventArgs(this));
             }
         }
+
+        #endregion
+
     }
 }

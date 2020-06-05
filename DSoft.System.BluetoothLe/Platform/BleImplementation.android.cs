@@ -3,16 +3,16 @@ using Android.Bluetooth;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Utils;
-using Plugin.BLE.BroadcastReceivers;
-using Plugin.BLE.Extensions;
-using Adapter = Plugin.BLE.Adapter;
-using IAdapter = Plugin.BLE.Contracts.IAdapter;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Utils;
+using System.BluetoothLe.BroadcastReceivers;
+using System.BluetoothLe.Extensions;
+using Adapter = System.BluetoothLe.Adapter;
+using IAdapter = System.BluetoothLe.Contracts.IAdapter;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
-    public class BleImplementation : BleImplementationBase
+    public partial class BleImplementation
     {
         private static volatile Handler _handler;
 
@@ -37,7 +37,7 @@ namespace Plugin.BLE
         private BluetoothManager _bluetoothManager;
 
 
-        protected override void InitializeNative()
+        protected void InitializeNative()
         {
             var ctx = Application.Context;
             if (!ctx.PackageManager.HasSystemFeature(PackageManager.FeatureBluetoothLe))
@@ -70,10 +70,10 @@ namespace Plugin.BLE
             }
         }
 
-        protected override BluetoothState GetInitialStateNative()
+        protected BluetoothState GetInitialStateNative()
             => _bluetoothManager?.Adapter.State.ToBluetoothState() ?? BluetoothState.Unavailable;
 
-        protected override IAdapter CreateNativeAdapter()
+        protected IAdapter CreateNativeAdapter()
             => new Adapter(_bluetoothManager);
     }
 }

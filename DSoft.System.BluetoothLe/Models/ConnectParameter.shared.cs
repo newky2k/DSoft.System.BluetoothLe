@@ -1,4 +1,4 @@
-﻿namespace Plugin.BLE
+﻿namespace System.BluetoothLe
 {
     /// <summary>
     /// Connection parameters. Contains platform specific parameters needed to achieved connection

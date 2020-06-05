@@ -1,6 +1,6 @@
-﻿using Plugin.BLE.Extensions;
+﻿using System.BluetoothLe.Extensions;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
     public enum AdvertisementRecordType
     {

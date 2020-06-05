@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Plugin.BLE.Extensions
+namespace System.BluetoothLe.Extensions
 {
     public static class GuidExtension
     {

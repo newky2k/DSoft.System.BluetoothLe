@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Plugin.BLE.Exceptions
+namespace System.BluetoothLe.Exceptions
 {
     public class CharacteristicReadException : Exception
     {

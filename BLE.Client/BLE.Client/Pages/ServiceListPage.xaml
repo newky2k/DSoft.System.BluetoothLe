@@ -4,7 +4,7 @@
                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                       xmlns:views="clr-namespace:MvvmCross.Forms.Views;assembly=MvvmCross.Forms"
                       xmlns:viewModels="clr-namespace:BLE.Client.ViewModels;assembly=BLE.Client"
-                      xmlns:abstractions="clr-namespace:Plugin.BLE;assembly=DSoft.System.Bluetooth"
+                      xmlns:abstractions="clr-namespace:System.BluetoothLe;assembly=System.BluetoothLe"
                       x:Class="BLE.Client.Pages.ServiceListPage"
                       Title="Services">
     <Grid>

@@ -3,31 +3,53 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Bluetooth;
-using Plugin.BLE;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe;
+using System.BluetoothLe.Contracts;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
-    public class Service : ServiceBase<BluetoothGattService>
+    public partial class Service
     {
+        #region Fields
         private readonly BluetoothGatt _gatt;
         private readonly IGattCallback _gattCallback;
+        #endregion
 
-        public override Guid Id => Guid.ParseExact(NativeService.Uuid.ToString(), "d");
-        public override bool IsPrimary => NativeService.Type == GattServiceType.Primary;
+        #region Properties
+        protected Guid NativeGuid => Guid.ParseExact(NativeService.Uuid.ToString(), "d");
 
-        public Service(BluetoothGattService nativeService, BluetoothGatt gatt, IGattCallback gattCallback, IDevice device) 
-            : base(device, nativeService)
+        protected bool NativeIsPrimary => NativeService.Type == GattServiceType.Primary;
+
+        protected BluetoothGattService NativeService { get; private set; }
+
+        #endregion
+
+        #region Constructors
+
+        public Service(BluetoothGattService nativeService, BluetoothGatt gatt, IGattCallback gattCallback, IDevice device) : this(device)
         {
+            NativeService = nativeService;
+
             _gatt = gatt;
             _gattCallback = gattCallback;
         }
 
-        protected override Task<IList<ICharacteristic>> GetCharacteristicsNativeAsync()
+        #endregion
+
+        #region Methods
+
+        protected Task<IList<ICharacteristic>> GetCharacteristicsNativeAsync()
         {
             return Task.FromResult<IList<ICharacteristic>>(
                 NativeService.Characteristics.Select(characteristic => new Characteristic(characteristic, _gatt, _gattCallback, this))
                 .Cast<ICharacteristic>().ToList());
+        }
+
+        #endregion
+
+        public virtual void Dispose()
+        {
+
         }
     }
 }

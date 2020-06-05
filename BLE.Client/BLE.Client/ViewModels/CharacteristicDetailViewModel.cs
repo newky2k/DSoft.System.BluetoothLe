@@ -11,11 +11,11 @@ using MvvmCross;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
-using Plugin.BLE;
-using Plugin.BLE.Contracts;
+using System.BluetoothLe;
+using System.BluetoothLe.Contracts;
 using Xamarin.Forms;
-using Plugin.BLE.EventArgs;
-using Plugin.BLE.Extensions;
+using System.BluetoothLe.EventArgs;
+using System.BluetoothLe.Extensions;
 
 namespace BLE.Client.ViewModels
 {
@@ -251,7 +251,7 @@ namespace BLE.Client.ViewModels
 
         private void CharacteristicOnValueUpdated(object sender, CharacteristicUpdatedEventArgs characteristicUpdatedEventArgs)
         {
-            Device.InvokeOnMainThreadAsync(() =>
+            Xamarin.Forms.Device.InvokeOnMainThreadAsync(() =>
             {
                 Messages.Insert(0, $"[{DateTime.Now.TimeOfDay}] - Updated: {CharacteristicValue}");
                 RaisePropertyChanged(() => CharacteristicValue);

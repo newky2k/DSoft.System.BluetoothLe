@@ -1,6 +1,6 @@
 ﻿using MvvmCross;
 using MvvmCross.Forms.Core;
-using Plugin.BLE;
+using System.BluetoothLe;
 
 namespace BLE.Client
 {

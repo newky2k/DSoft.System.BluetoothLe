@@ -1,28 +1,32 @@
 using System;
 using System.Threading.Tasks;
 using Android.Bluetooth;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Utils;
-using Plugin.BLE.CallbackEventArgs;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Utils;
+using System.BluetoothLe.CallbackEventArgs;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
-    public class Descriptor : DescriptorBase<BluetoothGattDescriptor>
+    public partial class Descriptor
     {
         private readonly BluetoothGatt _gatt;
         private readonly IGattCallback _gattCallback;
 
-        public override Guid Id => Guid.ParseExact(NativeDescriptor.Uuid.ToString(), "d");
+        protected Guid NativeGuid => Guid.ParseExact(NativeDescriptor.Uuid.ToString(), "d");
 
-        public override byte[] Value => NativeDescriptor.GetValue();
+        protected byte[] NativeValue => NativeDescriptor.GetValue();
 
-        public Descriptor(BluetoothGattDescriptor nativeDescriptor, BluetoothGatt gatt, IGattCallback gattCallback, ICharacteristic characteristic) : base(characteristic, nativeDescriptor)
+        protected BluetoothGattDescriptor NativeDescriptor { get; private set; }
+
+        public Descriptor(BluetoothGattDescriptor nativeDescriptor, BluetoothGatt gatt, IGattCallback gattCallback, ICharacteristic characteristic) : this(characteristic)
         {
+            NativeDescriptor = nativeDescriptor;
+
             _gattCallback = gattCallback;
             _gatt = gatt;
         }
 
-        protected override Task WriteNativeAsync(byte[] data)
+        protected Task WriteNativeAsync(byte[] data)
         {
             return TaskBuilder.FromEvent<bool, EventHandler<DescriptorCallbackEventArgs>, EventHandler>(
                execute: () => InternalWrite(data),
@@ -55,7 +59,7 @@ namespace Plugin.BLE
                 throw new Exception("GATT: WRITE descriptor value failed");
         }
 
-        protected override async Task<byte[]> ReadNativeAsync()
+        protected async Task<byte[]> ReadNativeAsync()
         {
             return await TaskBuilder.FromEvent<byte[], EventHandler<DescriptorCallbackEventArgs>, EventHandler>(
                execute: ReadInternal,

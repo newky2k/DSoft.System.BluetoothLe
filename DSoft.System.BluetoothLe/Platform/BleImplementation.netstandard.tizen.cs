@@ -1,26 +1,17 @@
-﻿using Plugin.BLE;
-using Plugin.BLE.Contracts;
+﻿using System.BluetoothLe;
+using System.BluetoothLe.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
-    public class BleImplementation : BleImplementationBase
+    public partial class BleImplementation
     {
-        protected override IAdapter CreateNativeAdapter()
-        {
-            throw new NotImplementedException();
-        }
+        protected IAdapter CreateNativeAdapter() => throw new PlatformNotSupportedException();
 
-        protected override BluetoothState GetInitialStateNative()
-        {
-            throw new NotImplementedException();
-        }
+        protected BluetoothState GetInitialStateNative() => throw new PlatformNotSupportedException();
 
-        protected override void InitializeNative()
-        {
-            throw new NotImplementedException();
-        }
+        protected void InitializeNative() => throw new PlatformNotSupportedException();
     }
 }

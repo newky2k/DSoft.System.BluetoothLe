@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,15 +8,16 @@ using Android.Bluetooth;
 using Android.Bluetooth.LE;
 using Android.OS;
 using Java.Util;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Extensions;
-using Object = Java.Lang.Object;
-using Trace = Plugin.BLE.Trace;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Extensions;
+using Trace = System.BluetoothLe.Trace;
 using Android.App;
+using Java.Lang;
 
-namespace Plugin.BLE
+
+namespace System.BluetoothLe
 {
-    public class Adapter : AdapterBase
+    public partial class Adapter
     {
         private readonly BluetoothManager _bluetoothManager;
         private readonly BluetoothAdapter _bluetoothAdapter;
@@ -50,7 +51,7 @@ namespace Plugin.BLE
             }
         }
 
-        protected override Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
+        protected Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
         {
             if (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop)
             {
@@ -113,7 +114,7 @@ namespace Plugin.BLE
             }
         }
 
-        protected override void StopScanNative()
+        protected void StopScanNative()
         {
             if (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop)
             {
@@ -129,20 +130,20 @@ namespace Plugin.BLE
             }
         }
 
-        protected override Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters,
+        protected Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters,
             CancellationToken cancellationToken)
         {
             ((Device)device).Connect(connectParameters, cancellationToken);
             return Task.CompletedTask;
         }
 
-        protected override void DisconnectDeviceNative(IDevice device)
+        protected void DisconnectDeviceNative(IDevice device)
         {
             //make sure everything is disconnected
             ((Device)device).Disconnect();
         }
 
-        public override async Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken))
         {
             var macBytes = deviceGuid.ToByteArray().Skip(10).Take(6).ToArray();
             var nativeDevice = _bluetoothAdapter.GetRemoteDevice(macBytes);
@@ -153,7 +154,7 @@ namespace Plugin.BLE
             return device;
         }
 
-        public override IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null)
+        public IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null)
         {
             if (services != null)
             {
@@ -182,7 +183,7 @@ namespace Plugin.BLE
         }
 
 
-        public class Api18BleScanCallback : Object, BluetoothAdapter.ILeScanCallback
+        public class Api18BleScanCallback : Java.Lang.Object, BluetoothAdapter.ILeScanCallback
         {
             private readonly Adapter _adapter;
 
@@ -268,6 +269,3 @@ namespace Plugin.BLE
         }
     }
 }
-
-
-

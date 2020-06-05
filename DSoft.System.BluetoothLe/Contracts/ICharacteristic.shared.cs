@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Plugin.BLE.EventArgs;
-using Plugin.BLE.Exceptions;
+using System.BluetoothLe.EventArgs;
+using System.BluetoothLe.Exceptions;
 
-namespace Plugin.BLE.Contracts
+namespace System.BluetoothLe.Contracts
 {
     /// <summary>
     /// A bluetooth LE GATT characteristic.

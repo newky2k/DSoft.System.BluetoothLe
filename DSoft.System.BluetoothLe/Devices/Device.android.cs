@@ -6,17 +6,19 @@ using Android.App;
 using Android.OS;
 using Android.Bluetooth;
 using Android.Content;
-using Plugin.BLE.Contracts;
-using Plugin.BLE.Utils;
-using Plugin.BLE.CallbackEventArgs;
-using Trace = Plugin.BLE.Trace;
+using System.BluetoothLe.Contracts;
+using System.BluetoothLe.Utils;
+using System.BluetoothLe.CallbackEventArgs;
+using Trace = System.BluetoothLe.Trace;
 using System.Threading;
 using Java.Util;
+using Android.Graphics;
 
-namespace Plugin.BLE
+namespace System.BluetoothLe
 {
-    public class Device : DeviceBase<BluetoothDevice>
+    public partial class Device
     {
+        #region Fields
         /// <summary>
         /// we have to keep a reference to this because Android's api is weird and requires
         /// the GattServer in order to do nearly anything, including enumerating services
@@ -34,13 +36,30 @@ namespace Plugin.BLE
         /// </summary>
         private CancellationTokenRegistration _connectCancellationTokenRegistration;
 
-        public Device(Adapter adapter, BluetoothDevice nativeDevice, BluetoothGatt gatt, int rssi, byte[] advertisementData = null) : base(adapter, nativeDevice)
+        #endregion
+
+        #region Properties
+
+        internal BluetoothDevice NativeDevice { get; private set; }
+
+        internal bool IsOperationRequested { get; set; }
+
+        #endregion
+
+        #region Constructors
+        internal Device(Adapter adapter, BluetoothDevice nativeDevice, BluetoothGatt gatt, int rssi, byte[] advertisementData = null) : this(adapter)
         {
+            NativeDevice = nativeDevice;
+
             Update(nativeDevice, gatt);
             Rssi = rssi;
             AdvertisementRecords = ParseScanRecord(advertisementData);
             _gattCallback = new GattCallback(adapter, this);
         }
+
+        #endregion
+
+        #region Methods
 
         public void Update(BluetoothDevice nativeDevice, BluetoothGatt gatt)
         {
@@ -55,9 +74,7 @@ namespace Plugin.BLE
             Name = NativeDevice.Name;
         }
 
-        internal bool IsOperationRequested { get; set; }
-
-        protected override async Task<IReadOnlyList<IService>> GetServicesNativeAsync()
+        protected async Task<IReadOnlyList<IService>> GetServicesNativeAsync()
         {
             if (_gattCallback == null || _gatt == null)
             {
@@ -73,7 +90,7 @@ namespace Plugin.BLE
             return await DiscoverServicesInternal();
         }
 
-        protected override async Task<IService> GetServiceNativeAsync(Guid id)
+        protected async Task<IService> GetServiceNativeAsync(Guid id)
         {
             if (_gattCallback == null || _gatt == null)
             {
@@ -199,7 +216,7 @@ namespace Plugin.BLE
             DisposeServices();
         }
 
-        protected override DeviceState GetState()
+        protected DeviceState GetState()
         {
             var manager = (BluetoothManager)Application.Context.GetSystemService(Context.BluetoothService);
             var state = manager.GetConnectionState(NativeDevice, ProfileType.Gatt);
@@ -294,7 +311,7 @@ namespace Plugin.BLE
             return records;
         }
 
-        public override async Task<bool> UpdateRssiAsync()
+        public async Task<bool> UpdateRssiAsync()
         {
             if (_gatt == null || _gattCallback == null)
             {
@@ -328,7 +345,7 @@ namespace Plugin.BLE
               unsubscribeReject: handler => _gattCallback.ConnectionInterrupted -= handler);
         }
 
-        protected override async Task<int> RequestMtuNativeAsync(int requestValue)
+        protected async Task<int> RequestMtuNativeAsync(int requestValue)
         {
             if (_gatt == null || _gattCallback == null)
             {
@@ -367,7 +384,7 @@ namespace Plugin.BLE
             );
         }
 
-        protected override bool UpdateConnectionIntervalNative(ConnectionInterval interval)
+        protected bool UpdateConnectionIntervalNative(ConnectionInterval interval)
         {
             if (_gatt == null || _gattCallback == null)
             {
@@ -392,5 +409,7 @@ namespace Plugin.BLE
                 throw new Exception($"Update Connection Interval fails with error. {ex.Message}");
             }
         }
+
+        #endregion
     }
 }
