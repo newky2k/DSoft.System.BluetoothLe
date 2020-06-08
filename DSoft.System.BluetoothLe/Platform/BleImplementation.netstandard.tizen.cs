@@ -5,12 +5,12 @@ using System.Text;
 
 namespace System.BluetoothLe
 {
-    public partial class BleImplementation
+    internal partial class BleImplementation
     {
-        protected IAdapter CreateNativeAdapter() => throw new PlatformNotSupportedException();
+        internal Adapter CreateNativeAdapter() => throw new PlatformNotSupportedException();
 
-        protected BluetoothState GetInitialStateNative() => throw new PlatformNotSupportedException();
+        internal BluetoothState GetInitialStateNative() => throw new PlatformNotSupportedException();
 
-        protected void InitializeNative() => throw new PlatformNotSupportedException();
+        internal void InitializeNative() => throw new PlatformNotSupportedException();
     }
 }

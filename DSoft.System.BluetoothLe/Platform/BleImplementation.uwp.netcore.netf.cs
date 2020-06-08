@@ -5,22 +5,36 @@ using System.Threading.Tasks;
 
 namespace System.BluetoothLe
 {
-    public partial class BleImplementation
+    internal partial class BleImplementation
     {
-        public static BluetoothCacheMode CacheModeCharacteristicRead { get; set; } = BluetoothCacheMode.Uncached;
-        public static BluetoothCacheMode CacheModeDescriptorRead { get; set; } = BluetoothCacheMode.Uncached;
-        public static BluetoothCacheMode CacheModeGetDescriptors { get; set; } = BluetoothCacheMode.Cached;
-        public static BluetoothCacheMode CacheModeGetCharacteristics { get; set; } = BluetoothCacheMode.Cached;
-        public static BluetoothCacheMode CacheModeGetServices { get; set; } = BluetoothCacheMode.Cached;
+        #region Fields
 
         private BluetoothAdapter _bluetoothadapter;
 
-        protected IAdapter CreateNativeAdapter()
+        #endregion
+
+        #region Properties
+        internal static BluetoothCacheMode CacheModeCharacteristicRead { get; set; } = BluetoothCacheMode.Uncached;
+
+        internal static BluetoothCacheMode CacheModeDescriptorRead { get; set; } = BluetoothCacheMode.Uncached;
+
+        internal static BluetoothCacheMode CacheModeGetDescriptors { get; set; } = BluetoothCacheMode.Cached;
+
+        internal static BluetoothCacheMode CacheModeGetCharacteristics { get; set; } = BluetoothCacheMode.Cached;
+
+        internal static BluetoothCacheMode CacheModeGetServices { get; set; } = BluetoothCacheMode.Cached;
+
+        #endregion
+
+        #region Methods
+
+
+        internal Adapter CreateNativeAdapter()
         {
             return new Adapter();
         }
 
-        protected BluetoothState GetInitialStateNative()
+        internal BluetoothState GetInitialStateNative()
         {
             //The only way to get the state of bluetooth through windows is by
             //getting the radios for a device. This operation is asynchronous
@@ -34,7 +48,7 @@ namespace System.BluetoothLe
         }
 
 
-        protected void InitializeNative()
+        internal void InitializeNative()
         {
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
@@ -43,10 +57,12 @@ namespace System.BluetoothLe
 
         }
 
-        public async Task InitAdapter()
+        private async Task InitAdapter()
         {
             _bluetoothadapter = await BluetoothAdapter.GetDefaultAsync();
         }
+
+        #endregion
     }
 
 }

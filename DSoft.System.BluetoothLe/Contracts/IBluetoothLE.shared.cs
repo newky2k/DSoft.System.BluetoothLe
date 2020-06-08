@@ -32,6 +32,6 @@ namespace System.BluetoothLe
         /// <summary>
         /// Adapter to that provides access to the physical bluetooth adapter.
         /// </summary>
-        IAdapter Adapter { get; }
+        Adapter Adapter { get; }
     }
 }

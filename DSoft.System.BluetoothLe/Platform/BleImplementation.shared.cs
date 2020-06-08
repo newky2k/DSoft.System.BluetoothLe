@@ -4,16 +4,24 @@ using System.BluetoothLe.Utils;
 
 namespace System.BluetoothLe
 {
-    public partial class BleImplementation : IBluetoothLE
+    internal partial class BleImplementation : IBluetoothLE
     {
-        private readonly Lazy<IAdapter> _adapter;
+        #region Fields
+        private readonly Lazy<Adapter> _adapter;
         private BluetoothState _state;
+        #endregion
 
+        #region Events
         public event EventHandler<BluetoothStateChangedArgs> StateChanged;
 
+        #endregion
+
+        #region Properties
         public bool IsAvailable => _state != BluetoothState.Unavailable;
+
         public bool IsOn => _state == BluetoothState.On;
-        public IAdapter Adapter => _adapter.Value;
+
+        public Adapter Adapter => _adapter.Value;
 
         public BluetoothState State
         {
@@ -29,10 +37,18 @@ namespace System.BluetoothLe
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         internal BleImplementation()
         {
-            _adapter = new Lazy<IAdapter>(CreateAdapter, System.Threading.LazyThreadSafetyMode.PublicationOnly);
+            _adapter = new Lazy<Adapter>(CreateAdapter, System.Threading.LazyThreadSafetyMode.PublicationOnly);
         }
+
+        #endregion
+
+        #region Methods
 
         public void Initialize()
         {
@@ -40,12 +56,11 @@ namespace System.BluetoothLe
             State = GetInitialStateNative();
         }
 
-        private IAdapter CreateAdapter()
+        private Adapter CreateAdapter()
         {
-            if (!IsAvailable)
-                return new FakeAdapter();
-
             return CreateNativeAdapter();
         }
+
+        #endregion
     }
 }
