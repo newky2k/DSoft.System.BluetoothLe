@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 
 namespace System.BluetoothLe
 {
-    public partial class Device : IDevice, ICancellationMaster
+    public partial class Device : IDisposable, ICancellationMaster
     {
         #region Fields
         protected readonly Adapter Adapter;
-        protected readonly Dictionary<Guid, IService> KnownServices = new Dictionary<Guid, IService>();
+        protected readonly Dictionary<Guid, Service> KnownServices = new Dictionary<Guid, Service>();
         #endregion
 
         #region Properties
@@ -21,8 +21,6 @@ namespace System.BluetoothLe
         public DeviceState State => GetState();
         public IReadOnlyList<AdvertisementRecord> AdvertisementRecords { get; protected set; }
         CancellationTokenSource ICancellationMaster.TokenSource { get; set; } = new CancellationTokenSource();
-
-        object IDevice.NativeDevice => NativeDevice;
 
         #endregion
 
@@ -37,7 +35,7 @@ namespace System.BluetoothLe
 
         #region Methods
 
-        public async Task<IReadOnlyList<IService>> GetServicesAsync(CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Service>> GetServicesAsync(CancellationToken cancellationToken = default)
         {
             using (var source = this.GetCombinedSource(cancellationToken))
             {
@@ -50,7 +48,7 @@ namespace System.BluetoothLe
             return KnownServices.Values.ToList();
         }
 
-        public async Task<IService> GetServiceAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Service> GetServiceAsync(Guid id, CancellationToken cancellationToken = default)
         {
             if (KnownServices.ContainsKey(id))
             {
@@ -117,7 +115,7 @@ namespace System.BluetoothLe
                 return false;
             }
 
-            var otherDeviceBase = (IDevice)other;
+            var otherDeviceBase = (Device)other;
             return Id == otherDeviceBase.Id;
         }
 

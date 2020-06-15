@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;Xamarin.iOS10;Xamarin.Mac20;Xamarin.TVOS10;Xamarin.WatchOS10;MonoAndroid90;tizen40;</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);uap10.0.16299;netcoreapp3.0;</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);uap10.0.16299;netcoreapp3.0;net461;</TargetFrameworks>
     <LangVersion>7.2</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
@@ -16,15 +16,15 @@
     <PackageId>DSoft.System.BluetoothLe</PackageId>
     <Authors>newky2k</Authors>
     <PackageLicenseExpression>Apache-2.0+</PackageLicenseExpression>
-    <Description>Cross-platform Bluetooth Low Energy library, based on Plugin.BLE, for Xamarin.iOS, Xamarin.Android, Mac, UWP(Preview), .Net Core 3.x(Preview - Windows 10 only - WPF and Windows.Forms), TVOS(Preview) and WatchOS(Preview), Tizen(coming soon)</Description>
+    <Description>Cross-platform Bluetooth Low Energy library, based on Plugin.BLE, for Xamarin.iOS, Xamarin.Android, Mac, UWP(Preview), .Net Core 3.x and .Net Framework 4.6.1+(Preview - Windows 10 only - WPF and Windows.Forms), TVOS(Preview) and WatchOS(Preview), Tizen(coming soon)</Description>
     <AssemblyName>System.BluetoothLe</AssemblyName>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>DSoft.snk</AssemblyOriginatorKeyFile>
     <RepositoryUrl>https://github.com/newky2k/DSoft.System.BluetoothLe</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/newky2k/DSoft.System.BluetoothLe</PackageProjectUrl>
-    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
-    <PackageTags>BluetoothLe xamarin mac ios android uwp wpf netcore</PackageTags>
+    <PackageReleaseNotes>Added .Net framwework support</PackageReleaseNotes>
+    <PackageTags>BluetoothLe xamarin mac ios android uwp wpf netcore dotnet tizen tvos watchos</PackageTags>
     <Copyright>Copyright © 2020 DSoft</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
@@ -57,6 +57,11 @@
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17134.1000" />
     <Compile Include="**\*.netcore.cs" />
     <Compile Include="**\*.netcore.*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('net461')) ">
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17134.1000" />
+    <Compile Include="**\*.netf.cs" />
+    <Compile Include="**\*.netf.*.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
     <Compile Include="**\*.android.cs" />

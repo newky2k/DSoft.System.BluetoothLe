@@ -1,20 +1,18 @@
 ﻿using System;
-using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe.EventArgs;
+using System.BluetoothLe.Utils;
 
 namespace System.BluetoothLe
 {
-    /// <summary>
-    /// Cross platform bluetooth LE implemenation.
-    /// </summary>
-    public static class BluetoothLE
+    public partial class BluetoothLE
     {
-        static readonly Lazy<IBluetoothLE> Implementation = new Lazy<IBluetoothLE>(CreateImplementation, System.Threading.LazyThreadSafetyMode.PublicationOnly);
+        #region Static Singleton Accessors
+        static readonly Lazy<BluetoothLE> Implementation = new Lazy<BluetoothLE>(CreateImplementation, System.Threading.LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
         /// Current bluetooth LE implementation.
         /// </summary>
-        public static IBluetoothLE Current
+        public static BluetoothLE Current
         {
             get
             {
@@ -27,12 +25,70 @@ namespace System.BluetoothLe
             }
         }
 
-        static IBluetoothLE CreateImplementation()
+        static BluetoothLE CreateImplementation()
         {
-            var implementation = new BleImplementation();
+            var implementation = new BluetoothLE();
             implementation.Initialize();
             return implementation;
         }
 
+        #endregion
+
+        #region Fields
+        private readonly Lazy<Adapter> _adapter;
+        private BluetoothState _state;
+        #endregion
+
+        #region Events
+        public event EventHandler<BluetoothStateChangedArgs> StateChanged;
+
+        #endregion
+
+        #region Properties
+        public bool IsAvailable => _state != BluetoothState.Unavailable;
+
+        public bool IsOn => _state == BluetoothState.On;
+
+        public Adapter Adapter => _adapter.Value;
+
+        public BluetoothState State
+        {
+            get => _state;
+            protected set
+            {
+                if (_state == value)
+                    return;
+
+                var oldState = _state;
+                _state = value;
+                StateChanged?.Invoke(this, new BluetoothStateChangedArgs(oldState, _state));
+            }
+        }
+
+        #endregion
+
+        #region Constructors
+
+        internal BluetoothLE()
+        {
+            _adapter = new Lazy<Adapter>(CreateAdapter, System.Threading.LazyThreadSafetyMode.PublicationOnly);
+        }
+
+        #endregion
+
+        #region Methods
+
+        public void Initialize()
+        {
+            InitializeNative();
+            State = GetInitialStateNative();
+        }
+
+        private Adapter CreateAdapter()
+        {
+            return CreateNativeAdapter();
+        }
+
+        #endregion
     }
 }

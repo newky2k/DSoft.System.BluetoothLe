@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Security.Cryptography;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
 using System.BluetoothLe.Extensions;
 
@@ -39,7 +38,7 @@ namespace System.BluetoothLe
 
         #region Constructors
 
-        public Characteristic(GattCharacteristic nativeCharacteristic, IService service) : this(service)
+        public Characteristic(GattCharacteristic nativeCharacteristic, Service service) : this(service)
         {
             NativeCharacteristic = nativeCharacteristic;
         }
@@ -48,20 +47,20 @@ namespace System.BluetoothLe
 
         #region Methods
 
-        protected async Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync()
+        protected async Task<IReadOnlyList<Descriptor>> GetDescriptorsNativeAsync()
         {
-            var descriptorsResult = await NativeCharacteristic.GetDescriptorsAsync(BleImplementation.CacheModeGetDescriptors);
+            var descriptorsResult = await NativeCharacteristic.GetDescriptorsAsync(BluetoothLE.CacheModeGetDescriptors);
             descriptorsResult.ThrowIfError();
 
             return descriptorsResult.Descriptors?
                 .Select(nativeDescriptor => new Descriptor(nativeDescriptor, this))
-                .Cast<IDescriptor>()
+                .Cast<Descriptor>()
                 .ToList();
         }
 
         protected async Task<byte[]> ReadNativeAsync()
         {
-            var readResult = await NativeCharacteristic.ReadValueAsync(BleImplementation.CacheModeCharacteristicRead);
+            var readResult = await NativeCharacteristic.ReadValueAsync(BluetoothLE.CacheModeCharacteristicRead);
             return _value = readResult.GetValueOrThrowIfError();
         }
 

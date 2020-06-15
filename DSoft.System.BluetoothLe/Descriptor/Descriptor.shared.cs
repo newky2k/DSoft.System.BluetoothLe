@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.BluetoothLe.Contracts;
 
 namespace System.BluetoothLe
 {
-    public partial class Descriptor : IDescriptor
+    public partial class Descriptor
     {
         private string _name;
 
@@ -15,9 +14,9 @@ namespace System.BluetoothLe
 
         public Guid Id => NativeGuid;
 
-        public ICharacteristic Characteristic { get; }
+        public Characteristic Characteristic { get; }
 
-        protected Descriptor(ICharacteristic characteristic)
+        protected Descriptor(Characteristic characteristic)
         {
             Characteristic = characteristic;
         }

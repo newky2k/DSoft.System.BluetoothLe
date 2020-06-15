@@ -4,15 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
 
 namespace System.BluetoothLe
 {
-    public partial class Characteristic : ICharacteristic
+    public partial class Characteristic
     {
         #region Fields
-        private IReadOnlyList<IDescriptor> _descriptors;
+        private IReadOnlyList<Descriptor> _descriptors;
         private CharacteristicWriteType _writeType = CharacteristicWriteType.Default;
 
         #endregion
@@ -31,7 +30,7 @@ namespace System.BluetoothLe
 
         public string Name => NativeName;
 
-        public IService Service { get; }
+        public Service Service { get; }
 
 
         public CharacteristicWriteType WriteType
@@ -72,7 +71,7 @@ namespace System.BluetoothLe
         #endregion
 
         #region Constructors
-        protected Characteristic(IService service)
+        protected Characteristic(Service service)
         {
             Service = service;
         }
@@ -142,12 +141,12 @@ namespace System.BluetoothLe
             return StopUpdatesNativeAsync();
         }
 
-        public async Task<IReadOnlyList<IDescriptor>> GetDescriptorsAsync(CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Descriptor>> GetDescriptorsAsync(CancellationToken cancellationToken = default)
         {
             return _descriptors ?? (_descriptors = await GetDescriptorsNativeAsync());
         }
 
-        public async Task<IDescriptor> GetDescriptorAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Descriptor> GetDescriptorAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var descriptors = await GetDescriptorsAsync(cancellationToken).ConfigureAwait(false);
             return descriptors.FirstOrDefault(d => d.Id == id);

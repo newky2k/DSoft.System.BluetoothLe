@@ -4,9 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
-using System.BluetoothLe.Exceptions;
 using System.BluetoothLe.Extensions;
 using System.BluetoothLe.Utils;
 
@@ -50,7 +48,7 @@ namespace System.BluetoothLe
 
         #region Constructors
 
-        public Characteristic(CBCharacteristic nativeCharacteristic, CBPeripheral parentDevice, IService service, IBleCentralManagerDelegate bleCentralManagerDelegate)  : this(service)
+        public Characteristic(CBCharacteristic nativeCharacteristic, CBPeripheral parentDevice, Service service, IBleCentralManagerDelegate bleCentralManagerDelegate)  : this(service)
         {
             NativeCharacteristic = nativeCharacteristic;
 
@@ -62,11 +60,11 @@ namespace System.BluetoothLe
 
         #region Methods
 
-        protected Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync()
+        protected Task<IReadOnlyList<Descriptor>> GetDescriptorsNativeAsync()
         {
             var exception = new Exception($"Device '{Service.Device.Id}' disconnected while fetching descriptors for characteristic with {Id}.");
 
-            return TaskBuilder.FromEvent<IReadOnlyList<IDescriptor>, EventHandler<CBCharacteristicEventArgs>, EventHandler<CBPeripheralErrorEventArgs>>(
+            return TaskBuilder.FromEvent<IReadOnlyList<Descriptor>, EventHandler<CBCharacteristicEventArgs>, EventHandler<CBPeripheralErrorEventArgs>>(
                 execute: () =>
                 {
                     if (_parentDevice.State != CBPeripheralState.Connected)
@@ -85,7 +83,7 @@ namespace System.BluetoothLe
                     }
                     else
                     {
-                        complete(args.Characteristic.Descriptors.Select(descriptor => new Descriptor(descriptor, _parentDevice, this, _bleCentralManagerDelegate)).Cast<IDescriptor>().ToList());
+                        complete(args.Characteristic.Descriptors.Select(descriptor => new Descriptor(descriptor, _parentDevice, this, _bleCentralManagerDelegate)).Cast<Descriptor>().ToList());
                     }
                 },
                 subscribeComplete: handler => _parentDevice.DiscoveredDescriptor += handler,

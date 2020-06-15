@@ -1,7 +1,7 @@
 using System;
 using Android.Bluetooth;
 using Android.Content;
-using System.BluetoothLe.Contracts;
+
 using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe.BroadcastReceivers

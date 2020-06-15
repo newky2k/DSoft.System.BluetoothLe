@@ -2,28 +2,38 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.BluetoothLe.Contracts;
 
 namespace System.BluetoothLe
 {
-    public partial class Service : IService
+    public partial class Service : IDisposable
     {
-        private readonly List<ICharacteristic> _characteristics = new List<ICharacteristic>();
+        #region Fields
+        private readonly List<Characteristic> _characteristics = new List<Characteristic>();
 
+        #endregion
+
+        #region Properties
         public string Name => KnownServices.Lookup(Id).Name;
 
         public Guid Id => NativeGuid;
 
         public bool IsPrimary => NativeIsPrimary;
 
-        public IDevice Device { get; }
+        public Device Device { get; }
 
-        protected Service(IDevice device)
+        #endregion
+
+        #region Constructors
+
+        protected Service(Device device)
         {
             Device = device;
         }
 
-        public async Task<IReadOnlyList<ICharacteristic>> GetCharacteristicsAsync()
+        #endregion
+
+        #region 
+        public async Task<IReadOnlyList<Characteristic>> GetCharacteristicsAsync()
         {
             if (!_characteristics.Any())
             {
@@ -34,11 +44,12 @@ namespace System.BluetoothLe
             return _characteristics.ToList();
         }
 
-        public async Task<ICharacteristic> GetCharacteristicAsync(Guid id)
+        public async Task<Characteristic> GetCharacteristicAsync(Guid id)
         {
             var characteristics = await GetCharacteristicsAsync();
             return characteristics.FirstOrDefault(c => c.Id == id);
         }
 
+        #endregion
     }
 }

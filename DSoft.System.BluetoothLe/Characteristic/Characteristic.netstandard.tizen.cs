@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.BluetoothLe.Contracts;
-using System.BluetoothLe.EventArgs;
 
 
 namespace System.BluetoothLe
@@ -20,7 +18,7 @@ namespace System.BluetoothLe
 
         public string NativeName => KnownCharacteristics.Lookup(Id).Name;
 
-        protected Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync() => throw new PlatformNotSupportedException();
+        protected Task<IReadOnlyList<Descriptor>> GetDescriptorsNativeAsync() => throw new PlatformNotSupportedException();
 
         protected Task<byte[]> ReadNativeAsync() => throw new PlatformNotSupportedException();
 

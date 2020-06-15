@@ -6,7 +6,7 @@ using MvvmCross;
 using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 using System.BluetoothLe.EventArgs;
 using System.BluetoothLe.Extensions;
 
@@ -15,7 +15,7 @@ namespace BLE.Client.ViewModels
     public class DescriptorDetailViewModel : BaseViewModel
     {
         private readonly IUserDialogs _userDialogs;
-        public IDescriptor Descriptor { get; private set; }
+        public Descriptor Descriptor { get; private set; }
 
         public string DescriptorValue => Descriptor?.Value?.ToHexString().Replace("-", " ");
 
@@ -23,7 +23,7 @@ namespace BLE.Client.ViewModels
 
 
 
-        public DescriptorDetailViewModel(IAdapter adapter, IUserDialogs userDialogs) : base(adapter)
+        public DescriptorDetailViewModel(Adapter adapter, IUserDialogs userDialogs) : base(adapter)
         {
             _userDialogs = userDialogs;
         }

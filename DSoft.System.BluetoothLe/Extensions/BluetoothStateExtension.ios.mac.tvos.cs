@@ -1,5 +1,5 @@
 using CoreBluetooth;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 
 namespace System.BluetoothLe.Extensions
 {

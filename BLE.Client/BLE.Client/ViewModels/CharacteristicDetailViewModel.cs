@@ -12,7 +12,6 @@ using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 using Xamarin.Forms;
 using System.BluetoothLe.EventArgs;
 using System.BluetoothLe.Extensions;
@@ -23,7 +22,7 @@ namespace BLE.Client.ViewModels
     {
         private readonly IUserDialogs _userDialogs;
         private bool _updatesStarted;
-        public ICharacteristic Characteristic { get; private set; }
+        public Characteristic Characteristic { get; private set; }
 
         public string CharacteristicValue => Characteristic?.Value.ToHexString().Replace("-", " ");
 
@@ -64,7 +63,7 @@ namespace BLE.Client.ViewModels
             }
         }
 
-        public CharacteristicDetailViewModel(IAdapter adapter, IUserDialogs userDialogs) : base(adapter)
+        public CharacteristicDetailViewModel(Adapter adapter, IUserDialogs userDialogs) : base(adapter)
         {
             _userDialogs = userDialogs;
         }

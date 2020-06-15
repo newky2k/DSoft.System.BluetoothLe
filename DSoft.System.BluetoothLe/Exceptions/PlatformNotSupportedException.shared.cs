@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace System.BluetoothLe.Exceptions
+namespace System.BluetoothLe
 {
     public class PlatformNotSupportedException : Exception
     {

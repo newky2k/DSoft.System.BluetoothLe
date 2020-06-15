@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
-using System.BluetoothLe.Contracts;
+
 
 namespace System.BluetoothLe
 {
@@ -21,7 +21,7 @@ namespace System.BluetoothLe
         /// Registry used to store device instances for pending operations : disconnect
         /// Helps to detect connection lost events.
         /// </summary>
-        private readonly IDictionary<string, IDevice> _deviceOperationRegistry = new ConcurrentDictionary<string, IDevice>();
+        private readonly IDictionary<string, Device> _deviceOperationRegistry = new ConcurrentDictionary<string, Device>();
 
         #endregion
 
@@ -73,7 +73,7 @@ namespace System.BluetoothLe
                 // when a peripheral gets connected, add that peripheral to our running list of connected peripherals
                 var guid = ParseDeviceGuid(e.Peripheral).ToString();
 
-                IDevice device;
+                Device device;
                 if (_deviceOperationRegistry.TryGetValue(guid, out device))
                 {
                     _deviceOperationRegistry.Remove(guid);
@@ -168,7 +168,7 @@ namespace System.BluetoothLe
             _centralManager.ScanForPeripherals(serviceCbuuids, new PeripheralScanningOptions { AllowDuplicatesKey = allowDuplicatesKey });
         }
 
-        protected void DisconnectDeviceNative(IDevice device)
+        protected void DisconnectDeviceNative(Device device)
         {
             _deviceOperationRegistry[device.Id.ToString()] = device;
             _centralManager.CancelPeripheralConnection(device.NativeDevice as CBPeripheral);
@@ -179,7 +179,7 @@ namespace System.BluetoothLe
             _centralManager.StopScan();
         }
 
-        protected Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters, CancellationToken cancellationToken)
+        protected Task ConnectToDeviceNativeAsync(Device device, ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
             if (connectParameters.AutoConnect)
             {
@@ -210,7 +210,7 @@ namespace System.BluetoothLe
         /// </summary>
         /// <returns>The to known device async.</returns>
         /// <param name="deviceGuid">Device GUID.</param>
-        public async Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken))
         {
             // Wait for the PoweredOn state
             await WaitForState(CBCentralManagerState.PoweredOn, cancellationToken, true);
@@ -252,7 +252,7 @@ namespace System.BluetoothLe
             return device;
         }
 
-        public IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null)
+        public IReadOnlyList<Device> GetSystemConnectedOrPairedDevices(Guid[] services = null)
         {
             CBUUID[] serviceUuids = null;
             if (services != null)
@@ -262,7 +262,7 @@ namespace System.BluetoothLe
 
             var nativeDevices = _centralManager.RetrieveConnectedPeripherals(serviceUuids);
 
-            return nativeDevices.Select(d => new Device(this, d, _bleCentralManagerDelegate)).Cast<IDevice>().ToList();
+            return nativeDevices.Select(d => new Device(this, d, _bleCentralManagerDelegate)).Cast<Device>().ToList();
         }
 
         #endregion
@@ -277,7 +277,7 @@ namespace System.BluetoothLe
             }
         }
 
-        private static bool ContainsDevice(IEnumerable<IDevice> list, CBPeripheral device)
+        private static bool ContainsDevice(IEnumerable<Device> list, CBPeripheral device)
         {
             return list.Any(d => Guid.ParseExact(device.Identifier.AsString(), "d") == d.Id);
         }

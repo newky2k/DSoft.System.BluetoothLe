@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
-using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe
@@ -12,19 +10,19 @@ namespace System.BluetoothLe
     public partial class Service
     {
         #region Properties
-        protected Guid NativeGuid => NativeService.Uuid;
+        internal Guid NativeGuid => NativeService.Uuid;
 
         //method to get parent devices to check if primary is obsolete
         //return true as a placeholder
-        protected bool NativeIsPrimary => true;
+        internal bool NativeIsPrimary => true;
 
-        protected GattDeviceService NativeService  {get; private set;}
+        internal GattDeviceService NativeService  {get; private set;}
 
         #endregion
 
         #region Constructors
 
-        internal Service(GattDeviceService nativeService, IDevice device) : this(device)
+        internal Service(GattDeviceService nativeService, Device device) : this(device)
         {
             NativeService = nativeService;
         }
@@ -33,14 +31,14 @@ namespace System.BluetoothLe
 
         #region Methods
 
-        protected async Task<IList<ICharacteristic>> GetCharacteristicsNativeAsync()
+        internal async Task<IList<Characteristic>> GetCharacteristicsNativeAsync()
         {
-            var result = await NativeService.GetCharacteristicsAsync(BleImplementation.CacheModeGetCharacteristics);
+            var result = await NativeService.GetCharacteristicsAsync(BluetoothLE.CacheModeGetCharacteristics);
             result.ThrowIfError();
 
             return result.Characteristics?
                 .Select(nativeChar => new Characteristic(nativeChar, this))
-                .Cast<ICharacteristic>()
+                .Cast<Characteristic>()
                 .ToList();
         }
 

@@ -1,12 +1,12 @@
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 
 namespace System.BluetoothLe.EventArgs
 {
     public class CharacteristicUpdatedEventArgs : System.EventArgs
     {
-        public ICharacteristic Characteristic { get; set; }
+        public Characteristic Characteristic { get; set; }
 
-        public CharacteristicUpdatedEventArgs(ICharacteristic characteristic)
+        public CharacteristicUpdatedEventArgs(Characteristic characteristic)
         {
             Characteristic = characteristic;
         }

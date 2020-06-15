@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Acr.UserDialogs;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 
 namespace BLE.Client.ViewModels
 {
@@ -11,16 +11,16 @@ namespace BLE.Client.ViewModels
     {
         private readonly IUserDialogs _userDialogs;
         private readonly IMvxNavigationService _navigation;
-        private IService _service;
-        private IReadOnlyList<ICharacteristic> _characteristics;
+        private Service _service;
+        private IReadOnlyList<Characteristic> _characteristics;
 
-        public IReadOnlyList<ICharacteristic> Characteristics
+        public IReadOnlyList<Characteristic> Characteristics
         {
             get => _characteristics;
             private set => SetProperty(ref _characteristics, value);
         }
 
-        public CharacteristicListViewModel(IAdapter adapter, IUserDialogs userDialogs, IMvxNavigationService navigation) : base(adapter)
+        public CharacteristicListViewModel(Adapter adapter, IUserDialogs userDialogs, IMvxNavigationService navigation) : base(adapter)
         {
             _userDialogs = userDialogs;
             _navigation = navigation;
@@ -63,7 +63,7 @@ namespace BLE.Client.ViewModels
             _service = await GetServiceFromBundleAsync(parameters);
         }
 
-        public ICharacteristic SelectedCharacteristic
+        public Characteristic SelectedCharacteristic
         {
             get => null;
             set

@@ -2,12 +2,10 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
-using System.BluetoothLe.Exceptions;
 using System.BluetoothLe.Utils;
 
-namespace System.BluetoothLe.Extensions
+namespace System.BluetoothLe
 {
     public static class AdapterExtenstion
     {
@@ -17,7 +15,7 @@ namespace System.BluetoothLe.Extensions
         /// <param name="adapter">Target adapter.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous read operation. The Task will finish after the scan has ended.</returns>
-        public static Task StartScanningForDevicesAsync(this IAdapter adapter, CancellationToken cancellationToken)
+        public static Task StartScanningForDevicesAsync(this Adapter adapter, CancellationToken cancellationToken)
         {
             return adapter.StartScanningForDevicesAsync(cancellationToken: cancellationToken);
         }
@@ -29,7 +27,7 @@ namespace System.BluetoothLe.Extensions
         /// <param name="serviceUuids">Requested service Ids.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is None.</param>
         /// <returns>A task that represents the asynchronous read operation. The Task will finish after the scan has ended.</returns>
-        public static Task StartScanningForDevicesAsync(this IAdapter adapter, Guid[] serviceUuids, CancellationToken cancellationToken = default)
+        public static Task StartScanningForDevicesAsync(this Adapter adapter, Guid[] serviceUuids, CancellationToken cancellationToken = default)
         {
             return adapter.StartScanningForDevicesAsync(serviceUuids, null, cancellationToken: cancellationToken);
         }
@@ -42,17 +40,17 @@ namespace System.BluetoothLe.Extensions
         /// <param name="deviceFilter">Function that filters the devices.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is None.</param>
         /// <returns>A task that represents the asynchronous read operation. The Task will finish after the scan has ended.</returns>
-        public static Task StartScanningForDevicesAsync(this IAdapter adapter, Func<IDevice, bool> deviceFilter, CancellationToken cancellationToken = default)
+        public static Task StartScanningForDevicesAsync(this Adapter adapter, Func<Device, bool> deviceFilter, CancellationToken cancellationToken = default)
         {
             return adapter.StartScanningForDevicesAsync(deviceFilter: deviceFilter, cancellationToken: cancellationToken);
         }
 
-        public static Task<IDevice> DiscoverDeviceAsync(this IAdapter adapter, Guid deviceId, CancellationToken cancellationToken = default)
+        public static Task<Device> DiscoverDeviceAsync(this Adapter adapter, Guid deviceId, CancellationToken cancellationToken = default)
         {
             return DiscoverDeviceAsync(adapter, device => device.Id == deviceId, cancellationToken);
         }
 
-        public static async Task<IDevice> DiscoverDeviceAsync(this IAdapter adapter, Func<IDevice, bool> deviceFilter, CancellationToken cancellationToken = default)
+        public static async Task<Device> DiscoverDeviceAsync(this Adapter adapter, Func<Device, bool> deviceFilter, CancellationToken cancellationToken = default)
         {
             var device = adapter.DiscoveredDevices.FirstOrDefault(deviceFilter);
             if (device != null)
@@ -65,7 +63,7 @@ namespace System.BluetoothLe.Extensions
                 await adapter.StopScanningForDevicesAsync();
             }
 
-            return await TaskBuilder.FromEvent<IDevice, EventHandler<DeviceEventArgs>, EventHandler>(
+            return await TaskBuilder.FromEvent<Device, EventHandler<DeviceEventArgs>, EventHandler>(
                 execute: () => adapter.StartScanningForDevicesAsync(deviceFilter, cancellationToken),
 
                 getCompleteHandler: (complete, reject) => ((sender, args) =>
@@ -92,7 +90,7 @@ namespace System.BluetoothLe.Extensions
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is None.</param>
         /// <returns>A task that represents the asynchronous read operation. The Task will finish after the device has been connected successfuly.</returns>
         /// <exception cref="DeviceConnectionException">Thrown if the device connection fails.</exception>
-        public static Task ConnectToDeviceAsync(this IAdapter adapter, IDevice device, ConnectParameters connectParameters, CancellationToken cancellationToken)
+        public static Task ConnectToDeviceAsync(this Adapter adapter, Device device, ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
             return adapter.ConnectToDeviceAsync(device, connectParameters:connectParameters, cancellationToken: cancellationToken);
         }

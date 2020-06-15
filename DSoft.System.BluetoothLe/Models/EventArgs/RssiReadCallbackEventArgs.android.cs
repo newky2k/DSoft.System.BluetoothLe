@@ -1,8 +1,8 @@
 ﻿using System;
 using Android.Bluetooth;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 
-namespace System.BluetoothLe.CallbackEventArgs
+namespace System.BluetoothLe.EventArgs
 {
     public class RssiReadCallbackEventArgs : System.EventArgs
     {

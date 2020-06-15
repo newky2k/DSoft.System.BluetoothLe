@@ -1,30 +1,33 @@
 using CoreBluetooth;
 using CoreFoundation;
 
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe
 {
-    public partial class BleImplementation
+    public partial class BluetoothLE
     {
+        #region Fields
         private static string _restorationIdentifier;
         private static bool _showPowerAlert = true;
-
         private CBCentralManager _centralManager;
         private IBleCentralManagerDelegate _bleCentralManagerDelegate;
 
-        public static void UseRestorationIdentifier(string restorationIdentifier)
+        #endregion
+
+        #region Methods
+        internal static void UseRestorationIdentifier(string restorationIdentifier)
         {
             _restorationIdentifier = restorationIdentifier;
         }
 
-        public static void ShowPowerAlert(bool showPowerAlert)
+        internal static void ShowPowerAlert(bool showPowerAlert)
         {
             _showPowerAlert = showPowerAlert;
         }
 
-        protected void InitializeNative()
+        internal void InitializeNative()
         {
             var cmDelegate = new BleCentralManagerDelegate();
             _bleCentralManagerDelegate = cmDelegate;
@@ -35,12 +38,12 @@ namespace System.BluetoothLe
             _bleCentralManagerDelegate.UpdatedState += (s, e) => State = GetState();
         }
 
-        protected BluetoothState GetInitialStateNative()
+        internal BluetoothState GetInitialStateNative()
         {
             return GetState();
         }
 
-        protected IAdapter CreateNativeAdapter()
+        internal Adapter CreateNativeAdapter()
         {
             return new Adapter(_centralManager, _bleCentralManagerDelegate);
         }
@@ -60,5 +63,7 @@ namespace System.BluetoothLe
                 ShowPowerAlert = _showPowerAlert
             };
         }
+
+        #endregion
     }
 }

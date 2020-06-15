@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 using System.BluetoothLe.Utils;
 
 namespace System.BluetoothLe
@@ -54,12 +54,12 @@ namespace System.BluetoothLe
             Trace.Message("Device changed name: {0}", Name);
         }
 
-        protected Task<IReadOnlyList<IService>> GetServicesNativeAsync()
+        protected Task<IReadOnlyList<Service>> GetServicesNativeAsync()
         {
             return GetServicesInternal();
         }
 
-        protected async Task<IService> GetServiceNativeAsync(Guid id)
+        protected async Task<Service> GetServiceNativeAsync(Guid id)
         {
             var cbuuid = CBUUID.FromString(id.ToString());
             var nativeService = NativeDevice.Services?.FirstOrDefault(service => service.UUID.Equals(cbuuid));
@@ -72,11 +72,11 @@ namespace System.BluetoothLe
             return services?.FirstOrDefault();
         }
 
-        private Task<IReadOnlyList<IService>> GetServicesInternal(CBUUID id = null)
+        private Task<IReadOnlyList<Service>> GetServicesInternal(CBUUID id = null)
         {
             var exception = new Exception($"Device {Name} disconnected while fetching services.");
 
-            return TaskBuilder.FromEvent<IReadOnlyList<IService>, EventHandler<NSErrorEventArgs>, EventHandler<CBPeripheralErrorEventArgs>>(
+            return TaskBuilder.FromEvent<IReadOnlyList<Service>, EventHandler<NSErrorEventArgs>, EventHandler<CBPeripheralErrorEventArgs>>(
                     execute: () =>
                     {
                         if (NativeDevice.State != CBPeripheralState.Connected)
@@ -107,7 +107,7 @@ namespace System.BluetoothLe
                         {
                             var services = NativeDevice.Services
                                 .Select(nativeService => new Service(nativeService, this, _bleCentralManagerDelegate))
-                                .Cast<IService>().ToList();
+                                .Cast<Service>().ToList();
                             complete(services);
                         }
                     },

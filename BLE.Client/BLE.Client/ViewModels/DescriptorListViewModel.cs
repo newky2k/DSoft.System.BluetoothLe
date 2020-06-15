@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 
 namespace BLE.Client.ViewModels
 {
     public class DescriptorListViewModel : BaseViewModel
     {
         private readonly IMvxNavigationService _navigation;
-        private ICharacteristic _characteristic;
+        private Characteristic _characteristic;
 
-        public IReadOnlyList<IDescriptor> Descriptors { get; private set;}
+        public IReadOnlyList<Descriptor> Descriptors { get; private set;}
 
-        public DescriptorListViewModel(IAdapter adapter, IMvxNavigationService navigation) : base(adapter)
+        public DescriptorListViewModel(Adapter adapter, IMvxNavigationService navigation) : base(adapter)
         {
             _navigation = navigation;
         }
@@ -44,7 +44,7 @@ namespace BLE.Client.ViewModels
             await RaisePropertyChanged(nameof(Descriptors));
         }
 
-        public IDescriptor SelectedDescriptor
+        public Descriptor SelectedDescriptor
         {
             get => null;
             set

@@ -3,7 +3,6 @@ using MvvmCross.IoC;
 using MvvmCross.Logging;
 using MvvmCross.Plugin;
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 
 [assembly: Preserve]
 
@@ -24,8 +23,8 @@ namespace MvvmCross.System.BluetoothLe
         public void Load()
         {
             Trace.Message("Loading bluetooth low energy plugin");
-            Mvx.IoCProvider.LazyConstructAndRegisterSingleton<IBluetoothLE>(() => BluetoothLE.Current);
-            Mvx.IoCProvider.LazyConstructAndRegisterSingleton<IAdapter>(() => Mvx.IoCProvider.Resolve<IBluetoothLE>().Adapter);
+            Mvx.IoCProvider.RegisterSingleton(() => BluetoothLE.Current);
+            Mvx.IoCProvider.RegisterSingleton(() => BluetoothLE.Current.Adapter);
         }
     }
 }

@@ -1,9 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using Android.Bluetooth;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.Utils;
-using System.BluetoothLe.CallbackEventArgs;
+using System.BluetoothLe.EventArgs;
 
 namespace System.BluetoothLe
 {
@@ -18,7 +17,7 @@ namespace System.BluetoothLe
 
         protected BluetoothGattDescriptor NativeDescriptor { get; private set; }
 
-        public Descriptor(BluetoothGattDescriptor nativeDescriptor, BluetoothGatt gatt, IGattCallback gattCallback, ICharacteristic characteristic) : this(characteristic)
+        public Descriptor(BluetoothGattDescriptor nativeDescriptor, BluetoothGatt gatt, IGattCallback gattCallback, Characteristic characteristic) : this(characteristic)
         {
             NativeDescriptor = nativeDescriptor;
 

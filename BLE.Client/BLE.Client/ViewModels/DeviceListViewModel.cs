@@ -8,7 +8,6 @@ using Acr.UserDialogs;
 using BLE.Client.Extensions;
 using MvvmCross.ViewModels;
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
 using System.BluetoothLe.Extensions;
 using Plugin.Permissions.Abstractions;
@@ -22,7 +21,7 @@ namespace BLE.Client.ViewModels
 {
     public class DeviceListViewModel : BaseViewModel
     {
-        private readonly IBluetoothLE _bluetoothLe;
+        private readonly BluetoothLE _bluetoothLe;
         private readonly IUserDialogs _userDialogs;
         private readonly ISettings _settings;
         private Guid _previousGuid;
@@ -95,7 +94,7 @@ namespace BLE.Client.ViewModels
             set => Adapter.ScanMode = value;
         }
 
-        public DeviceListViewModel(IBluetoothLE bluetoothLe, IAdapter adapter, IUserDialogs userDialogs, ISettings settings, IPermissions permissions) : base(adapter)
+        public DeviceListViewModel(BluetoothLE bluetoothLe, Adapter adapter, IUserDialogs userDialogs, ISettings settings, IPermissions permissions) : base(adapter)
         {
             _permissions = permissions;
             _bluetoothLe = bluetoothLe;
@@ -172,7 +171,7 @@ namespace BLE.Client.ViewModels
             AddOrUpdateDevice(args.Device);
         }
 
-        private void AddOrUpdateDevice(IDevice device)
+        private void AddOrUpdateDevice(System.BluetoothLe.Device device)
         {
             InvokeOnMainThread(() =>
             {
@@ -208,7 +207,7 @@ namespace BLE.Client.ViewModels
 
                 // SystemDevices = Adapter.GetSystemConnectedOrPairedDevices(new[] { guid }).Select(d => new DeviceListItemViewModel(d)).ToList();
                 // remove the GUID filter for test
-                // Avoid to loose already IDevice with a connection, otherwise you can't close it
+                // Avoid to loose already Device with a connection, otherwise you can't close it
                 // Keep the reference of already known devices and drop all not in returned list.
                 var pairedOrConnectedDeviceWithNullGatt = Adapter.GetSystemConnectedOrPairedDevices();
                 SystemDevices.RemoveAll(sd => !pairedOrConnectedDeviceWithNullGatt.Any(p => p.Id == sd.Id));
@@ -416,7 +415,7 @@ namespace BLE.Client.ViewModels
 
         private async void ConnectToPreviousDeviceAsync()
         {
-            IDevice device;
+            System.BluetoothLe.Device device;
             CancellationTokenSource tokenSource = new CancellationTokenSource();
             try
             {

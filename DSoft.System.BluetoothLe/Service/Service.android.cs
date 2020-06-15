@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Android.Bluetooth;
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
+
 
 namespace System.BluetoothLe
 {
@@ -16,17 +16,17 @@ namespace System.BluetoothLe
         #endregion
 
         #region Properties
-        protected Guid NativeGuid => Guid.ParseExact(NativeService.Uuid.ToString(), "d");
+        internal Guid NativeGuid => Guid.ParseExact(NativeService.Uuid.ToString(), "d");
 
-        protected bool NativeIsPrimary => NativeService.Type == GattServiceType.Primary;
+        internal bool NativeIsPrimary => NativeService.Type == GattServiceType.Primary;
 
-        protected BluetoothGattService NativeService { get; private set; }
+        internal BluetoothGattService NativeService { get; private set; }
 
         #endregion
 
         #region Constructors
 
-        public Service(BluetoothGattService nativeService, BluetoothGatt gatt, IGattCallback gattCallback, IDevice device) : this(device)
+        internal Service(BluetoothGattService nativeService, BluetoothGatt gatt, IGattCallback gattCallback, Device device) : this(device)
         {
             NativeService = nativeService;
 
@@ -38,11 +38,11 @@ namespace System.BluetoothLe
 
         #region Methods
 
-        protected Task<IList<ICharacteristic>> GetCharacteristicsNativeAsync()
+        internal Task<IList<Characteristic>> GetCharacteristicsNativeAsync()
         {
-            return Task.FromResult<IList<ICharacteristic>>(
+            return Task.FromResult<IList<Characteristic>>(
                 NativeService.Characteristics.Select(characteristic => new Characteristic(characteristic, _gatt, _gattCallback, this))
-                .Cast<ICharacteristic>().ToList());
+                .Cast<Characteristic>().ToList());
         }
 
         #endregion

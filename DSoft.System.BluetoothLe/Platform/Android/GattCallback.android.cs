@@ -1,7 +1,7 @@
 ﻿using System;
 using Android.Bluetooth;
 using System.BluetoothLe.Extensions;
-using System.BluetoothLe.CallbackEventArgs;
+using System.BluetoothLe.EventArgs;
 
 namespace System.BluetoothLe
 {

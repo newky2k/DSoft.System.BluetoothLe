@@ -10,7 +10,6 @@ using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Advertisement;
 
 using System.BluetoothLe;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe
@@ -59,7 +58,7 @@ namespace System.BluetoothLe
             }
         }
 
-        protected async Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters, CancellationToken cancellationToken)
+        protected async Task ConnectToDeviceNativeAsync(Device device, ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
             Trace.Message($"Connecting to device with ID:  {device.Id.ToString()}");
 
@@ -99,7 +98,7 @@ namespace System.BluetoothLe
             }
         }
 
-        protected void DisconnectDeviceNative(IDevice device)
+        protected void DisconnectDeviceNative(Device device)
         {
             // Windows doesn't support disconnecting, so currently just dispose of the device
             Trace.Message($"Disconnected from device with ID:  {device.Id.ToString()}");
@@ -113,7 +112,7 @@ namespace System.BluetoothLe
 
         }
 
-        public async Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default)
+        public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default)
         {
             //convert GUID to string and take last 12 characters as MAC address
             var guidString = deviceGuid.ToString("N").Substring(20);
@@ -125,7 +124,7 @@ namespace System.BluetoothLe
             return knownDevice;
         }
 
-        public IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null)
+        public IReadOnlyList<Device> GetSystemConnectedOrPairedDevices(Guid[] services = null)
         {
             //currently no way to retrieve paired and connected devices on windows without using an
             //async method. 

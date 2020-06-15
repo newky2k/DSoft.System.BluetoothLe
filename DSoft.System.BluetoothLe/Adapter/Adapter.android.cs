@@ -8,7 +8,6 @@ using Android.Bluetooth;
 using Android.Bluetooth.LE;
 using Android.OS;
 using Java.Util;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.Extensions;
 using Trace = System.BluetoothLe.Trace;
 using Android.App;
@@ -130,20 +129,20 @@ namespace System.BluetoothLe
             }
         }
 
-        protected Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters,
+        protected Task ConnectToDeviceNativeAsync(Device device, ConnectParameters connectParameters,
             CancellationToken cancellationToken)
         {
             ((Device)device).Connect(connectParameters, cancellationToken);
             return Task.CompletedTask;
         }
 
-        protected void DisconnectDeviceNative(IDevice device)
+        protected void DisconnectDeviceNative(Device device)
         {
             //make sure everything is disconnected
             ((Device)device).Disconnect();
         }
 
-        public async Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken))
         {
             var macBytes = deviceGuid.ToByteArray().Skip(10).Take(6).ToArray();
             var nativeDevice = _bluetoothAdapter.GetRemoteDevice(macBytes);
@@ -154,7 +153,7 @@ namespace System.BluetoothLe
             return device;
         }
 
-        public IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null)
+        public IReadOnlyList<Device> GetSystemConnectedOrPairedDevices(Guid[] services = null)
         {
             if (services != null)
             {
@@ -166,7 +165,7 @@ namespace System.BluetoothLe
 
             var bondedDevices = _bluetoothAdapter.BondedDevices.Where(d => d.Type == BluetoothDeviceType.Le || d.Type == BluetoothDeviceType.Dual);
 
-            return connectedDevices.Union(bondedDevices, new DeviceComparer()).Select(d => new Device(this, d, null, 0)).Cast<IDevice>().ToList();
+            return connectedDevices.Union(bondedDevices, new DeviceComparer()).Select(d => new Device(this, d, null, 0)).Cast<Device>().ToList();
         }
 
         private class DeviceComparer : IEqualityComparer<BluetoothDevice>

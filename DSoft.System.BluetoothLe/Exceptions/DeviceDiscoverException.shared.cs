@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace System.BluetoothLe.Exceptions
+namespace System.BluetoothLe
 {
     public class DeviceDiscoverException : Exception
     {

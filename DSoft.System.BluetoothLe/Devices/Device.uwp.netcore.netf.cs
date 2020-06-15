@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Windows.Devices.Bluetooth;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 using System.BluetoothLe.Extensions;
 
 
@@ -47,20 +47,20 @@ namespace System.BluetoothLe
             return Task.FromResult(true);
         }
 
-        protected async Task<IReadOnlyList<IService>> GetServicesNativeAsync()
+        protected async Task<IReadOnlyList<Service>> GetServicesNativeAsync()
         {
-            var result = await NativeDevice.BluetoothLEDevice.GetGattServicesAsync(BleImplementation.CacheModeGetServices);
+            var result = await NativeDevice.BluetoothLEDevice.GetGattServicesAsync(BluetoothLE.CacheModeGetServices);
             result.ThrowIfError();
 
             return result.Services?
                 .Select(nativeService => new Service(nativeService, this))
-                .Cast<IService>()
+                .Cast<Service>()
                 .ToList();
         }
 
-        protected async Task<IService> GetServiceNativeAsync(Guid id)
+        protected async Task<Service> GetServiceNativeAsync(Guid id)
         {
-            var result = await NativeDevice.BluetoothLEDevice.GetGattServicesForUuidAsync(id, BleImplementation.CacheModeGetServices);
+            var result = await NativeDevice.BluetoothLEDevice.GetGattServicesForUuidAsync(id, BluetoothLE.CacheModeGetServices);
             result.ThrowIfError();
 
             var nativeService = result.Services?.FirstOrDefault();

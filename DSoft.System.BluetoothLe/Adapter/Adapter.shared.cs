@@ -1,7 +1,5 @@
 ﻿using System;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
-using System.BluetoothLe.Exceptions;
 using System.BluetoothLe.Utils;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,12 +10,12 @@ using System.Threading.Tasks;
 
 namespace System.BluetoothLe
 {
-    public partial class Adapter : IAdapter
+    public partial class Adapter
     {
         #region Fields
         private CancellationTokenSource _scanCancellationTokenSource;
         private volatile bool _isScanning;
-        private Func<IDevice, bool> _currentScanDeviceFilter;
+        private Func<Device, bool> _currentScanDeviceFilter;
 
         #endregion
 
@@ -42,21 +40,21 @@ namespace System.BluetoothLe
         public int ScanTimeout { get; set; } = 10000;
         public ScanMode ScanMode { get; set; } = ScanMode.LowPower;
 
-        protected ConcurrentDictionary<Guid, IDevice> DiscoveredDevicesRegistry { get; } = new ConcurrentDictionary<Guid, IDevice>();
+        protected ConcurrentDictionary<Guid, Device> DiscoveredDevicesRegistry { get; } = new ConcurrentDictionary<Guid, Device>();
 
-        public virtual IReadOnlyList<IDevice> DiscoveredDevices => DiscoveredDevicesRegistry.Values.ToList();
+        public virtual IReadOnlyList<Device> DiscoveredDevices => DiscoveredDevicesRegistry.Values.ToList();
 
         /// <summary>
         /// Used to store all connected devices
         /// </summary>
-        public ConcurrentDictionary<string, IDevice> ConnectedDeviceRegistry { get; } = new ConcurrentDictionary<string, IDevice>();
+        public ConcurrentDictionary<string, Device> ConnectedDeviceRegistry { get; } = new ConcurrentDictionary<string, Device>();
 
-        public IReadOnlyList<IDevice> ConnectedDevices => ConnectedDeviceRegistry.Values.ToList();
+        public IReadOnlyList<Device> ConnectedDevices => ConnectedDeviceRegistry.Values.ToList();
 
         #endregion
 
         #region Methods
-        public async Task StartScanningForDevicesAsync(Guid[] serviceUuids = null, Func<IDevice, bool> deviceFilter = null, bool allowDuplicatesKey = false, CancellationToken cancellationToken = default)
+        public async Task StartScanningForDevicesAsync(Guid[] serviceUuids = null, Func<Device, bool> deviceFilter = null, bool allowDuplicatesKey = false, CancellationToken cancellationToken = default)
         {
             if (IsScanning)
             {
@@ -103,7 +101,7 @@ namespace System.BluetoothLe
             return Task.FromResult(0);
         }
 
-        public async Task ConnectToDeviceAsync(IDevice device, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default)
+        public async Task ConnectToDeviceAsync(Device device, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default)
         {
             if (device == null)
                 throw new ArgumentNullException(nameof(device));
@@ -146,7 +144,7 @@ namespace System.BluetoothLe
             }
         }
 
-        public Task DisconnectDeviceAsync(IDevice device)
+        public Task DisconnectDeviceAsync(Device device)
         {
             if (!ConnectedDevices.Contains(device))
             {
@@ -194,7 +192,7 @@ namespace System.BluetoothLe
             IsScanning = false;
         }
 
-        public void HandleDiscoveredDevice(IDevice device)
+        public void HandleDiscoveredDevice(Device device)
         {
             if (_currentScanDeviceFilter != null && !_currentScanDeviceFilter(device))
                 return;
@@ -209,12 +207,12 @@ namespace System.BluetoothLe
             DeviceDiscovered?.Invoke(this, new DeviceEventArgs { Device = device });
         }
 
-        public void HandleConnectedDevice(IDevice device)
+        public void HandleConnectedDevice(Device device)
         {
             DeviceConnected?.Invoke(this, new DeviceEventArgs { Device = device });
         }
 
-        public void HandleDisconnectedDevice(bool disconnectRequested, IDevice device)
+        public void HandleDisconnectedDevice(bool disconnectRequested, Device device)
         {
             if (disconnectRequested)
             {
@@ -233,7 +231,7 @@ namespace System.BluetoothLe
             }
         }
 
-        public void HandleConnectionFail(IDevice device, string errorMessage)
+        public void HandleConnectionFail(Device device, string errorMessage)
         {
             Trace.Message("Failed to connect peripheral {0}: {1}", device.Id, device.Name);
             DeviceConnectionError?.Invoke(this, new DeviceErrorEventArgs

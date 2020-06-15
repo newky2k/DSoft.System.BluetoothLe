@@ -6,13 +6,12 @@ using Android.App;
 using Android.OS;
 using Android.Bluetooth;
 using Android.Content;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.Utils;
-using System.BluetoothLe.CallbackEventArgs;
 using Trace = System.BluetoothLe.Trace;
 using System.Threading;
 using Java.Util;
 using Android.Graphics;
+using System.BluetoothLe.EventArgs;
 
 namespace System.BluetoothLe
 {
@@ -74,11 +73,11 @@ namespace System.BluetoothLe
             Name = NativeDevice.Name;
         }
 
-        protected async Task<IReadOnlyList<IService>> GetServicesNativeAsync()
+        protected async Task<IReadOnlyList<Service>> GetServicesNativeAsync()
         {
             if (_gattCallback == null || _gatt == null)
             {
-                return new List<IService>();
+                return new List<Service>();
             }
 
             // _gatt.Services is already populated if device service discovery was already done
@@ -90,7 +89,7 @@ namespace System.BluetoothLe
             return await DiscoverServicesInternal();
         }
 
-        protected async Task<IService> GetServiceNativeAsync(Guid id)
+        protected async Task<Service> GetServiceNativeAsync(Guid id)
         {
             if (_gattCallback == null || _gatt == null)
             {
@@ -110,10 +109,10 @@ namespace System.BluetoothLe
             return services?.FirstOrDefault(service => service.Id == id);
         }
 
-        private async Task<IReadOnlyList<IService>> DiscoverServicesInternal()
+        private async Task<IReadOnlyList<Service>> DiscoverServicesInternal()
         {
             return await TaskBuilder
-                .FromEvent<IReadOnlyList<IService>, EventHandler<ServicesDiscoveredCallbackEventArgs>, EventHandler>(
+                .FromEvent<IReadOnlyList<Service>, EventHandler<ServicesDiscoveredCallbackEventArgs>, EventHandler>(
                     execute: () =>
                     {
                         if (!_gatt.DiscoverServices())
@@ -212,7 +211,7 @@ namespace System.BluetoothLe
             _gatt = null;
 
             // ClossGatt might will get called on signal loss without Disconnect being called we have to make sure we clear the services
-            // Clear services & characteristics otherwise we will get gatt operation return FALSE when connecting to the same IDevice instace at a later time
+            // Clear services & characteristics otherwise we will get gatt operation return FALSE when connecting to the same Device instace at a later time
             DisposeServices();
         }
 

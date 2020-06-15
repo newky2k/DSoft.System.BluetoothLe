@@ -1,6 +1,6 @@
 using System;
 using Android.OS;
-using System.BluetoothLe.Contracts;
+using System.BluetoothLe;
 using AndroidScanMode = Android.Bluetooth.LE.ScanMode;
 using Trace = System.BluetoothLe.Trace;
 

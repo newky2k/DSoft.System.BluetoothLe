@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Bluetooth;
-using System.BluetoothLe.Contracts;
 using System.BluetoothLe.EventArgs;
-using System.BluetoothLe.Exceptions;
-using System.BluetoothLe.CallbackEventArgs;
 using System.BluetoothLe.Extensions;
 using System.BluetoothLe.Utils;
 
@@ -37,7 +34,7 @@ namespace System.BluetoothLe
         #endregion
 
         #region Constructors
-        public Characteristic(BluetoothGattCharacteristic nativeCharacteristic, BluetoothGatt gatt, IGattCallback gattCallback, IService service) : this(service)
+        public Characteristic(BluetoothGattCharacteristic nativeCharacteristic, BluetoothGatt gatt, IGattCallback gattCallback, Service service) : this(service)
         {
             NativeCharacteristic = nativeCharacteristic;
 
@@ -47,9 +44,9 @@ namespace System.BluetoothLe
         #endregion
 
         #region Methods
-        protected Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync()
+        protected Task<IReadOnlyList<Descriptor>> GetDescriptorsNativeAsync()
         {
-            return Task.FromResult<IReadOnlyList<IDescriptor>>(NativeCharacteristic.Descriptors.Select(item => new Descriptor(item, _gatt, _gattCallback, this)).Cast<IDescriptor>().ToList());
+            return Task.FromResult<IReadOnlyList<Descriptor>>(NativeCharacteristic.Descriptors.Select(item => new Descriptor(item, _gatt, _gattCallback, this)).Cast<Descriptor>().ToList());
         }
 
         protected async Task<byte[]> ReadNativeAsync()

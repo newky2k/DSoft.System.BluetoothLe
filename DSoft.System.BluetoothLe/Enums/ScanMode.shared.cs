@@ -1,4 +1,4 @@
-namespace System.BluetoothLe.Contracts
+namespace System.BluetoothLe
 {
     /// <summary>
     /// Defines how Scans are performed.
