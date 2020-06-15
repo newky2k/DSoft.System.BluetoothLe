@@ -50,13 +50,13 @@ namespace BLE.Client.ViewModels
 
         }
 
-        protected Task<IService> GetServiceFromBundleAsync(IMvxBundle parameters)
+        protected Task<Service> GetServiceFromBundleAsync(IMvxBundle parameters)
         {
 
             var device = GetDeviceFromBundle(parameters);
             if (device == null || !parameters.Data.ContainsKey(ServiceIdKey))
             {
-                return Task.FromResult<IService>(null);
+                return Task.FromResult<Service>(null);
             }
 
             var serviceId = parameters.Data[ServiceIdKey];

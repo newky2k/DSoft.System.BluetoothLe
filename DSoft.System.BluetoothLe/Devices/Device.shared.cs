@@ -11,7 +11,7 @@ namespace System.BluetoothLe
     {
         #region Fields
         protected readonly Adapter Adapter;
-        protected readonly Dictionary<Guid, IService> KnownServices = new Dictionary<Guid, IService>();
+        protected readonly Dictionary<Guid, Service> KnownServices = new Dictionary<Guid, Service>();
         #endregion
 
         #region Properties
@@ -37,7 +37,7 @@ namespace System.BluetoothLe
 
         #region Methods
 
-        public async Task<IReadOnlyList<IService>> GetServicesAsync(CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Service>> GetServicesAsync(CancellationToken cancellationToken = default)
         {
             using (var source = this.GetCombinedSource(cancellationToken))
             {
@@ -50,7 +50,7 @@ namespace System.BluetoothLe
             return KnownServices.Values.ToList();
         }
 
-        public async Task<IService> GetServiceAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Service> GetServiceAsync(Guid id, CancellationToken cancellationToken = default)
         {
             if (KnownServices.ContainsKey(id))
             {
