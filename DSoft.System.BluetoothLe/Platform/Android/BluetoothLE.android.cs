@@ -11,7 +11,7 @@ using Android.Graphics;
 
 namespace System.BluetoothLe
 {
-    internal partial class BleImplementation
+    public partial class BluetoothLE
     {
         #region Fields
 

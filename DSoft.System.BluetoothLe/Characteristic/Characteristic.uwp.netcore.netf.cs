@@ -49,7 +49,7 @@ namespace System.BluetoothLe
 
         protected async Task<IReadOnlyList<Descriptor>> GetDescriptorsNativeAsync()
         {
-            var descriptorsResult = await NativeCharacteristic.GetDescriptorsAsync(BleImplementation.CacheModeGetDescriptors);
+            var descriptorsResult = await NativeCharacteristic.GetDescriptorsAsync(BluetoothLE.CacheModeGetDescriptors);
             descriptorsResult.ThrowIfError();
 
             return descriptorsResult.Descriptors?
@@ -60,7 +60,7 @@ namespace System.BluetoothLe
 
         protected async Task<byte[]> ReadNativeAsync()
         {
-            var readResult = await NativeCharacteristic.ReadValueAsync(BleImplementation.CacheModeCharacteristicRead);
+            var readResult = await NativeCharacteristic.ReadValueAsync(BluetoothLE.CacheModeCharacteristicRead);
             return _value = readResult.GetValueOrThrowIfError();
         }
 

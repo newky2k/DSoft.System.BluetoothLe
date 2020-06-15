@@ -29,7 +29,7 @@ namespace System.BluetoothLe
 
         protected async Task<byte[]> ReadNativeAsync()
         {
-            var readResult = await NativeDescriptor.ReadValueAsync(BleImplementation.CacheModeDescriptorRead);
+            var readResult = await NativeDescriptor.ReadValueAsync(BluetoothLE.CacheModeDescriptorRead);
             return _value = readResult.GetValueOrThrowIfError();
         }
 

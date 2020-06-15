@@ -21,7 +21,7 @@ namespace BLE.Client.ViewModels
 {
     public class DeviceListViewModel : BaseViewModel
     {
-        private readonly IBluetoothLE _bluetoothLe;
+        private readonly BluetoothLE _bluetoothLe;
         private readonly IUserDialogs _userDialogs;
         private readonly ISettings _settings;
         private Guid _previousGuid;
@@ -94,7 +94,7 @@ namespace BLE.Client.ViewModels
             set => Adapter.ScanMode = value;
         }
 
-        public DeviceListViewModel(IBluetoothLE bluetoothLe, Adapter adapter, IUserDialogs userDialogs, ISettings settings, IPermissions permissions) : base(adapter)
+        public DeviceListViewModel(BluetoothLE bluetoothLe, Adapter adapter, IUserDialogs userDialogs, ISettings settings, IPermissions permissions) : base(adapter)
         {
             _permissions = permissions;
             _bluetoothLe = bluetoothLe;

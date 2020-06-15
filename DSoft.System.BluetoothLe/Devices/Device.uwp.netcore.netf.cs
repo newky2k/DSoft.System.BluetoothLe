@@ -49,7 +49,7 @@ namespace System.BluetoothLe
 
         protected async Task<IReadOnlyList<Service>> GetServicesNativeAsync()
         {
-            var result = await NativeDevice.BluetoothLEDevice.GetGattServicesAsync(BleImplementation.CacheModeGetServices);
+            var result = await NativeDevice.BluetoothLEDevice.GetGattServicesAsync(BluetoothLE.CacheModeGetServices);
             result.ThrowIfError();
 
             return result.Services?
@@ -60,7 +60,7 @@ namespace System.BluetoothLe
 
         protected async Task<Service> GetServiceNativeAsync(Guid id)
         {
-            var result = await NativeDevice.BluetoothLEDevice.GetGattServicesForUuidAsync(id, BleImplementation.CacheModeGetServices);
+            var result = await NativeDevice.BluetoothLEDevice.GetGattServicesForUuidAsync(id, BluetoothLE.CacheModeGetServices);
             result.ThrowIfError();
 
             var nativeService = result.Services?.FirstOrDefault();

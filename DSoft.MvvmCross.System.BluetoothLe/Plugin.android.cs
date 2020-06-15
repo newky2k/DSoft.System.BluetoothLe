@@ -18,8 +18,8 @@ namespace MvvmCross.System.BluetoothLe
         public void Load()
         {
             Trace.Message("Loading bluetooth low energy plugin");
-            Mvx.IoCProvider.LazyConstructAndRegisterSingleton<IBluetoothLE>(() => BluetoothLE.Current);
-            Mvx.IoCProvider.LazyConstructAndRegisterSingleton(() => Mvx.IoCProvider.Resolve<IBluetoothLE>().Adapter);
+            Mvx.IoCProvider.RegisterSingleton(() => BluetoothLE.Current);
+            Mvx.IoCProvider.RegisterSingleton(() => BluetoothLE.Current.Adapter);
         }
     }
 }

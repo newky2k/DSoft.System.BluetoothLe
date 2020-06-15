@@ -33,7 +33,7 @@ namespace System.BluetoothLe
 
         internal async Task<IList<Characteristic>> GetCharacteristicsNativeAsync()
         {
-            var result = await NativeService.GetCharacteristicsAsync(BleImplementation.CacheModeGetCharacteristics);
+            var result = await NativeService.GetCharacteristicsAsync(BluetoothLE.CacheModeGetCharacteristics);
             result.ThrowIfError();
 
             return result.Characteristics?

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace System.BluetoothLe
 {
-    internal partial class BleImplementation
+    public partial class BluetoothLE
     {
         internal Adapter CreateNativeAdapter() => throw new PlatformNotSupportedException();
 

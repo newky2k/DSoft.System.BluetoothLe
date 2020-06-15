@@ -6,7 +6,7 @@ using System.BluetoothLe.Extensions;
 
 namespace System.BluetoothLe
 {
-    internal partial class BleImplementation
+    public partial class BluetoothLE
     {
         #region Fields
         private static string _restorationIdentifier;
