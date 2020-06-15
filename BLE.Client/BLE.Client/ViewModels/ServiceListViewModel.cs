@@ -21,7 +21,7 @@ namespace BLE.Client.ViewModels
 
         public IMvxCommand DiscoverAllServicesCommand { get; }
         public IMvxCommand<KnownService> DiscoverServiceByIdCommand { get; set; }
-        public ServiceListViewModel(IAdapter adapter, IUserDialogs userDialogs, IMvxNavigationService navigation) : base(adapter)
+        public ServiceListViewModel(Adapter adapter, IUserDialogs userDialogs, IMvxNavigationService navigation) : base(adapter)
         {
             _userDialogs = userDialogs;
             _navigation = navigation;

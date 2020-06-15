@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace System.BluetoothLe
 {
-    public partial class Adapter : IAdapter
+    public partial class Adapter
     {
         #region Fields
         private CancellationTokenSource _scanCancellationTokenSource;

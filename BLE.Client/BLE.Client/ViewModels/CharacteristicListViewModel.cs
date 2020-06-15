@@ -20,7 +20,7 @@ namespace BLE.Client.ViewModels
             private set => SetProperty(ref _characteristics, value);
         }
 
-        public CharacteristicListViewModel(IAdapter adapter, IUserDialogs userDialogs, IMvxNavigationService navigation) : base(adapter)
+        public CharacteristicListViewModel(Adapter adapter, IUserDialogs userDialogs, IMvxNavigationService navigation) : base(adapter)
         {
             _userDialogs = userDialogs;
             _navigation = navigation;

@@ -23,7 +23,7 @@ namespace BLE.Client.ViewModels
 
 
 
-        public DescriptorDetailViewModel(IAdapter adapter, IUserDialogs userDialogs) : base(adapter)
+        public DescriptorDetailViewModel(Adapter adapter, IUserDialogs userDialogs) : base(adapter)
         {
             _userDialogs = userDialogs;
         }

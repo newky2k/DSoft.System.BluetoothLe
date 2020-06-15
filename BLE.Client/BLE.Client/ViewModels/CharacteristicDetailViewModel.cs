@@ -63,7 +63,7 @@ namespace BLE.Client.ViewModels
             }
         }
 
-        public CharacteristicDetailViewModel(IAdapter adapter, IUserDialogs userDialogs) : base(adapter)
+        public CharacteristicDetailViewModel(Adapter adapter, IUserDialogs userDialogs) : base(adapter)
         {
             _userDialogs = userDialogs;
         }

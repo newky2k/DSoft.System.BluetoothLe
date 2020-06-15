@@ -7,8 +7,6 @@ using System.BluetoothLe;
 using System.BluetoothLe.Utils;
 using System.BluetoothLe.BroadcastReceivers;
 using System.BluetoothLe.Extensions;
-using Adapter = System.BluetoothLe.Adapter;
-using IAdapter = System.BluetoothLe.IAdapter;
 using Android.Graphics;
 
 namespace System.BluetoothLe

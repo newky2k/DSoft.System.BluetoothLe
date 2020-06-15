@@ -12,7 +12,7 @@ namespace BLE.Client.ViewModels
 
         public IReadOnlyList<Descriptor> Descriptors { get; private set;}
 
-        public DescriptorListViewModel(IAdapter adapter, IMvxNavigationService navigation) : base(adapter)
+        public DescriptorListViewModel(Adapter adapter, IMvxNavigationService navigation) : base(adapter)
         {
             _navigation = navigation;
         }

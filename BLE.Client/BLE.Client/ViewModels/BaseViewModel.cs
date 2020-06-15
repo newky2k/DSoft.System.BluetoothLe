@@ -10,7 +10,7 @@ namespace BLE.Client.ViewModels
 {
     public class BaseViewModel : MvxViewModel<MvxBundle>
     {
-        protected readonly IAdapter Adapter;
+        protected readonly Adapter Adapter;
         protected const string DeviceIdKey = "DeviceIdNavigationKey";
         protected const string ServiceIdKey = "ServiceIdNavigationKey";
         protected const string CharacteristicIdKey = "CharacteristicIdNavigationKey";
@@ -18,7 +18,7 @@ namespace BLE.Client.ViewModels
 
         private readonly IMvxLog _log;
 
-        public BaseViewModel(IAdapter adapter)
+        public BaseViewModel(Adapter adapter)
         {
             Adapter = adapter;
             _log = Mvx.IoCProvider.Resolve<IMvxLog>();
