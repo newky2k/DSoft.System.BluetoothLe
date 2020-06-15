@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace System.BluetoothLe
 {
-    public partial class Service : IService
+    public partial class Service : IDisposable
     {
         #region Fields
         private readonly List<Characteristic> _characteristics = new List<Characteristic>();

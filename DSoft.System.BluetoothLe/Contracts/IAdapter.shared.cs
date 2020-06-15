@@ -17,7 +17,7 @@ namespace System.BluetoothLe
         event EventHandler<DeviceEventArgs> DeviceAdvertised;
         /// <summary>
         /// Occurs when the adapter receives an advertisement for the first time of the current scan run.
-        /// This means once per every <see cref="StartScanningForDevicesAsync(Guid[], Func&lt;IDevice, bool&gt;, CancellationToken)"/> call. 
+        /// This means once per every <see cref="StartScanningForDevicesAsync(Guid[], Func&lt;Device, bool&gt;, CancellationToken)"/> call. 
         /// </summary>
         event EventHandler<DeviceEventArgs> DeviceDiscovered;
         /// <summary>
@@ -57,12 +57,12 @@ namespace System.BluetoothLe
         /// <summary>
         /// List of last discovered devices.
         /// </summary>
-        IReadOnlyList<IDevice> DiscoveredDevices { get; }
+        IReadOnlyList<Device> DiscoveredDevices { get; }
 
         /// <summary>
         /// List of currently connected devices.
         /// </summary>
-        IReadOnlyList<IDevice> ConnectedDevices { get; }
+        IReadOnlyList<Device> ConnectedDevices { get; }
 
         /// <summary>
         /// Starts scanning for BLE devices that fulfill the <paramref name="deviceFilter"/>.
@@ -77,7 +77,7 @@ namespace System.BluetoothLe
         /// For android, key is ignored.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is None.</param>
         /// <returns>A task that represents the asynchronous read operation. The Task will finish after the scan has ended.</returns>
-        Task StartScanningForDevicesAsync(Guid[] serviceUuids = null, Func<IDevice, bool> deviceFilter = null, bool allowDuplicatesKey = false, CancellationToken cancellationToken = default);
+        Task StartScanningForDevicesAsync(Guid[] serviceUuids = null, Func<Device, bool> deviceFilter = null, bool allowDuplicatesKey = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Stops scanning for BLE devices.
@@ -94,14 +94,14 @@ namespace System.BluetoothLe
         /// <returns>A task that represents the asynchronous read operation. The Task will finish after the device has been connected successfuly.</returns>
         /// <exception cref="DeviceConnectionException">Thrown if the device connection fails.</exception>
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="device"/> is null.</exception>
-        Task ConnectToDeviceAsync(IDevice device, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default);
+        Task ConnectToDeviceAsync(Device device, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Disconnects from the <paramref name="device"/>.
         /// </summary>
         /// <param name="device">Device to connect from.</param>
         /// <returns>A task that represents the asynchronous read operation. The Task will finish after the device has been disconnected successfuly.</returns>
-        Task DisconnectDeviceAsync(IDevice device);
+        Task DisconnectDeviceAsync(Device device);
 
         /// <summary>
         /// Connects to a device with a known GUID without scanning and if in range. Does not scan for devices.
@@ -110,7 +110,7 @@ namespace System.BluetoothLe
         /// <param name="connectParameters">Connection parameters. Contains platform specific parameters needed to achieved connection. The default value is None.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is None.</param>
         /// <returns></returns>
-        Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default);
+        Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Returns all BLE devices connected to the system. For android the implementations uses getConnectedDevices(GATT) & getBondedDevices()
@@ -123,7 +123,7 @@ namespace System.BluetoothLe
         /// In order to use the device in the app you have to first call ConnectAsync.
         /// </summary>
         /// <param name="services">IMPORTANT: Only considered by iOS due to platform limitations. Filters devices by advertised services. SET THIS VALUE FOR ANY RESULTS</param>
-        /// <returns>List of IDevices connected to the OS.  In case of no devices the list is empty.</returns>
-        IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null);
+        /// <returns>List of Devices connected to the OS.  In case of no devices the list is empty.</returns>
+        IReadOnlyList<Device> GetSystemConnectedOrPairedDevices(Guid[] services = null);
     }
 }

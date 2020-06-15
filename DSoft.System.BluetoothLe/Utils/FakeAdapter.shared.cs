@@ -11,8 +11,8 @@ namespace System.BluetoothLe.Utils
         public bool IsScanning { get; }
         public int ScanTimeout { get; set; }
         public ScanMode ScanMode { get; set; }
-        public IReadOnlyList<IDevice> DiscoveredDevices { get; }
-        public IReadOnlyList<IDevice> ConnectedDevices { get; }
+        public IReadOnlyList<Device> DiscoveredDevices { get; }
+        public IReadOnlyList<Device> ConnectedDevices { get; }
 
         public event EventHandler<DeviceEventArgs> DeviceAdvertised;
         public event EventHandler<DeviceEventArgs> DeviceDiscovered;
@@ -21,10 +21,10 @@ namespace System.BluetoothLe.Utils
         public event EventHandler<DeviceErrorEventArgs> DeviceConnectionLost;
         public event EventHandler ScanTimeoutElapsed;
 
-        public Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters, CancellationToken cancellationToken)
+        public Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
             TraceUnavailability();
-            return Task.FromResult<IDevice>(null);
+            return Task.FromResult<Device>(null);
         }
 
         protected Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
@@ -38,13 +38,13 @@ namespace System.BluetoothLe.Utils
             TraceUnavailability();
         }
 
-        protected Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters, CancellationToken cancellationToken)
+        protected Task ConnectToDeviceNativeAsync(Device device, ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
             TraceUnavailability();
             return Task.FromResult(0);
         }
 
-        protected void DisconnectDeviceNative(IDevice device)
+        protected void DisconnectDeviceNative(Device device)
         {
             TraceUnavailability();
         }
@@ -54,13 +54,13 @@ namespace System.BluetoothLe.Utils
             Trace.Message("Bluetooth LE is not available on this device. Nothing will happen - ever!");
         }
 
-        public IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null)
+        public IReadOnlyList<Device> GetSystemConnectedOrPairedDevices(Guid[] services = null)
         {
             TraceUnavailability();
-            return new List<IDevice>();
+            return new List<Device>();
         }
 
-        public Task StartScanningForDevicesAsync(Guid[] serviceUuids = null, Func<IDevice, bool> deviceFilter = null, bool allowDuplicatesKey = false, CancellationToken cancellationToken = default)
+        public Task StartScanningForDevicesAsync(Guid[] serviceUuids = null, Func<Device, bool> deviceFilter = null, bool allowDuplicatesKey = false, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -70,12 +70,12 @@ namespace System.BluetoothLe.Utils
             throw new NotImplementedException();
         }
 
-        public Task ConnectToDeviceAsync(IDevice device, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default)
+        public Task ConnectToDeviceAsync(Device device, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task DisconnectDeviceAsync(IDevice device)
+        public Task DisconnectDeviceAsync(Device device)
         {
             throw new NotImplementedException();
         }

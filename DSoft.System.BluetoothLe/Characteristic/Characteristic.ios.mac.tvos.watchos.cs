@@ -48,7 +48,7 @@ namespace System.BluetoothLe
 
         #region Constructors
 
-        public Characteristic(CBCharacteristic nativeCharacteristic, CBPeripheral parentDevice, IService service, IBleCentralManagerDelegate bleCentralManagerDelegate)  : this(service)
+        public Characteristic(CBCharacteristic nativeCharacteristic, CBPeripheral parentDevice, Service service, IBleCentralManagerDelegate bleCentralManagerDelegate)  : this(service)
         {
             NativeCharacteristic = nativeCharacteristic;
 

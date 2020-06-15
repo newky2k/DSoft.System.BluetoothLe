@@ -34,7 +34,7 @@ namespace System.BluetoothLe
         #endregion
 
         #region Constructors
-        public Characteristic(BluetoothGattCharacteristic nativeCharacteristic, BluetoothGatt gatt, IGattCallback gattCallback, IService service) : this(service)
+        public Characteristic(BluetoothGattCharacteristic nativeCharacteristic, BluetoothGatt gatt, IGattCallback gattCallback, Service service) : this(service)
         {
             NativeCharacteristic = nativeCharacteristic;
 

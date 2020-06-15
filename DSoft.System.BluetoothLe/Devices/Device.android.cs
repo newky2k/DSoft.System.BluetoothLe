@@ -211,7 +211,7 @@ namespace System.BluetoothLe
             _gatt = null;
 
             // ClossGatt might will get called on signal loss without Disconnect being called we have to make sure we clear the services
-            // Clear services & characteristics otherwise we will get gatt operation return FALSE when connecting to the same IDevice instace at a later time
+            // Clear services & characteristics otherwise we will get gatt operation return FALSE when connecting to the same Device instace at a later time
             DisposeServices();
         }
 

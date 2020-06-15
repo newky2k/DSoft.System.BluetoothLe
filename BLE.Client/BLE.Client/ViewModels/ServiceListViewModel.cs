@@ -15,9 +15,9 @@ namespace BLE.Client.ViewModels
         private readonly IUserDialogs _userDialogs;
         private readonly IMvxNavigationService _navigation;
 
-        private IDevice _device;
+        private Device _device;
 
-        public IReadOnlyList<IService> Services { get; private set; }
+        public IReadOnlyList<Service> Services { get; private set; }
 
         public IMvxCommand DiscoverAllServicesCommand { get; }
         public IMvxCommand<KnownService> DiscoverServiceByIdCommand { get; set; }
@@ -60,7 +60,7 @@ namespace BLE.Client.ViewModels
 
                 var service = await _device.GetServiceAsync(knownService.Id);
 
-                Services = service != null ? new List<IService> { service } : new List<IService>();
+                Services = service != null ? new List<Service> { service } : new List<Service>();
                 await RaisePropertyChanged(nameof(Services));
 
                 if (service == null)
@@ -92,7 +92,7 @@ namespace BLE.Client.ViewModels
         }
 
 
-        public IService SelectedService
+        public Service SelectedService
         {
             get => null;
             set

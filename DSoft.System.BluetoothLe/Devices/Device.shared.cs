@@ -7,7 +7,7 @@ using System.BluetoothLe;
 
 namespace System.BluetoothLe
 {
-    public partial class Device : IDevice, ICancellationMaster
+    public partial class Device : IDisposable, ICancellationMaster
     {
         #region Fields
         protected readonly Adapter Adapter;
@@ -21,8 +21,6 @@ namespace System.BluetoothLe
         public DeviceState State => GetState();
         public IReadOnlyList<AdvertisementRecord> AdvertisementRecords { get; protected set; }
         CancellationTokenSource ICancellationMaster.TokenSource { get; set; } = new CancellationTokenSource();
-
-        object IDevice.NativeDevice => NativeDevice;
 
         #endregion
 
@@ -117,7 +115,7 @@ namespace System.BluetoothLe
                 return false;
             }
 
-            var otherDeviceBase = (IDevice)other;
+            var otherDeviceBase = (Device)other;
             return Id == otherDeviceBase.Id;
         }
 

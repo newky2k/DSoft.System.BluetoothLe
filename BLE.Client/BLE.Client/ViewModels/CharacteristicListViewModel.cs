@@ -11,7 +11,7 @@ namespace BLE.Client.ViewModels
     {
         private readonly IUserDialogs _userDialogs;
         private readonly IMvxNavigationService _navigation;
-        private IService _service;
+        private Service _service;
         private IReadOnlyList<Characteristic> _characteristics;
 
         public IReadOnlyList<Characteristic> Characteristics

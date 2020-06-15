@@ -38,7 +38,7 @@ namespace System.BluetoothLe
 
         #region Constructors
 
-        public Characteristic(GattCharacteristic nativeCharacteristic, IService service) : this(service)
+        public Characteristic(GattCharacteristic nativeCharacteristic, Service service) : this(service)
         {
             NativeCharacteristic = nativeCharacteristic;
         }

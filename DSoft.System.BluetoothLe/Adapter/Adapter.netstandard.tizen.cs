@@ -13,13 +13,13 @@ namespace System.BluetoothLe
 
         protected void StopScanNative() => throw new PlatformNotSupportedException();
 
-        protected Task ConnectToDeviceNativeAsync(IDevice device, ConnectParameters connectParameters, CancellationToken cancellationToken) => throw new PlatformNotSupportedException();
+        protected Task ConnectToDeviceNativeAsync(Device device, ConnectParameters connectParameters, CancellationToken cancellationToken) => throw new PlatformNotSupportedException();
 
-        protected void DisconnectDeviceNative(IDevice device) => throw new PlatformNotSupportedException();
+        protected void DisconnectDeviceNative(Device device) => throw new PlatformNotSupportedException();
 
-        public Task<IDevice> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default) => throw new PlatformNotSupportedException();
+        public Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default) => throw new PlatformNotSupportedException();
 
-        public IReadOnlyList<IDevice> GetSystemConnectedOrPairedDevices(Guid[] services = null) => throw new PlatformNotSupportedException();
+        public IReadOnlyList<Device> GetSystemConnectedOrPairedDevices(Guid[] services = null) => throw new PlatformNotSupportedException();
 
     }
 }

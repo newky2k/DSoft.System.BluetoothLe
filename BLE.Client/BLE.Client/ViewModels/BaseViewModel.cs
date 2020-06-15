@@ -41,7 +41,7 @@ namespace BLE.Client.ViewModels
 
         protected IMvxBundle Bundle { get; private set; }
 
-        protected IDevice GetDeviceFromBundle(IMvxBundle parameters)
+        protected Device GetDeviceFromBundle(IMvxBundle parameters)
         {
             if (!parameters.Data.ContainsKey(DeviceIdKey)) return null;
             var deviceId = parameters.Data[DeviceIdKey];

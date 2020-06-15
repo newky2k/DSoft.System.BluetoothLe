@@ -30,7 +30,7 @@ namespace System.BluetoothLe
 
         public string Name => NativeName;
 
-        public IService Service { get; }
+        public Service Service { get; }
 
 
         public CharacteristicWriteType WriteType
@@ -71,7 +71,7 @@ namespace System.BluetoothLe
         #endregion
 
         #region Constructors
-        protected Characteristic(IService service)
+        protected Characteristic(Service service)
         {
             Service = service;
         }
