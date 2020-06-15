@@ -63,7 +63,7 @@ namespace BLE.Client.ViewModels
             return device.GetServiceAsync(Guid.Parse(serviceId));
         }
 
-        protected async Task<ICharacteristic> GetCharacteristicFromBundleAsync(IMvxBundle parameters)
+        protected async Task<Characteristic> GetCharacteristicFromBundleAsync(IMvxBundle parameters)
         {
             var service = await GetServiceFromBundleAsync(parameters);
             if (service == null || !parameters.Data.ContainsKey(CharacteristicIdKey))

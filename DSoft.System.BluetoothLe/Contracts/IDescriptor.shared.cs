@@ -29,7 +29,7 @@ namespace System.BluetoothLe
         /// <summary>
         /// Returns the parent characteristic
         /// </summary>
-        ICharacteristic Characteristic { get; }
+        Characteristic Characteristic { get; }
 
         /// <summary>
         /// Reads the characteristic value from the device. The result is also stored inisde the Value property.

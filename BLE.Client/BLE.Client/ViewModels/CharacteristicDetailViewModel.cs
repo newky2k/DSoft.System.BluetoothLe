@@ -22,7 +22,7 @@ namespace BLE.Client.ViewModels
     {
         private readonly IUserDialogs _userDialogs;
         private bool _updatesStarted;
-        public ICharacteristic Characteristic { get; private set; }
+        public Characteristic Characteristic { get; private set; }
 
         public string CharacteristicValue => Characteristic?.Value.ToHexString().Replace("-", " ");
 

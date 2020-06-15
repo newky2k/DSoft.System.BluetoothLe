@@ -15,9 +15,9 @@ namespace System.BluetoothLe.Models
 
 		readonly Device device;
 		Service service;
-		ICharacteristic receive;
-		ICharacteristic transmit;
-		ICharacteristic reset;
+		Characteristic receive;
+		Characteristic transmit;
+		Characteristic reset;
 
 		static readonly Guid ServiceId = new Guid("713D0000-503E-4C75-BA94-3148F18D941E");
 		static readonly Guid ReceiveCharId = new Guid("713D0002-503E-4C75-BA94-3148F18D941E");

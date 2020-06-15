@@ -12,9 +12,9 @@ namespace BLE.Client.ViewModels
         private readonly IUserDialogs _userDialogs;
         private readonly IMvxNavigationService _navigation;
         private IService _service;
-        private IReadOnlyList<ICharacteristic> _characteristics;
+        private IReadOnlyList<Characteristic> _characteristics;
 
-        public IReadOnlyList<ICharacteristic> Characteristics
+        public IReadOnlyList<Characteristic> Characteristics
         {
             get => _characteristics;
             private set => SetProperty(ref _characteristics, value);
@@ -63,7 +63,7 @@ namespace BLE.Client.ViewModels
             _service = await GetServiceFromBundleAsync(parameters);
         }
 
-        public ICharacteristic SelectedCharacteristic
+        public Characteristic SelectedCharacteristic
         {
             get => null;
             set

@@ -8,7 +8,7 @@ namespace BLE.Client.ViewModels
     public class DescriptorListViewModel : BaseViewModel
     {
         private readonly IMvxNavigationService _navigation;
-        private ICharacteristic _characteristic;
+        private Characteristic _characteristic;
 
         public IReadOnlyList<IDescriptor> Descriptors { get; private set;}
 

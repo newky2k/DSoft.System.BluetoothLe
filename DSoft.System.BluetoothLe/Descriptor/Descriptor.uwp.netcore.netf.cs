@@ -22,7 +22,7 @@ namespace System.BluetoothLe
         protected GattDescriptor NativeDescriptor { get; private set; }
 
 
-        public Descriptor(GattDescriptor nativeDescriptor, ICharacteristic characteristic) : this(characteristic)
+        public Descriptor(GattDescriptor nativeDescriptor, Characteristic characteristic) : this(characteristic)
         {
             NativeDescriptor = nativeDescriptor;
         }

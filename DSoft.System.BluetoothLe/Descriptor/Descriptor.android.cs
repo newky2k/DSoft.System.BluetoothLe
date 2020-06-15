@@ -17,7 +17,7 @@ namespace System.BluetoothLe
 
         protected BluetoothGattDescriptor NativeDescriptor { get; private set; }
 
-        public Descriptor(BluetoothGattDescriptor nativeDescriptor, BluetoothGatt gatt, IGattCallback gattCallback, ICharacteristic characteristic) : this(characteristic)
+        public Descriptor(BluetoothGattDescriptor nativeDescriptor, BluetoothGatt gatt, IGattCallback gattCallback, Characteristic characteristic) : this(characteristic)
         {
             NativeDescriptor = nativeDescriptor;
 

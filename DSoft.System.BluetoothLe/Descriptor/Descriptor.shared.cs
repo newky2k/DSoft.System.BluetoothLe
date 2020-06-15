@@ -14,9 +14,9 @@ namespace System.BluetoothLe
 
         public Guid Id => NativeGuid;
 
-        public ICharacteristic Characteristic { get; }
+        public Characteristic Characteristic { get; }
 
-        protected Descriptor(ICharacteristic characteristic)
+        protected Descriptor(Characteristic characteristic)
         {
             Characteristic = characteristic;
         }

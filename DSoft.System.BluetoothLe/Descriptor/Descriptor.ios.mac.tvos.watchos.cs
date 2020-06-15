@@ -37,7 +37,7 @@ namespace System.BluetoothLe
         private readonly CBPeripheral _parentDevice;
         private readonly IBleCentralManagerDelegate _bleCentralManagerDelegate;
 
-        public Descriptor(CBDescriptor nativeDescriptor, CBPeripheral parentDevice, ICharacteristic characteristic, IBleCentralManagerDelegate bleCentralManagerDelegate) : this(characteristic)
+        public Descriptor(CBDescriptor nativeDescriptor, CBPeripheral parentDevice, Characteristic characteristic, IBleCentralManagerDelegate bleCentralManagerDelegate) : this(characteristic)
         {
             NativeDescriptor = nativeDescriptor;
 

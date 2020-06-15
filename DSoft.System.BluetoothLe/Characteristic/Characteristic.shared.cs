@@ -8,7 +8,7 @@ using System.BluetoothLe.EventArgs;
 
 namespace System.BluetoothLe
 {
-    public partial class Characteristic : ICharacteristic
+    public partial class Characteristic
     {
         #region Fields
         private IReadOnlyList<IDescriptor> _descriptors;
