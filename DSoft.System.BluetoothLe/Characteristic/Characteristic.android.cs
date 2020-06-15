@@ -44,9 +44,9 @@ namespace System.BluetoothLe
         #endregion
 
         #region Methods
-        protected Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync()
+        protected Task<IReadOnlyList<Descriptor>> GetDescriptorsNativeAsync()
         {
-            return Task.FromResult<IReadOnlyList<IDescriptor>>(NativeCharacteristic.Descriptors.Select(item => new Descriptor(item, _gatt, _gattCallback, this)).Cast<IDescriptor>().ToList());
+            return Task.FromResult<IReadOnlyList<Descriptor>>(NativeCharacteristic.Descriptors.Select(item => new Descriptor(item, _gatt, _gattCallback, this)).Cast<Descriptor>().ToList());
         }
 
         protected async Task<byte[]> ReadNativeAsync()

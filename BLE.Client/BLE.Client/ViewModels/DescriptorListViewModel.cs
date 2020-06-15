@@ -10,7 +10,7 @@ namespace BLE.Client.ViewModels
         private readonly IMvxNavigationService _navigation;
         private Characteristic _characteristic;
 
-        public IReadOnlyList<IDescriptor> Descriptors { get; private set;}
+        public IReadOnlyList<Descriptor> Descriptors { get; private set;}
 
         public DescriptorListViewModel(IAdapter adapter, IMvxNavigationService navigation) : base(adapter)
         {
@@ -44,7 +44,7 @@ namespace BLE.Client.ViewModels
             await RaisePropertyChanged(nameof(Descriptors));
         }
 
-        public IDescriptor SelectedDescriptor
+        public Descriptor SelectedDescriptor
         {
             get => null;
             set

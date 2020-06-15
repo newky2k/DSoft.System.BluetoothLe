@@ -15,7 +15,7 @@ namespace BLE.Client.ViewModels
     public class DescriptorDetailViewModel : BaseViewModel
     {
         private readonly IUserDialogs _userDialogs;
-        public IDescriptor Descriptor { get; private set; }
+        public Descriptor Descriptor { get; private set; }
 
         public string DescriptorValue => Descriptor?.Value?.ToHexString().Replace("-", " ");
 

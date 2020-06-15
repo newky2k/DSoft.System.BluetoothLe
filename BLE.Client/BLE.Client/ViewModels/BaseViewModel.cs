@@ -75,7 +75,7 @@ namespace BLE.Client.ViewModels
             return await service.GetCharacteristicAsync(Guid.Parse(characteristicId));
         }
 
-        protected async Task<IDescriptor> GetDescriptorFromBundleAsync(IMvxBundle parameters)
+        protected async Task<Descriptor> GetDescriptorFromBundleAsync(IMvxBundle parameters)
         {
             var characteristic = await GetCharacteristicFromBundleAsync(parameters);
             if (characteristic == null || !parameters.Data.ContainsKey(DescriptorIdKey))

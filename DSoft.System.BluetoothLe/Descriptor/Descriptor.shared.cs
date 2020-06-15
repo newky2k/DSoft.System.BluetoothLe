@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace System.BluetoothLe
 {
-    public partial class Descriptor : IDescriptor
+    public partial class Descriptor
     {
         private string _name;
 

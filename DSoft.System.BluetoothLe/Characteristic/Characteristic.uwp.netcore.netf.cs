@@ -47,14 +47,14 @@ namespace System.BluetoothLe
 
         #region Methods
 
-        protected async Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync()
+        protected async Task<IReadOnlyList<Descriptor>> GetDescriptorsNativeAsync()
         {
             var descriptorsResult = await NativeCharacteristic.GetDescriptorsAsync(BleImplementation.CacheModeGetDescriptors);
             descriptorsResult.ThrowIfError();
 
             return descriptorsResult.Descriptors?
                 .Select(nativeDescriptor => new Descriptor(nativeDescriptor, this))
-                .Cast<IDescriptor>()
+                .Cast<Descriptor>()
                 .ToList();
         }
 

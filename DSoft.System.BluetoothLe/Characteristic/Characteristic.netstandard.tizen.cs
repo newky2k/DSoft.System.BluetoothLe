@@ -18,7 +18,7 @@ namespace System.BluetoothLe
 
         public string NativeName => KnownCharacteristics.Lookup(Id).Name;
 
-        protected Task<IReadOnlyList<IDescriptor>> GetDescriptorsNativeAsync() => throw new PlatformNotSupportedException();
+        protected Task<IReadOnlyList<Descriptor>> GetDescriptorsNativeAsync() => throw new PlatformNotSupportedException();
 
         protected Task<byte[]> ReadNativeAsync() => throw new PlatformNotSupportedException();
 
