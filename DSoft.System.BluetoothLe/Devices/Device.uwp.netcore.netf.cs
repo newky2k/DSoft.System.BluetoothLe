@@ -37,7 +37,7 @@ namespace System.BluetoothLe
             this.AdvertisementRecords = advertisementData;
         }
 
-        public Task<bool> UpdateRssiAsync()
+        internal Task<bool> UpdateRssiNativeAsync()
         {
             //No current method to update the Rssi of a device
             //In future implementations, maybe listen for device's advertisements
@@ -47,7 +47,7 @@ namespace System.BluetoothLe
             return Task.FromResult(true);
         }
 
-        protected async Task<IReadOnlyList<Service>> GetServicesNativeAsync()
+        private async Task<IReadOnlyList<Service>> GetServicesNativeAsync()
         {
             var result = await NativeDevice.BluetoothLEDevice.GetGattServicesAsync(BluetoothLE.CacheModeGetServices);
             result.ThrowIfError();
@@ -58,7 +58,7 @@ namespace System.BluetoothLe
                 .ToList();
         }
 
-        protected async Task<Service> GetServiceNativeAsync(Guid id)
+        private async Task<Service> GetServiceNativeAsync(Guid id)
         {
             var result = await NativeDevice.BluetoothLEDevice.GetGattServicesForUuidAsync(id, BluetoothLE.CacheModeGetServices);
             result.ThrowIfError();
@@ -67,7 +67,7 @@ namespace System.BluetoothLe
             return nativeService != null ? new Service(nativeService, this) : null;
         }
 
-        protected DeviceState GetState()
+        private DeviceState GetState()
         {
             if (NativeDevice.IsConnected)
             {
@@ -77,13 +77,13 @@ namespace System.BluetoothLe
             return NativeDevice.IsPaired ? DeviceState.Limited : DeviceState.Disconnected;
         }
 
-        protected Task<int> RequestMtuNativeAsync(int requestValue)
+        private Task<int> RequestMtuNativeAsync(int requestValue)
         {
             Trace.Message("Request MTU not supported in UWP");
             return Task.FromResult(-1);
         }
 
-        protected bool UpdateConnectionIntervalNative(ConnectionInterval interval)
+        private bool UpdateConnectionIntervalNative(ConnectionInterval interval)
         {
             Trace.Message("Update Connection Interval not supported in UWP");
             return false;

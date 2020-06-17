@@ -53,12 +53,12 @@ namespace System.BluetoothLe
             Trace.Message("Device changed name: {0}", Name);
         }
 
-        protected Task<IReadOnlyList<Service>> GetServicesNativeAsync()
+        private Task<IReadOnlyList<Service>> GetServicesNativeAsync()
         {
             return GetServicesInternal();
         }
 
-        protected async Task<Service> GetServiceNativeAsync(Guid id)
+        private async Task<Service> GetServiceNativeAsync(Guid id)
         {
             var cbuuid = CBUUID.FromString(id.ToString());
             var nativeService = NativeDevice.Services?.FirstOrDefault(service => service.UUID.Equals(cbuuid));
@@ -121,7 +121,7 @@ namespace System.BluetoothLe
                     unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
         }
 
-        public Task<bool> UpdateRssiAsync()
+        private Task<bool> UpdateRssiNativeAsync()
         {
             return TaskBuilder.FromEvent<bool, EventHandler<CBRssiEventArgs>, EventHandler<CBPeripheralErrorEventArgs>>(
                 execute: () => NativeDevice.ReadRSSI(),
@@ -148,7 +148,7 @@ namespace System.BluetoothLe
                 unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
         }
 
-        protected DeviceState GetState()
+        private DeviceState GetState()
         {
             switch (NativeDevice.State)
             {
@@ -165,24 +165,26 @@ namespace System.BluetoothLe
             }
         }
 
-        public void Update(CBPeripheral nativeDevice)
+        private async Task<int> RequestMtuNativeAsync(int requestValue)
+        {
+            Trace.Message($"Request MTU is not supported on iOS.");
+            return await Task.FromResult((int)NativeDevice.GetMaximumWriteValueLength(CBCharacteristicWriteType.WithoutResponse));
+        }
+
+        private bool UpdateConnectionIntervalNative(ConnectionInterval interval)
+        {
+            Trace.Message("Cannot update connection inteval on iOS.");
+            return false;
+        }
+
+        internal void Update(CBPeripheral nativeDevice)
         {
             Rssi = nativeDevice.RSSI?.Int32Value ?? 0;
             //It's maybe not the best idea to updated the name based on CBPeripherial name because this might be stale.
             //Name = nativeDevice.Name; 
         }
 
-        protected async Task<int> RequestMtuNativeAsync(int requestValue)
-        {
-            Trace.Message($"Request MTU is not supported on iOS.");
-            return await Task.FromResult((int)NativeDevice.GetMaximumWriteValueLength(CBCharacteristicWriteType.WithoutResponse));
-        }
 
-        protected bool UpdateConnectionIntervalNative(ConnectionInterval interval)
-        {
-            Trace.Message("Cannot update connection inteval on iOS.");
-            return false;
-        }
 
         #endregion
     }

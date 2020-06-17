@@ -60,94 +60,17 @@ namespace System.BluetoothLe
 
         #region Methods
 
-        public void Update(BluetoothDevice nativeDevice, BluetoothGatt gatt)
+        #region Private
+        private Guid ParseDeviceId()
         {
-            _connectCancellationTokenRegistration.Dispose();
-            _connectCancellationTokenRegistration = new CancellationTokenRegistration();
-
-            NativeDevice = nativeDevice;
-            _gatt = gatt;
-
-
-            Id = ParseDeviceId();
-            Name = NativeDevice.Name;
-        }
-
-        protected async Task<IReadOnlyList<Service>> GetServicesNativeAsync()
-        {
-            if (_gattCallback == null || _gatt == null)
-            {
-                return new List<Service>();
-            }
-
-            // _gatt.Services is already populated if device service discovery was already done
-            if (_gatt.Services.Any())
-            {
-                return _gatt.Services.Select(service => new Service(service, _gatt, _gattCallback, this)).ToList();
-            }
-
-            return await DiscoverServicesInternal();
-        }
-
-        protected async Task<Service> GetServiceNativeAsync(Guid id)
-        {
-            if (_gattCallback == null || _gatt == null)
-            {
-                return null;
-            }
-
-            var uuid = UUID.FromString(id.ToString("d"));
-
-            // _gatt.GetService will directly return if device service discovery was already done
-            var nativeService = _gatt.GetService(uuid);
-            if (nativeService != null)
-            {
-                return new Service(nativeService, _gatt, _gattCallback, this);
-            }
-
-            var services = await DiscoverServicesInternal();
-            return services?.FirstOrDefault(service => service.Id == id);
-        }
-
-        private async Task<IReadOnlyList<Service>> DiscoverServicesInternal()
-        {
-            return await TaskBuilder
-                .FromEvent<IReadOnlyList<Service>, EventHandler<ServicesDiscoveredCallbackEventArgs>, EventHandler>(
-                    execute: () =>
-                    {
-                        if (!_gatt.DiscoverServices())
-                        {
-                            throw new Exception("Could not start service discovery");
-                        }
-                    },
-                    getCompleteHandler: (complete, reject) => ((sender, args) =>
-                    {
-                        complete(_gatt.Services.Select(service => new Service(service, _gatt, _gattCallback, this)).ToList());
-                    }),
-                    subscribeComplete: handler => _gattCallback.ServicesDiscovered += handler,
-                    unsubscribeComplete: handler => _gattCallback.ServicesDiscovered -= handler,
-                    getRejectHandler: reject => ((sender, args) =>
-                    {
-                        reject(new Exception($"Device {Name} disconnected while fetching services."));
-                    }),
-                    subscribeReject: handler => _gattCallback.ConnectionInterrupted += handler,
-                    unsubscribeReject: handler => _gattCallback.ConnectionInterrupted -= handler);
-        }
-
-        public void Connect(ConnectParameters connectParameters, CancellationToken cancellationToken)
-        {
-            IsOperationRequested = true;
-
-            if (connectParameters.ForceBleTransport)
-            {
-                ConnectToGattForceBleTransportAPI(connectParameters.AutoConnect, cancellationToken);
-            }
-            else
-            {
-                var connectGatt = NativeDevice.ConnectGatt(Application.Context, connectParameters.AutoConnect, _gattCallback);
-                _connectCancellationTokenRegistration.Dispose();
-                _connectCancellationTokenRegistration = cancellationToken.Register(() => connectGatt.Disconnect());
-            }
+            var deviceGuid = new byte[16];
+            var macWithoutColons = NativeDevice.Address.Replace(":", "");
+            var macBytes = Enumerable.Range(0, macWithoutColons.Length)
+                .Where(x => x % 2 == 0)
+                .Select(x => Convert.ToByte(macWithoutColons.Substring(x, 2), 16))
+                .ToArray();
+            macBytes.CopyTo(deviceGuid, 10);
+            return new Guid(deviceGuid);
         }
 
         private void ConnectToGattForceBleTransportAPI(bool autoconnect, CancellationToken cancellationToken)
@@ -181,75 +104,32 @@ namespace System.BluetoothLe
 
         }
 
-        /// <summary>
-        /// This method is only called by a user triggered disconnect.
-        /// A user will first trigger _gatt.disconnect -> which in turn will trigger _gatt.Close() via the gattCallback
-        /// </summary>
-        public void Disconnect()
+        private async Task<IReadOnlyList<Service>> DiscoverServicesInternal()
         {
-            if (_gatt != null)
-            {
-                IsOperationRequested = true;
-
-                DisposeServices();
-
-                _gatt.Disconnect();
-            }
-            else
-            {
-                Trace.Message("[Warning]: Can't disconnect {0}. Gatt is null.", Name);
-            }
+            return await TaskBuilder
+                .FromEvent<IReadOnlyList<Service>, EventHandler<ServicesDiscoveredCallbackEventArgs>, EventHandler>(
+                    execute: () =>
+                    {
+                        if (!_gatt.DiscoverServices())
+                        {
+                            throw new Exception("Could not start service discovery");
+                        }
+                    },
+                    getCompleteHandler: (complete, reject) => ((sender, args) =>
+                    {
+                        complete(_gatt.Services.Select(service => new Service(service, _gatt, _gattCallback, this)).ToList());
+                    }),
+                    subscribeComplete: handler => _gattCallback.ServicesDiscovered += handler,
+                    unsubscribeComplete: handler => _gattCallback.ServicesDiscovered -= handler,
+                    getRejectHandler: reject => ((sender, args) =>
+                    {
+                        reject(new Exception($"Device {Name} disconnected while fetching services."));
+                    }),
+                    subscribeReject: handler => _gattCallback.ConnectionInterrupted += handler,
+                    unsubscribeReject: handler => _gattCallback.ConnectionInterrupted -= handler);
         }
 
-        /// <summary>
-        /// CloseGatt is called by the gattCallback in case of user disconnect or a disconnect by signal loss or a connection error. 
-        /// Cleares all cached services.
-        /// </summary>
-        public void CloseGatt()
-        {
-            _gatt?.Close();
-            _gatt = null;
-
-            // ClossGatt might will get called on signal loss without Disconnect being called we have to make sure we clear the services
-            // Clear services & characteristics otherwise we will get gatt operation return FALSE when connecting to the same Device instace at a later time
-            DisposeServices();
-        }
-
-        protected DeviceState GetState()
-        {
-            var manager = (BluetoothManager)Application.Context.GetSystemService(Context.BluetoothService);
-            var state = manager.GetConnectionState(NativeDevice, ProfileType.Gatt);
-
-            switch (state)
-            {
-                case ProfileState.Connected:
-                    // if the device does not have a gatt instance we can't use it in the app, so we need to explicitly be able to connect it
-                    // even if the profile state is connected
-                    return _gatt != null ? DeviceState.Connected : DeviceState.Limited;
-
-                case ProfileState.Connecting:
-                    return DeviceState.Connecting;
-
-                case ProfileState.Disconnected:
-                case ProfileState.Disconnecting:
-                default:
-                    return DeviceState.Disconnected;
-            }
-        }
-
-        private Guid ParseDeviceId()
-        {
-            var deviceGuid = new byte[16];
-            var macWithoutColons = NativeDevice.Address.Replace(":", "");
-            var macBytes = Enumerable.Range(0, macWithoutColons.Length)
-                .Where(x => x % 2 == 0)
-                .Select(x => Convert.ToByte(macWithoutColons.Substring(x, 2), 16))
-                .ToArray();
-            macBytes.CopyTo(deviceGuid, 10);
-            return new Guid(deviceGuid);
-        }
-
-        public static List<AdvertisementRecord> ParseScanRecord(byte[] scanRecord)
+        private static List<AdvertisementRecord> ParseScanRecord(byte[] scanRecord)
         {
             var records = new List<AdvertisementRecord>();
 
@@ -309,8 +189,32 @@ namespace System.BluetoothLe
 
             return records;
         }
+        #endregion
 
-        public async Task<bool> UpdateRssiAsync()
+        #region Protected
+        private DeviceState GetState()
+        {
+            var manager = (BluetoothManager)Application.Context.GetSystemService(Context.BluetoothService);
+            var state = manager.GetConnectionState(NativeDevice, ProfileType.Gatt);
+
+            switch (state)
+            {
+                case ProfileState.Connected:
+                    // if the device does not have a gatt instance we can't use it in the app, so we need to explicitly be able to connect it
+                    // even if the profile state is connected
+                    return _gatt != null ? DeviceState.Connected : DeviceState.Limited;
+
+                case ProfileState.Connecting:
+                    return DeviceState.Connecting;
+
+                case ProfileState.Disconnected:
+                case ProfileState.Disconnecting:
+                default:
+                    return DeviceState.Disconnected;
+            }
+        }
+
+        private async Task<bool> UpdateRssiNativeAsync()
         {
             if (_gatt == null || _gattCallback == null)
             {
@@ -344,7 +248,7 @@ namespace System.BluetoothLe
               unsubscribeReject: handler => _gattCallback.ConnectionInterrupted -= handler);
         }
 
-        protected async Task<int> RequestMtuNativeAsync(int requestValue)
+        private async Task<int> RequestMtuNativeAsync(int requestValue)
         {
             if (_gatt == null || _gattCallback == null)
             {
@@ -361,29 +265,29 @@ namespace System.BluetoothLe
             return await TaskBuilder.FromEvent<int, EventHandler<MtuRequestCallbackEventArgs>, EventHandler>(
               execute: () => { _gatt.RequestMtu(requestValue); },
               getCompleteHandler: (complete, reject) => ((sender, args) =>
-               {
-                   if (args.Error != null)
-                   {
-                       Trace.Message($"Failed to request MTU ({requestValue}) for device {Id}-{Name}. {args.Error.Message}");
-                       reject(new Exception($"Request MTU error: {args.Error.Message}"));
-                   }
-                   else
-                   {
-                       complete(args.Mtu);
-                   }
-               }),
+              {
+                  if (args.Error != null)
+                  {
+                      Trace.Message($"Failed to request MTU ({requestValue}) for device {Id}-{Name}. {args.Error.Message}");
+                      reject(new Exception($"Request MTU error: {args.Error.Message}"));
+                  }
+                  else
+                  {
+                      complete(args.Mtu);
+                  }
+              }),
               subscribeComplete: handler => _gattCallback.MtuRequested += handler,
               unsubscribeComplete: handler => _gattCallback.MtuRequested -= handler,
               getRejectHandler: reject => ((sender, args) =>
-               {
-                   reject(new Exception($"Device {Name} disconnected while requesting MTU."));
-               }),
+              {
+                  reject(new Exception($"Device {Name} disconnected while requesting MTU."));
+              }),
               subscribeReject: handler => _gattCallback.ConnectionInterrupted += handler,
               unsubscribeReject: handler => _gattCallback.ConnectionInterrupted -= handler
             );
         }
 
-        protected bool UpdateConnectionIntervalNative(ConnectionInterval interval)
+        private bool UpdateConnectionIntervalNative(ConnectionInterval interval)
         {
             if (_gatt == null || _gattCallback == null)
             {
@@ -408,6 +312,110 @@ namespace System.BluetoothLe
                 throw new Exception($"Update Connection Interval fails with error. {ex.Message}");
             }
         }
+
+        private async Task<IReadOnlyList<Service>> GetServicesNativeAsync()
+        {
+            if (_gattCallback == null || _gatt == null)
+            {
+                return new List<Service>();
+            }
+
+            // _gatt.Services is already populated if device service discovery was already done
+            if (_gatt.Services.Any())
+            {
+                return _gatt.Services.Select(service => new Service(service, _gatt, _gattCallback, this)).ToList();
+            }
+
+            return await DiscoverServicesInternal();
+        }
+
+        private async Task<Service> GetServiceNativeAsync(Guid id)
+        {
+            if (_gattCallback == null || _gatt == null)
+            {
+                return null;
+            }
+
+            var uuid = UUID.FromString(id.ToString("d"));
+
+            // _gatt.GetService will directly return if device service discovery was already done
+            var nativeService = _gatt.GetService(uuid);
+            if (nativeService != null)
+            {
+                return new Service(nativeService, _gatt, _gattCallback, this);
+            }
+
+            var services = await DiscoverServicesInternal();
+            return services?.FirstOrDefault(service => service.Id == id);
+        }
+
+        #endregion
+
+        internal void Update(BluetoothDevice nativeDevice, BluetoothGatt gatt)
+        {
+            _connectCancellationTokenRegistration.Dispose();
+            _connectCancellationTokenRegistration = new CancellationTokenRegistration();
+
+            NativeDevice = nativeDevice;
+            _gatt = gatt;
+
+
+            Id = ParseDeviceId();
+            Name = NativeDevice.Name;
+        }
+
+        internal void Connect(ConnectParameters connectParameters, CancellationToken cancellationToken)
+        {
+            IsOperationRequested = true;
+
+            if (connectParameters.ForceBleTransport)
+            {
+                ConnectToGattForceBleTransportAPI(connectParameters.AutoConnect, cancellationToken);
+            }
+            else
+            {
+                var connectGatt = NativeDevice.ConnectGatt(Application.Context, connectParameters.AutoConnect, _gattCallback);
+                _connectCancellationTokenRegistration.Dispose();
+                _connectCancellationTokenRegistration = cancellationToken.Register(() => connectGatt.Disconnect());
+            }
+        }
+
+        /// <summary>
+        /// This method is only called by a user triggered disconnect.
+        /// A user will first trigger _gatt.disconnect -> which in turn will trigger _gatt.Close() via the gattCallback
+        /// </summary>
+        internal void Disconnect()
+        {
+            if (_gatt != null)
+            {
+                IsOperationRequested = true;
+
+                DisposeServices();
+
+                _gatt.Disconnect();
+            }
+            else
+            {
+                Trace.Message("[Warning]: Can't disconnect {0}. Gatt is null.", Name);
+            }
+        }
+
+        /// <summary>
+        /// CloseGatt is called by the gattCallback in case of user disconnect or a disconnect by signal loss or a connection error. 
+        /// Cleares all cached services.
+        /// </summary>
+        internal void CloseGatt()
+        {
+            _gatt?.Close();
+            _gatt = null;
+
+            // ClossGatt might will get called on signal loss without Disconnect being called we have to make sure we clear the services
+            // Clear services & characteristics otherwise we will get gatt operation return FALSE when connecting to the same Device instace at a later time
+            DisposeServices();
+        }
+
+        
+
 
         #endregion
     }

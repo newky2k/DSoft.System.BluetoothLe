@@ -124,6 +124,10 @@ namespace System.BluetoothLe
             return Id.GetHashCode();
         }
 
+        public async Task<bool> UpdateRssiAsync()
+        {
+            return await UpdateRssiNativeAsync();
+        }
         #endregion
     }
 }
