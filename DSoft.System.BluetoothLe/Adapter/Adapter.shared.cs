@@ -243,6 +243,13 @@ namespace System.BluetoothLe
 
         #endregion
 
+        #region Constructors
 
+        public Adapter()
+        {
+
+        }
+
+        #endregion
     }
 }

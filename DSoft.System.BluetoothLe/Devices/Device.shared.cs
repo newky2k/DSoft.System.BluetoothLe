@@ -19,12 +19,19 @@ namespace System.BluetoothLe
         public string Name { get; protected set; }
         public int Rssi { get; protected set; }
         public DeviceState State => GetState();
+
         public IReadOnlyList<AdvertisementRecord> AdvertisementRecords { get; protected set; }
+
         CancellationTokenSource ICancellationMaster.TokenSource { get; set; } = new CancellationTokenSource();
 
         #endregion
 
         #region Constructors
+
+        protected Device()
+        {
+
+        }
 
         private Device(Adapter adapter)
         {
@@ -81,7 +88,7 @@ namespace System.BluetoothLe
 
         public virtual void Dispose()
         {
-            Adapter.DisconnectDeviceAsync(this);
+            Adapter?.DisconnectDeviceAsync(this);
         }
 
         public void DisposeServices()

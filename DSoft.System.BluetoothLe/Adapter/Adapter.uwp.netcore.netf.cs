@@ -18,11 +18,6 @@ namespace System.BluetoothLe
     {
         private BluetoothLEAdvertisementWatcher _bleWatcher;
 
-        public Adapter()
-        {
-            
-        }
-
         protected Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
         {
             var hasFilter = serviceUuids?.Any() ?? false;
