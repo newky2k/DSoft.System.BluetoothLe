@@ -71,6 +71,12 @@ namespace System.BluetoothLe
         #endregion
 
         #region Constructors
+
+        protected Characteristic()
+        {
+
+        }
+
         protected Characteristic(Service service)
         {
             Service = service;

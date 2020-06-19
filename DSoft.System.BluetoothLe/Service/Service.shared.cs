@@ -25,6 +25,11 @@ namespace System.BluetoothLe
 
         #region Constructors
 
+        protected Service()
+        {
+
+        }
+
         protected Service(Device device)
         {
             Device = device;

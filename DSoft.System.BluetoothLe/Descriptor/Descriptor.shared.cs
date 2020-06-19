@@ -16,10 +16,19 @@ namespace System.BluetoothLe
 
         public Characteristic Characteristic { get; }
 
+        #region Constructors
+
+        protected Descriptor()
+        {
+
+        }
+
         protected Descriptor(Characteristic characteristic)
         {
             Characteristic = characteristic;
         }
+
+        #endregion
 
         public Task<byte[]> ReadAsync(CancellationToken cancellationToken = default)
         {

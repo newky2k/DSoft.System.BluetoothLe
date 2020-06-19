@@ -26,14 +26,5 @@ namespace System.BluetoothLe
         private bool UpdateConnectionIntervalNative(ConnectionInterval interval) => throw new PlatformNotSupportedException();
 
         #endregion
-
-        #region Constructors
-
-        internal Device()
-        {
-
-        }
-
-        #endregion
     }
 }
