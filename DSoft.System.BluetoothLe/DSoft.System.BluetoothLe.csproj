@@ -23,7 +23,9 @@
     <RepositoryUrl>https://github.com/newky2k/DSoft.System.BluetoothLe</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/newky2k/DSoft.System.BluetoothLe</PackageProjectUrl>
-    <PackageReleaseNotes>Added .Net framwework support</PackageReleaseNotes>
+    <PackageReleaseNotes>  - Fixed issues with WPF on .Net Core and .Net Framework
+      - Added WPF framework references for .Net Core and .Net Framework
+    </PackageReleaseNotes>
     <PackageTags>BluetoothLe xamarin mac ios android uwp wpf netcore dotnet tizen tvos watchos</PackageTags>
     <Copyright>Copyright © 2020 DSoft</Copyright>
   </PropertyGroup>
