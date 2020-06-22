@@ -1,10 +1,10 @@
 # DSoft.System.BluetoothLe
 
-Cross-platform Bluetooth Low Energy library, based on [Plugin.BLE](https://github.com/xabre/xamarin-bluetooth-le) , for Xamarin.iOS, Xamarin.Android, Xamarin.Mac, UWP(Preview), .Net Core 3.x and .Net Framework 4.6.1+(Preview - Windows 10 only - WPF & Windows.Forms), TVOS(Preview) and WatchOS(Preview), Tizen(coming soon)
+Cross-platform Bluetooth Low Energy library, based on [Plugin.BLE](https://github.com/xabre/xamarin-bluetooth-le) , for Xamarin.iOS, Xamarin.Android, Xamarin.Mac, UWP(Preview), WPF for.Net Core 3.x and .Net Framework 4.6.1+(Preview - Windows 10 only), TVOS(Preview) and WatchOS(Preview), Tizen(coming soon)
 
 ## .Net Core 3.x support
 
-We have had added .Net Core and .Net Framework 4.6.1+ support for Windows using the Windows RT API using `Microsoft.Windows.SDK.Contracts`.  The UWP,.Net Core and .Net Framework implementations are essentially the same as they use the same APIs.  We have duplicated `ObservableBluetoothLeDevice` from Windows Community Toolkit as it doesn't work with `Microsoft.Windows.SDK.Contracts`, .Net Core or .Net Framework.
+We have had added .Net Core and .Net Framework 4.6.1+ support for Windows using the Windows RT API using `Microsoft.Windows.SDK.Contracts`.  The UWP,.Net Core and .Net Framework implementations are essentially the same as they use the same APIs.  We have duplicated `ObservableBluetoothLeDevice` from Windows Community Toolkit as it doesn't work with `Microsoft.Windows.SDK.Contracts`, .Net Core or .Net Framework. `ObservableBluetoothLeDevice` has been modified to use the WPF Application dispatcher on .Net Core and .Net framework.
 
 ### Note: .Net Core and .Net Framework support requires Windows 10 - version 1803 and above
 

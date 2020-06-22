@@ -53,16 +53,27 @@
     <Compile Include="**\*.uwp.cs" />
     <Compile Include="**\*.uwp.*.cs" />
   </ItemGroup>
+
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+  
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17134.1000" />
     <Compile Include="**\*.netcore.cs" />
     <Compile Include="**\*.netcore.*.cs" />
   </ItemGroup>
+
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith('net461')) ">
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+  
   <ItemGroup Condition=" $(TargetFramework.StartsWith('net461')) ">
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17134.1000" />
     <Compile Include="**\*.netf.cs" />
     <Compile Include="**\*.netf.*.cs" />
   </ItemGroup>
+  
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
     <Compile Include="**\*.android.cs" />
     <Compile Include="**\*.android.*.cs" />
