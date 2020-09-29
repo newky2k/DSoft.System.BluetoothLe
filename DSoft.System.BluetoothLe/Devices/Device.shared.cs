@@ -4,20 +4,48 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.BluetoothLe;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace System.BluetoothLe
 {
-    public partial class Device : IDisposable, ICancellationMaster
+    public partial class Device : IDisposable, ICancellationMaster, INotifyPropertyChanged
     {
         #region Fields
         protected readonly Adapter Adapter;
         protected readonly Dictionary<Guid, Service> KnownServices = new Dictionary<Guid, Service>();
+        private string _name;
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+        private int _rssi;
         #endregion
 
         #region Properties
         public Guid Id { get; protected set; }
-        public string Name { get; protected set; }
-        public int Rssi { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the name of the device
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name
+        {
+            get { return _name; }
+            protected set { _name = value; NotifyPropertyChanged(nameof(Name)); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Rssi(Received Signal Strength Indicator) value for the device
+        /// </summary>
+        /// <value>
+        /// The rssi.
+        /// </value>
+        public int Rssi
+        {
+            get { return _rssi; }
+            protected set { _rssi = value; NotifyPropertyChanged(nameof(Rssi)); }
+        }
+
         public DeviceState State => GetState();
 
         public IReadOnlyList<AdvertisementRecord> AdvertisementRecords { get; protected set; }
@@ -86,11 +114,7 @@ namespace System.BluetoothLe
             return Name;
         }
 
-        public virtual void Dispose()
-        {
-            Adapter?.DisconnectDeviceAsync(this);
-        }
-
+        
         public void DisposeServices()
         {
             this.CancelEverythingAndReInitialize();
@@ -135,6 +159,16 @@ namespace System.BluetoothLe
         {
             return await UpdateRssiNativeAsync();
         }
+        #endregion
+
+        #region Private Methods
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        }
+
         #endregion
     }
 }

@@ -48,6 +48,13 @@ namespace System.BluetoothLe
         #endregion
 
         #region Methods
+
+        public virtual void Dispose()
+        {
+
+            Adapter?.DisconnectDeviceAsync(this);
+        }
+
         private void OnNameUpdated(object sender, System.EventArgs e)
         {
             Name = ((CBPeripheral)sender).Name;
