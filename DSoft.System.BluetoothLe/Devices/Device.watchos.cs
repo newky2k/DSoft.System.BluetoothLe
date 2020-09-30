@@ -7,6 +7,7 @@ using Foundation;
 using System.BluetoothLe;
 using System.BluetoothLe.Utils;
 
+
 namespace System.BluetoothLe
 {
     public partial class Device
@@ -26,6 +27,7 @@ namespace System.BluetoothLe
             : this(adapter, nativeDevice, bleCentralManagerDelegate, nativeDevice.Name, 0,
                 new List<AdvertisementRecord>())
         {
+
         }
 
         internal Device(Adapter adapter, CBPeripheral nativeDevice, IBleCentralManagerDelegate bleCentralManagerDelegate, string name, int rssi, List<AdvertisementRecord> advertisementRecords) : this(adapter)
@@ -33,6 +35,14 @@ namespace System.BluetoothLe
             NativeDevice = nativeDevice;
 
             _bleCentralManagerDelegate = bleCentralManagerDelegate;
+
+            var deviceDelegate = new Platform.Apple.BleCBPeripheralDelegate();
+
+            deviceDelegate.OnNameUpdated += (s, e) => { Name = NativeDevice.Name; };
+            deviceDelegate.OnUpdatedRssi += (s, e) => { NativeDevice.ReadRSSI(); };
+            deviceDelegate.OnReadRssi += (s, e) => { Rssi = e.Rssi.Int32Value; };
+
+            NativeDevice.Delegate = deviceDelegate;
 
             Id = Guid.ParseExact(NativeDevice.Identifier.AsString(), "d");
             Name = name;
@@ -51,8 +61,10 @@ namespace System.BluetoothLe
 
         public virtual void Dispose()
         {
-
             Adapter?.DisconnectDeviceAsync(this);
+
+            NativeDevice.Delegate = null;
+            NativeDevice = null;
         }
 
         private void OnNameUpdated(object sender, System.EventArgs e)

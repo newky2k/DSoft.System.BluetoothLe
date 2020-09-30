@@ -8,22 +8,22 @@ namespace System.BluetoothLe.Platform.Apple
 {
     public interface IBleCBPeripheralDelegate
     {
-        event EventHandler<CBPeripheralOpenL2CapChannelEventArgs> DidOpenL2CapChannel;
-        event EventHandler<CBServiceEventArgs> DiscoveredCharacteristic;
-        event EventHandler<CBCharacteristicEventArgs> DiscoveredDescriptor;
-        event EventHandler<CBServiceEventArgs> DiscoveredIncludedService;
-        event EventHandler<NSError> DiscoveredService;
-        event EventHandler InvalidatedService;
-        event EventHandler IsReadyToSendWriteWithoutResponse;
-        event EventHandler<CBPeripheralServicesEventArgs> ModifiedServices;
-        event EventHandler<CBRssiEventArgs> RssiRead;
-        event EventHandler<NSError> RssiUpdated;
-        event EventHandler<CBCharacteristicEventArgs> UpdatedCharacterteristicValue;
-        event EventHandler UpdatedName;
-        event EventHandler<CBCharacteristicEventArgs> UpdatedNotificationState;
-        event EventHandler<CBDescriptorEventArgs> UpdatedValue;
-        event EventHandler<CBCharacteristicEventArgs> WroteCharacteristicValue;
-        event EventHandler<CBDescriptorEventArgs> WroteDescriptorValue;
+        event EventHandler<CBPeripheralOpenL2CapChannelEventArgs> OnL2CapChannelOpened;
+        event EventHandler<CBServiceEventArgs> OnCharacteristicDiscovered;
+        event EventHandler<CBCharacteristicEventArgs> OnDescriptorDiscovered;
+        event EventHandler<CBServiceEventArgs> OnIncludedServiceDiscovered;
+        event EventHandler<NSError> OnServiceDiscovered;
+        event EventHandler OnServiceInvalidated;
+        event EventHandler OnIsReadyToSendWriteWithoutResponse;
+        event EventHandler<CBPeripheralServicesEventArgs> OnServicesModified;
+        event EventHandler<CBRssiEventArgs> OnReadRssi;
+        event EventHandler<NSError> OnUpdatedRssi;
+        event EventHandler<CBCharacteristicEventArgs> OnCharacterteristicValueUpdated;
+        event EventHandler OnNameUpdated;
+        event EventHandler<CBCharacteristicEventArgs> OnUpdatedNotificationState;
+        event EventHandler<CBDescriptorEventArgs> OnUpdatedValue;
+        event EventHandler<CBCharacteristicEventArgs> OnWroteCharacteristicValue;
+        event EventHandler<CBDescriptorEventArgs> OnWroteDescriptorValue;
     }
 
     public class BleCBPeripheralDelegate : CBPeripheralDelegate, IBleCBPeripheralDelegate
@@ -49,97 +49,97 @@ namespace System.BluetoothLe.Platform.Apple
 
         #region Properties
 
-        event EventHandler<CBPeripheralOpenL2CapChannelEventArgs> IBleCBPeripheralDelegate.DidOpenL2CapChannel
+        public event EventHandler<CBPeripheralOpenL2CapChannelEventArgs> OnL2CapChannelOpened
         {
             add => _didOpenL2CapChannel += value;
             remove => _didOpenL2CapChannel -= value;
         }
 
-        event EventHandler<CBServiceEventArgs> IBleCBPeripheralDelegate.DiscoveredCharacteristic
+        public event EventHandler<CBServiceEventArgs> OnCharacteristicDiscovered
         {
             add => _discoveredCharacteristic += value;
             remove => _discoveredCharacteristic -= value;
         }
 
-        event EventHandler<CBCharacteristicEventArgs> IBleCBPeripheralDelegate.DiscoveredDescriptor
+        public event EventHandler<CBCharacteristicEventArgs> OnDescriptorDiscovered
         {
             add => _discoveredDescriptor += value;
             remove => _discoveredDescriptor -= value;
         }
 
-        event EventHandler<CBServiceEventArgs> IBleCBPeripheralDelegate.DiscoveredIncludedService
+        public event EventHandler<CBServiceEventArgs> OnIncludedServiceDiscovered
         {
             add => _discoveredIncludedService += value;
             remove => _discoveredIncludedService -= value;
         }
 
-        event EventHandler<NSError> IBleCBPeripheralDelegate.DiscoveredService
+        public event EventHandler<NSError> OnServiceDiscovered
         {
             add => _discoveredService += value;
             remove => _discoveredService -= value;
         }
 
-        event EventHandler IBleCBPeripheralDelegate.InvalidatedService
+        public event EventHandler OnServiceInvalidated
         {
             add => _invalidatedService += value;
             remove => _invalidatedService -= value;
         }
 
-        event EventHandler IBleCBPeripheralDelegate.IsReadyToSendWriteWithoutResponse
+        public event EventHandler OnIsReadyToSendWriteWithoutResponse
         {
             add => _isReadyToSendWriteWithoutResponse += value;
             remove => _isReadyToSendWriteWithoutResponse -= value;
         }
 
-        event EventHandler<CBPeripheralServicesEventArgs> IBleCBPeripheralDelegate.ModifiedServices
+        public event EventHandler<CBPeripheralServicesEventArgs> OnServicesModified
         {
             add => _modifiedServices += value;
             remove => _modifiedServices -= value;
         }
 
-        event EventHandler<CBRssiEventArgs> IBleCBPeripheralDelegate.RssiRead
+        public event EventHandler<CBRssiEventArgs> OnReadRssi
         {
             add => _rssiRead += value;
             remove => _rssiRead -= value;
         }
 
-        event EventHandler<NSError> IBleCBPeripheralDelegate.RssiUpdated
+        public event EventHandler<NSError> OnUpdatedRssi
         {
             add => _rssiUpdated += value;
             remove => _rssiUpdated -= value;
         }
 
-        event EventHandler<CBCharacteristicEventArgs> IBleCBPeripheralDelegate.UpdatedCharacterteristicValue
+        public event EventHandler<CBCharacteristicEventArgs> OnCharacterteristicValueUpdated
         {
             add => _updatedCharacterteristicValue += value;
             remove => _updatedCharacterteristicValue -= value;
         }
 
-        event EventHandler IBleCBPeripheralDelegate.UpdatedName
+        public event EventHandler OnNameUpdated
         {
             add => _updatedName += value;
             remove => _updatedName -= value;
         }
 
-        event EventHandler<CBCharacteristicEventArgs> IBleCBPeripheralDelegate.UpdatedNotificationState
+        public event EventHandler<CBCharacteristicEventArgs> OnUpdatedNotificationState
         {
             add => _updatedNotificationState += value;
             remove => _updatedNotificationState -= value;
         }
 
-        event EventHandler<CBDescriptorEventArgs> IBleCBPeripheralDelegate.UpdatedValue
+        public event EventHandler<CBDescriptorEventArgs> OnUpdatedValue
         {
             add => _updatedValue += value;
             remove => _updatedValue -= value;
         }
 
-        event EventHandler<CBCharacteristicEventArgs> IBleCBPeripheralDelegate.WroteCharacteristicValue
+        public event EventHandler<CBCharacteristicEventArgs> OnWroteCharacteristicValue
         {
             add => _wroteCharacteristicValue += value;
             remove => _wroteCharacteristicValue -= value;
         }
 
-        event EventHandler<CBDescriptorEventArgs> IBleCBPeripheralDelegate.WroteDescriptorValue
+        public event EventHandler<CBDescriptorEventArgs> OnWroteDescriptorValue
         {
             add => _wroteDescriptorValue += value;
             remove => _wroteDescriptorValue -= value;

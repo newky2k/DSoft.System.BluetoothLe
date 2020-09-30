@@ -37,7 +37,7 @@ namespace System.BluetoothLe
             var deviceDelegate = new BleCBPeripheralDelegate();
 
             deviceDelegate.OnNameUpdated += (s, e) => { Name = NativeDevice.Name;  };
-
+            deviceDelegate.OnUpdatedRssi += (s, e) => { Rssi = NativeDevice.RSSI.Int32Value; };
 
             NativeDevice.Delegate = deviceDelegate;
 
