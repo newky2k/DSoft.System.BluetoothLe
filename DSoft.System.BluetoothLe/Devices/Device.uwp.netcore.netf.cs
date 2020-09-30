@@ -27,6 +27,7 @@ namespace System.BluetoothLe
             Name = nativeDevice.Name;
             AdvertisementRecords = advertisementRecords;
 
+            NativeDevice.OnNameChanged += (s, name) => { Name = name; };
         }
 
         #endregion
