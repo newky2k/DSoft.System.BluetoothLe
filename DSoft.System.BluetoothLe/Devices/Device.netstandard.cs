@@ -13,6 +13,13 @@ namespace System.BluetoothLe
         #endregion
 
         #region Methods
+
+        public virtual void Dispose()
+        {
+
+            Adapter?.DisconnectDeviceAsync(this);
+        }
+
         private Task<bool> UpdateRssiNativeAsync() => throw new PlatformNotSupportedException();
 
         private DeviceState GetState() => throw new PlatformNotSupportedException();

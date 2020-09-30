@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
 using System.BluetoothLe.Utils;
+using System.BluetoothLe.Platform.Apple;
 
 namespace System.BluetoothLe
 {
@@ -33,6 +34,15 @@ namespace System.BluetoothLe
 
             _bleCentralManagerDelegate = bleCentralManagerDelegate;
 
+            var deviceDelegate = new BleCBPeripheralDelegate();
+
+            deviceDelegate.OnNameUpdated += (s, e) => { Name = NativeDevice.Name;  };
+            deviceDelegate.OnUpdatedRssi += (s, e) => { Rssi = NativeDevice.RSSI.Int32Value; };
+
+            NativeDevice.Delegate = deviceDelegate;
+
+
+
             Id = Guid.ParseExact(NativeDevice.Identifier.AsString(), "d");
             Name = name;
 
@@ -47,6 +57,17 @@ namespace System.BluetoothLe
         #endregion
 
         #region Methods
+
+        public virtual void Dispose()
+        {
+            Adapter?.DisconnectDeviceAsync(this);
+
+            NativeDevice.Delegate = null;
+            NativeDevice = null;
+
+        }
+
+
         private void OnNameUpdated(object sender, System.EventArgs e)
         {
             Name = ((CBPeripheral)sender).Name;

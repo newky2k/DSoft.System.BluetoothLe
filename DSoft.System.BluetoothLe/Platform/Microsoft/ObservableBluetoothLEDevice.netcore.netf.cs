@@ -38,6 +38,8 @@ namespace System.BluetoothLe
     /// <seealso cref="System.IEquatable{ObservableBluetoothLEDevice}" />
     public class ObservableBluetoothLEDevice : INotifyPropertyChanged, IEquatable<ObservableBluetoothLEDevice>
     {
+        public EventHandler<string> OnNameChanged = delegate { };
+
         /// <summary>
         /// Source for <see cref="BluetoothLEDevice" />
         /// </summary>
@@ -113,6 +115,7 @@ namespace System.BluetoothLe
             LoadGlyph();
 
             this.PropertyChanged += ObservableBluetoothLEDevice_PropertyChanged;
+
         }
 
         /// <summary>
@@ -373,7 +376,7 @@ namespace System.BluetoothLe
                 }
 
                 BluetoothLEDevice.ConnectionStatusChanged += BluetoothLEDevice_ConnectionStatusChanged;
-                BluetoothLEDevice.NameChanged += BluetoothLEDevice_NameChanged;
+                BluetoothLEDevice.NameChanged += OnNameChangedHandler;
 
                 IsPaired = DeviceInfo.Pairing.IsPaired;
                 IsConnected = BluetoothLEDevice.ConnectionStatus == BluetoothConnectionStatus.Connected;
@@ -473,11 +476,14 @@ namespace System.BluetoothLe
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The arguments.</param>
-        private async void BluetoothLEDevice_NameChanged(BluetoothLEDevice sender, object args)
+        private async void OnNameChangedHandler(BluetoothLEDevice sender, object args)
         {
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 Name = BluetoothLEDevice.Name;
+
+                OnNameChanged?.Invoke(this, BluetoothLEDevice.Name);
+
             }, Windows.Threading.DispatcherPriority.Normal);
         }
 

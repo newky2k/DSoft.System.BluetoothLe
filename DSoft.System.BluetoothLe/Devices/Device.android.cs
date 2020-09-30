@@ -351,6 +351,13 @@ namespace System.BluetoothLe
 
         #endregion
 
+        #region Methods
+        public virtual void Dispose()
+        {
+            Adapter?.DisconnectDeviceAsync(this);
+        }
+
+
         internal void Update(BluetoothDevice nativeDevice, BluetoothGatt gatt)
         {
             _connectCancellationTokenRegistration.Dispose();
@@ -414,7 +421,7 @@ namespace System.BluetoothLe
             DisposeServices();
         }
 
-        
+        #endregion
 
 
         #endregion

@@ -26,10 +26,19 @@ namespace System.BluetoothLe
             Id = id;
             Name = nativeDevice.Name;
             AdvertisementRecords = advertisementRecords;
+
+            NativeDevice.OnNameChanged += (s, name) => { Name = name; };
         }
+
         #endregion
 
         #region Methods
+
+        public virtual void Dispose()
+        {
+
+            Adapter?.DisconnectDeviceAsync(this);
+        }
 
         internal void Update(short btAdvRawSignalStrengthInDBm, IReadOnlyList<AdvertisementRecord> advertisementData)
         {
