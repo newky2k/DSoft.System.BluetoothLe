@@ -24,6 +24,22 @@ namespace System.BluetoothLe
 
         internal static BluetoothCacheMode CacheModeGetServices { get; set; } = BluetoothCacheMode.Cached;
 
+        private BluetoothAdapter NativeAdapter
+        {
+            get => _bluetoothadapter;
+            set
+            {
+                _bluetoothadapter = value;
+
+                if (_bluetoothadapter == null)
+                {
+                    State = BluetoothState.Unavailable;
+                }
+
+                State = BluetoothState.On;
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -33,6 +49,8 @@ namespace System.BluetoothLe
         {
             return new Adapter();
         }
+
+
 
         internal BluetoothState GetInitialStateNative()
         {
@@ -59,7 +77,7 @@ namespace System.BluetoothLe
 
         private async Task InitAdapter()
         {
-            _bluetoothadapter = await BluetoothAdapter.GetDefaultAsync();
+            NativeAdapter = await BluetoothAdapter.GetDefaultAsync();
         }
 
         #endregion

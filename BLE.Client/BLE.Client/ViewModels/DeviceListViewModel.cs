@@ -279,7 +279,10 @@ namespace BLE.Client.ViewModels
 
             await RaisePropertyChanged(() => IsRefreshing);
             Adapter.ScanMode = ScanMode.LowLatency;
-            await Adapter.StartScanningForDevicesAsync(_cancellationTokenSource.Token);
+
+            var updateableService = new Guid[] { Guid.Parse("F000FFC0-0451-4000-B000-000000000000") };
+
+            await Adapter.StartScanningForDevicesAsync(updateableService,  _cancellationTokenSource.Token);
         }
 
         private void CleanupCancellationToken()

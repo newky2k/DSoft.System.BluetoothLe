@@ -11,6 +11,7 @@ using Windows.Devices.Bluetooth.Advertisement;
 
 using System.BluetoothLe;
 using System.BluetoothLe.Extensions;
+using Windows.Devices.Bluetooth.GenericAttributeProfile;
 
 namespace System.BluetoothLe
 {
@@ -147,6 +148,8 @@ namespace System.BluetoothLe
         private async void DeviceFoundAsync(BluetoothLEAdvertisementWatcher watcher, BluetoothLEAdvertisementReceivedEventArgs btAdv)
         {
             var deviceId = ParseDeviceId(btAdv.BluetoothAddress);
+
+            var service = await GattDeviceService.FromIdAsync(deviceId.ToString());
 
             if (DiscoveredDevicesRegistry.TryGetValue(deviceId, out var device))
             {
