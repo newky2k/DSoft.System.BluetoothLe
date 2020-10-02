@@ -19,23 +19,18 @@ namespace System.BluetoothLe
     {
         private BluetoothLEAdvertisementWatcher _bleWatcher;
 
+        private Guid[] _serviceUuids;
+
+        private bool HasFilter => _serviceUuids?.Any() ?? false;
+
         protected Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
         {
-            var hasFilter = serviceUuids?.Any() ?? false;
+
+            _serviceUuids = serviceUuids;
 
             _bleWatcher = new BluetoothLEAdvertisementWatcher { ScanningMode = ScanMode.ToNative() };
 
             Trace.Message("Starting a scan for devices.");
-            if (hasFilter)
-            {
-                //adds filter to native scanner if serviceUuids are specified
-                foreach (var uuid in serviceUuids)
-                {
-                    _bleWatcher.AdvertisementFilter.Advertisement.ServiceUuids.Add(uuid);
-                }
-
-                Trace.Message($"ScanFilters: {string.Join(", ", serviceUuids)}");
-            }
 
             _bleWatcher.Received -= DeviceFoundAsync;
             _bleWatcher.Received += DeviceFoundAsync;
@@ -51,6 +46,7 @@ namespace System.BluetoothLe
                 Trace.Message("Stopping the scan for devices");
                 _bleWatcher.Stop();
                 _bleWatcher = null;
+                _serviceUuids = null;
             }
         }
 
@@ -162,6 +158,25 @@ namespace System.BluetoothLe
                 var bluetoothLeDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(btAdv.BluetoothAddress);
                 if (bluetoothLeDevice != null) //make sure advertisement bluetooth address actually returns a device
                 {
+
+                    //if there is a filter on devices find the services for the device
+                    if (HasFilter)
+                    {
+                        var services = await bluetoothLeDevice.GetGattServicesAsync();
+
+                        //compare the list of services provided with the _serviceIds being listened for
+                        var items = (from x in services.Services
+                                     join y in _serviceUuids on x.Uuid equals y
+                                     select x)
+                                     .ToList();
+
+                        //if no services then ignore
+                        if (!items.Any())
+                            return;
+
+                    }
+                    
+
                     device = new Device(this, bluetoothLeDevice, btAdv.RawSignalStrengthInDBm, deviceId, ParseAdvertisementData(btAdv.Advertisement));
                     Trace.Message("DiscoveredPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
                     this.HandleDiscoveredDevice(device);
