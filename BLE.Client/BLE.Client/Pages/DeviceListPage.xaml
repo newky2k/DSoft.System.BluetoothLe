@@ -32,7 +32,7 @@
                         </Grid.Triggers>
                         <StackLayout Orientation="Vertical"
                                      VerticalOptions="Center">
-                            <Label Text="{Binding Name}"
+                            <Label Text="{Binding Name, Mode=TwoWay}"
                                    FontSize="Large" />
                             <Label Text="{Binding Id, StringFormat='{0}'}"
                                    TextColor="Gray"
