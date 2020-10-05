@@ -46,7 +46,6 @@ namespace System.BluetoothLe
                 Trace.Message("Stopping the scan for devices");
                 _bleWatcher.Stop();
                 _bleWatcher = null;
-                _serviceUuids = null;
             }
         }
 
@@ -164,15 +163,20 @@ namespace System.BluetoothLe
                     {
                         var services = await bluetoothLeDevice.GetGattServicesAsync();
 
-                        //compare the list of services provided with the _serviceIds being listened for
-                        var items = (from x in services.Services
-                                     join y in _serviceUuids on x.Uuid equals y
-                                     select x)
-                                     .ToList();
+                        if (services.Services.Any())
+                        {
+                           
+                            //compare the list of services provided with the _serviceIds being listened for
+                            var items = (from x in services.Services
+                                         join y in _serviceUuids on x.Uuid equals y
+                                         select x)
+                                         .ToList();
 
-                        //if no services then ignore
-                        if (!items.Any())
-                            return;
+                            //if no services then ignore
+                            if (!items.Any())
+                                return;
+                        }
+                        
 
                     }
                     

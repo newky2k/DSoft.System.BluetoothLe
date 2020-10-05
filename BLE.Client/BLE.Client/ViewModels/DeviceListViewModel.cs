@@ -282,7 +282,14 @@ namespace BLE.Client.ViewModels
 
             var updateableService = new Guid[] { Guid.ParseExact("f000ffc0-0451-4000-b000-000000000000", "d") };
 
-            await Adapter.StartScanningForDevicesAsync(updateableService, _cancellationTokenSource.Token);
+            //await Adapter.StartScanningForDevicesAsync(updateableService, _cancellationTokenSource.Token);
+
+            Adapter.ScanTimeout = 5000;
+
+            //CurrentAdapter.DeviceDiscovered += (s, a) => deviceList.Add(a.Device);
+            await Adapter.StartScanningForDevicesAsync(updateableService?.ToArray(), cancellationToken: _cancellationTokenSource.Token);
+
+            var devices = Adapter.DiscoveredDevices;
         }
 
         private void CleanupCancellationToken()
