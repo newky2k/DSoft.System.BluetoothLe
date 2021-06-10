@@ -58,7 +58,7 @@ namespace System.BluetoothLe
                 {
                     foreach (var device in ConnectedDeviceRegistry.Values.ToList())
                     {
-                        ((Device)device).DisposeServices();
+                        ((Device)device).ClearServices();
                         HandleDisconnectedDevice(false, device);
                     }
 
@@ -122,7 +122,7 @@ namespace System.BluetoothLe
                 foundDevice = foundDevice ?? new Device(this, e.Peripheral, _bleCentralManagerDelegate);
 
                 //make sure all cached services are cleared this will also clear characteristics and descriptors implicitly
-                ((Device)foundDevice).DisposeServices();
+                ((Device)foundDevice).ClearServices();
 
                 HandleDisconnectedDevice(isNormalDisconnect, foundDevice);
             };
@@ -315,18 +315,33 @@ namespace System.BluetoothLe
                     var arr = ((NSData)advertisementData.ObjectForKey(key)).ToArray();
                     records.Add(new AdvertisementRecord(AdvertisementRecordType.ManufacturerSpecificData, arr));
                 }
-                else if (key == CBAdvertisement.DataServiceUUIDsKey)
+                else if (key == CBAdvertisement.DataServiceUUIDsKey || key == CBAdvertisement.DataOverflowServiceUUIDsKey)
                 {
                     var array = (NSArray)advertisementData.ObjectForKey(key);
 
-                    var dataList = new List<NSData>();
                     for (nuint i = 0; i < array.Count; i++)
                     {
                         var cbuuid = array.GetItem<CBUUID>(i);
-                        dataList.Add(cbuuid.Data);
+
+                        switch (cbuuid.Data.Length)
+                        {
+                            case 16:
+                                // 128-bit UUID
+                                records.Add(new AdvertisementRecord(AdvertisementRecordType.UuidsComplete128Bit, cbuuid.Data.ToArray()));
+                                break;
+                            case 8:
+                                // 32-bit UUID
+                                records.Add(new AdvertisementRecord(AdvertisementRecordType.UuidCom32Bit, cbuuid.Data.ToArray()));
+                                break;
+                            case 2:
+                                // 16-bit UUID
+                                records.Add(new AdvertisementRecord(AdvertisementRecordType.UuidsComplete16Bit, cbuuid.Data.ToArray()));
+                                break;
+                            default:
+                                // Invalid data length for UUID
+                                break;
+                        }
                     }
-                    records.Add(new AdvertisementRecord(AdvertisementRecordType.UuidsComplete128Bit,
-                        dataList.SelectMany(d => d.ToArray()).ToArray()));
                 }
                 else if (key == CBAdvertisement.DataTxPowerLevelKey)
                 {
