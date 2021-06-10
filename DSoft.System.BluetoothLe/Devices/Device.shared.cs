@@ -13,7 +13,7 @@ namespace System.BluetoothLe
     {
         #region Fields
         protected readonly Adapter Adapter;
-        protected readonly Dictionary<Guid, Service> KnownServices = new Dictionary<Guid, Service>();
+        private readonly List<Service> KnownServices = new List<Service>();
         private string _name;
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
         private int _rssi;
@@ -72,42 +72,36 @@ namespace System.BluetoothLe
 
         public async Task<IReadOnlyList<Service>> GetServicesAsync(CancellationToken cancellationToken = default)
         {
-            using (var source = this.GetCombinedSource(cancellationToken))
+            lock (KnownServices)
             {
-                foreach (var service in await GetServicesNativeAsync())
+                if (KnownServices.Any())
                 {
-                    KnownServices[service.Id] = service;
+                    return KnownServices.ToArray();
                 }
             }
 
-            return KnownServices.Values.ToList();
+            using (var source = this.GetCombinedSource(cancellationToken))
+            {
+                var services = await GetServicesNativeAsync();
+
+                lock (KnownServices)
+                {
+                    KnownServices.AddRange(services);
+                    return KnownServices.ToArray();
+                }
+            }
         }
 
         public async Task<Service> GetServiceAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            if (KnownServices.ContainsKey(id))
-            {
-                return KnownServices[id];
-            }
+            var services = await GetServicesAsync(cancellationToken);
 
-            var service = await GetServiceNativeAsync(id);
-            if (service == null)
-            {
-                return null;
-            }
-
-            return KnownServices[id] = service;
+            return services.ToList().FirstOrDefault(x => x.Id == id);
         }
 
-        public async Task<int> RequestMtuAsync(int requestValue)
-        {
-            return await RequestMtuNativeAsync(requestValue);
-        }
+        public Task<int> RequestMtuAsync(int requestValue) => RequestMtuNativeAsync(requestValue);
 
-        public bool UpdateConnectionInterval(ConnectionInterval interval)
-        {
-            return UpdateConnectionIntervalNative(interval);
-        }
+        public bool UpdateConnectionInterval(ConnectionInterval interval) => UpdateConnectionIntervalNative(interval);
 
         public override string ToString()
         {
@@ -115,23 +109,26 @@ namespace System.BluetoothLe
         }
 
         
-        public void DisposeServices()
+        public void ClearServices()
         {
             this.CancelEverythingAndReInitialize();
 
-            foreach (var service in KnownServices.Values)
+            lock (KnownServices)
             {
-                try
+                foreach (var service in KnownServices)
                 {
-                    service.Dispose();
+                    try
+                    {
+                        service.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.Message("Exception while cleanup of service: {0}", ex.Message);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Trace.Message("Exception while cleanup of service: {0}", ex.Message);
-                }
-            }
 
-            KnownServices.Clear();
+                KnownServices.Clear();
+            }
         }
 
         public override bool Equals(object other)
@@ -150,15 +147,10 @@ namespace System.BluetoothLe
             return Id == otherDeviceBase.Id;
         }
 
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
-        }
+        public override int GetHashCode() => Id.GetHashCode();
 
-        public async Task<bool> UpdateRssiAsync()
-        {
-            return await UpdateRssiNativeAsync();
-        }
+        public Task<bool> UpdateRssiAsync() => UpdateRssiNativeAsync();
+
         #endregion
 
         #region Private Methods

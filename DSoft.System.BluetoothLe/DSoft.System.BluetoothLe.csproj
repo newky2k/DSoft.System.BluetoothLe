@@ -1,8 +1,8 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.54">
+﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.23">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;Xamarin.iOS10;Xamarin.Mac20;Xamarin.TVOS10;Xamarin.WatchOS10;MonoAndroid90;tizen40;</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);uap10.0.16299;netcoreapp3.0;net461;</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);uap10.0.16299;netcoreapp3.1;net461;</TargetFrameworks>
     <LangVersion>7.2</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
@@ -27,7 +27,7 @@
       - Added WPF framework references for .Net Core and .Net Framework
     </PackageReleaseNotes>
     <PackageTags>BluetoothLe xamarin mac ios android uwp wpf netcore dotnet tizen tvos watchos</PackageTags>
-    <Copyright>Copyright © 2020 DSoft</Copyright>
+    <Copyright>Copyright © 2021 DSoft</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -59,13 +59,13 @@
   <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
     <UseWPF>true</UseWPF>
   </PropertyGroup>
-  
+      
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17134.1000" />
     <Compile Include="**\*.netcore.cs" />
     <Compile Include="**\*.netcore.*.cs" />
   </ItemGroup>
-
+    
   <PropertyGroup Condition=" $(TargetFramework.StartsWith('net461')) ">
     <UseWPF>true</UseWPF>
   </PropertyGroup>

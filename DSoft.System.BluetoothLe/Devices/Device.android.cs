@@ -397,7 +397,7 @@ namespace System.BluetoothLe
             {
                 IsOperationRequested = true;
 
-                DisposeServices();
+                ClearServices();
 
                 _gatt.Disconnect();
             }
@@ -418,7 +418,7 @@ namespace System.BluetoothLe
 
             // ClossGatt might will get called on signal loss without Disconnect being called we have to make sure we clear the services
             // Clear services & characteristics otherwise we will get gatt operation return FALSE when connecting to the same Device instace at a later time
-            DisposeServices();
+            ClearServices();
         }
 
         #endregion
