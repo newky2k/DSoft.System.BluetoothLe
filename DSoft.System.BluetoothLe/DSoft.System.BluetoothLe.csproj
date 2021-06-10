@@ -26,6 +26,7 @@
     <PackageReleaseNotes>- Ported changes from PluginBle
 - Added NET 5.x support
 - Updated .NetCore to 3.1
+- Update windows apis to 10.0.17763.1000
 
 </PackageReleaseNotes>
     <PackageTags>BluetoothLe xamarin mac ios android uwp wpf netcore dotnet tizen tvos watchos</PackageTags>
@@ -67,7 +68,7 @@
   </PropertyGroup>
       
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
-    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17134.1000" />
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17763.1000" />
     <Compile Include="**\*.netcore.cs" />
     <Compile Include="**\*.netcore.*.cs" />
   </ItemGroup>
@@ -82,7 +83,7 @@
   </PropertyGroup>
   
   <ItemGroup Condition=" $(TargetFramework.StartsWith('net461')) ">
-    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17134.1000" />
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17763.1000" />
     <Compile Include="**\*.netf.cs" />
     <Compile Include="**\*.netf.*.cs" />
   </ItemGroup>
