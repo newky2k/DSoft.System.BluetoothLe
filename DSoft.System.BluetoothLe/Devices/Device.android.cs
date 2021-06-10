@@ -82,7 +82,7 @@ namespace System.BluetoothLe
                 //no transport mode before lollipop, it will probably not work... gattCallBackError 133 again alas
                 var connectGatt = NativeDevice.ConnectGatt(Application.Context, autoconnect, _gattCallback);
                 _connectCancellationTokenRegistration.Dispose();
-                _connectCancellationTokenRegistration = cancellationToken.Register(() => connectGatt.Disconnect());
+                _connectCancellationTokenRegistration = cancellationToken.Register(() => DisconnectAndClose(connectGatt));
             }
             else if (Build.VERSION.SdkInt < BuildVersionCodes.M)
             {
@@ -99,7 +99,7 @@ namespace System.BluetoothLe
             {
                 var connectGatt = NativeDevice.ConnectGatt(Application.Context, autoconnect, _gattCallback, BluetoothTransports.Le);
                 _connectCancellationTokenRegistration.Dispose();
-                _connectCancellationTokenRegistration = cancellationToken.Register(() => connectGatt.Disconnect());
+                _connectCancellationTokenRegistration = cancellationToken.Register(() => DisconnectAndClose(connectGatt));
             }
 
         }
@@ -383,7 +383,7 @@ namespace System.BluetoothLe
             {
                 var connectGatt = NativeDevice.ConnectGatt(Application.Context, connectParameters.AutoConnect, _gattCallback);
                 _connectCancellationTokenRegistration.Dispose();
-                _connectCancellationTokenRegistration = cancellationToken.Register(() => connectGatt.Disconnect());
+                _connectCancellationTokenRegistration = cancellationToken.Register(() => DisconnectAndClose(connectGatt));
             }
         }
 
@@ -421,6 +421,11 @@ namespace System.BluetoothLe
             ClearServices();
         }
 
+        private void DisconnectAndClose(BluetoothGatt gatt)
+        {
+            gatt.Disconnect();
+            gatt.Close();
+        }
         #endregion
 
 
