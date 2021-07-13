@@ -392,8 +392,7 @@ namespace System.BluetoothLe
                 }
                 else
                 {
-                    Trace.Message("Parsing Advertisement: Ignoring Advertisement entry for key {0}, since we don't know how to parse it yet. Maybe you can open a Pull Request and implement it ;)",
-                        key.ToString());
+                    Trace.Message($"Parsing Advertisement: Ignoring Advertisement entry for key {key}, since we don't know how to parse it yet. Maybe you can open a Pull Request and implement it ;)");
                 }
             }
 
