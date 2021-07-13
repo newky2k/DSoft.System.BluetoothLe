@@ -17,21 +17,35 @@ namespace System.BluetoothLe
         private string _name;
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
         private int _rssi;
+        private Guid _id;
         #endregion
 
         #region Properties
-        public Guid Id { get; protected set; }
+
+
+
+        /// <summary>
+        /// Gets or sets the Id of the device
+        /// </summary>
+        /// <value>
+        /// The Id.
+        /// </value>
+        public Guid Id
+        {
+            get { return _id; }
+            set { _id = value; NotifyPropertyChanged(nameof(Id)); NotifyPropertyChanged(nameof(NameOrId)); }
+        }
 
         /// <summary>
         /// Gets or sets the name of the device
         /// </summary>
         /// <value>
-        /// The name.
+        /// The name of the device
         /// </value>
         public string Name
         {
             get { return _name; }
-            protected set { _name = value; NotifyPropertyChanged(nameof(Name)); }
+            protected set { _name = value; NotifyPropertyChanged(nameof(Name)); NotifyPropertyChanged(nameof(NameOrId)); }
         }
 
         /// <summary>
@@ -51,6 +65,14 @@ namespace System.BluetoothLe
         public IReadOnlyList<AdvertisementRecord> AdvertisementRecords { get; protected set; }
 
         CancellationTokenSource ICancellationMaster.TokenSource { get; set; } = new CancellationTokenSource();
+
+        /// <summary>
+        /// Gets the name if set or the Id if not
+        /// </summary>
+        /// <value>
+        /// The name or Id.
+        /// </value>
+        public string NameOrId => (string.IsNullOrWhiteSpace(Name)) ? Id.ToString() : Name;
 
         #endregion
 
