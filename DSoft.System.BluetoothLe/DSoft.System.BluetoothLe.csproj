@@ -8,7 +8,7 @@
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <Configurations>Debug;Release;</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <DebugType>portable</DebugType>
     <RootNamespace>System.BluetoothLe</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
