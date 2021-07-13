@@ -36,14 +36,6 @@ namespace System.BluetoothLe
 
             _bleCentralManagerDelegate = bleCentralManagerDelegate;
 
-            var deviceDelegate = new Platform.Apple.BleCBPeripheralDelegate();
-
-            deviceDelegate.OnNameUpdated += (s, e) => { Name = NativeDevice.Name; };
-            deviceDelegate.OnUpdatedRssi += (s, e) => { NativeDevice.ReadRSSI(); };
-            deviceDelegate.OnReadRssi += (s, e) => { Rssi = e.Rssi.Int32Value; };
-
-            NativeDevice.Delegate = deviceDelegate;
-
             Id = Guid.ParseExact(NativeDevice.Identifier.AsString(), "d");
             Name = name;
 
@@ -52,7 +44,7 @@ namespace System.BluetoothLe
 
             // TODO figure out if this is in any way required,
             // https://github.com/xabre/xamarin-bluetooth-le/issues/81
-            //_nativeDevice.UpdatedName += OnNameUpdated;
+            NativeDevice.UpdatedName += OnNameUpdated;
         }
 
         #endregion
@@ -63,6 +55,7 @@ namespace System.BluetoothLe
         {
             Adapter?.DisconnectDeviceAsync(this);
 
+            NativeDevice.UpdatedName -= OnNameUpdated;
             NativeDevice.Delegate = null;
             NativeDevice = null;
         }
