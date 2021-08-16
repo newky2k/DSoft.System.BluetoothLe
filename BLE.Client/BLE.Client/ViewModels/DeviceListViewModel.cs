@@ -44,6 +44,8 @@ namespace BLE.Client.ViewModels
 
         public MvxCommand<DeviceListItemViewModel> ConnectDisposeCommand => new MvxCommand<DeviceListItemViewModel>(ConnectAndDisposeDevice);
 
+        public MvxCommand ThrowCommand => new MvxCommand(() => ThrowError());
+
         public ObservableCollection<DeviceListItemViewModel> Devices { get; set; } = new ObservableCollection<DeviceListItemViewModel>();
         public bool IsRefreshing => (Adapter != null) ? Adapter.IsScanning : false;
         public bool IsStateOn => _bluetoothLe.IsOn;
@@ -516,6 +518,11 @@ namespace BLE.Client.ViewModels
             }
 
 
+        }
+
+        private async void ThrowError()
+        {
+            var aDevice = await Adapter.ConnectToKnownDeviceAsync(Guid.Parse("00000000-0000-0000-0000-3414b58e2c80"));
         }
 
         private void OnDeviceDisconnected(object sender, DeviceEventArgs e)
