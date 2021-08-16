@@ -289,7 +289,7 @@ namespace BLE.Client.ViewModels
             Adapter.ScanTimeout = 5000;
 
             //CurrentAdapter.DeviceDiscovered += (s, a) => deviceList.Add(a.Device);
-            await Adapter.StartScanningForDevicesAsync(updateableService?.ToArray(), cancellationToken: _cancellationTokenSource.Token);
+            await Adapter.StartScanningForDevicesAsync(cancellationToken: _cancellationTokenSource.Token);
 
             var devices = Adapter.DiscoveredDevices;
         }

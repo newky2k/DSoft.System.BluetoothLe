@@ -44,7 +44,10 @@ namespace System.BluetoothLe
         internal void Update(short btAdvRawSignalStrengthInDBm, IReadOnlyList<AdvertisementRecord> advertisementData)
         {
             this.Rssi = btAdvRawSignalStrengthInDBm;
-            this.AdvertisementRecords = advertisementData;
+
+            MergeOrUpdateAdvertising(advertisementData);
+
+            //this.AdvertisementRecords = advertisementData;
         }
 
         internal Task<bool> UpdateRssiNativeAsync()
@@ -97,6 +100,23 @@ namespace System.BluetoothLe
         {
             Trace.Message("Update Connection Interval not supported in UWP");
             return false;
+        }
+
+        internal void MergeOrUpdateAdvertising(IReadOnlyList<AdvertisementRecord> advertisementRecords)
+        {
+            var adverts = this.AdvertisementRecords.ToList();
+
+            foreach (var adv in advertisementRecords)
+            {
+                var matcing = adverts.FirstOrDefault(x => x.Type.Equals(adv.Type));
+
+                if (matcing != null)
+                    adverts.Remove(matcing);
+
+                adverts.Add(adv);
+            }
+
+            this.AdvertisementRecords = adverts;
         }
 
         #endregion

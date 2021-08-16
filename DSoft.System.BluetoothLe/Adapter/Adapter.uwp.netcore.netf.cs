@@ -24,6 +24,8 @@ namespace System.BluetoothLe
 
         private bool HasFilter => _serviceUuids?.Any() ?? false;
 
+        private List<Guid> _foundIds;
+
         protected Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
         {
 
@@ -32,6 +34,8 @@ namespace System.BluetoothLe
             _bleWatcher = new BluetoothLEAdvertisementWatcher { ScanningMode = ScanMode.ToNative() };
 
             Trace.Message("Starting a scan for devices.");
+
+            _foundIds = new List<Guid>();
 
             _bleWatcher.Received -= DeviceFoundAsync;
             _bleWatcher.Received += DeviceFoundAsync;
@@ -47,6 +51,8 @@ namespace System.BluetoothLe
                 Trace.Message("Stopping the scan for devices");
                 _bleWatcher.Stop();
                 _bleWatcher = null;
+
+                _foundIds = null;
             }
         }
 
@@ -143,6 +149,7 @@ namespace System.BluetoothLe
         public static List<AdvertisementRecord> ParseAdvertisementData(BluetoothLEAdvertisement adv)
         {
             var advList = adv.DataSections;
+
             return advList.Select(data => new AdvertisementRecord((AdvertisementRecordType)data.DataType, data.Data?.ToArray())).ToList();
         }
 
@@ -155,11 +162,9 @@ namespace System.BluetoothLe
         {
             var deviceId = ParseDeviceId(btAdv.BluetoothAddress);
 
-            var service = await GattDeviceService.FromIdAsync(deviceId.ToString());
-
             if (DiscoveredDevicesRegistry.TryGetValue(deviceId, out var device))
             {
-                Trace.Message("AdvertisdedPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
+                Trace.Message("AdvertisedPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
                 (device as Device)?.Update(btAdv.RawSignalStrengthInDBm, ParseAdvertisementData(btAdv.Advertisement));
                 this.HandleDiscoveredDevice(device);
             }
@@ -193,6 +198,17 @@ namespace System.BluetoothLe
                     
 
                     device = new Device(this, bluetoothLeDevice, btAdv.RawSignalStrengthInDBm, deviceId, ParseAdvertisementData(btAdv.Advertisement));
+
+                    if (DiscoveredDevicesRegistry.ContainsKey(device.Id))
+                    {
+                        //try and merge advertising data
+                        var existingDevice = DiscoveredDevicesRegistry[device.Id];
+
+                        existingDevice.MergeOrUpdateAdvertising(device.AdvertisementRecords);
+
+                        return;
+                    }
+
                     Trace.Message("DiscoveredPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
                     this.HandleDiscoveredDevice(device);
                 }
