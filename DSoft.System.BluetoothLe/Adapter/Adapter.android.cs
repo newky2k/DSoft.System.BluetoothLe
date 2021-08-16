@@ -12,7 +12,7 @@ using System.BluetoothLe.Extensions;
 using Trace = System.BluetoothLe.Trace;
 using Android.App;
 using Java.Lang;
-
+using System.BluetoothLe.Exceptions;
 
 namespace System.BluetoothLe
 {
@@ -147,10 +147,18 @@ namespace System.BluetoothLe
             ((Device)device).Disconnect();
         }
 
-        public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken), bool dontThrowExceptionOnNotFound = false)
         {
             var macBytes = deviceGuid.ToByteArray().Skip(10).Take(6).ToArray();
             var nativeDevice = _bluetoothAdapter.GetRemoteDevice(macBytes);
+
+            if (nativeDevice == null)
+            {
+                if (dontThrowExceptionOnNotFound == true)
+                    return null;
+
+                throw new DeviceNotFoundException(deviceGuid);
+            }
 
             var device = new Device(this, nativeDevice, null, 0, new byte[] { });
 

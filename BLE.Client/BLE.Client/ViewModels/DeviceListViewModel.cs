@@ -522,7 +522,7 @@ namespace BLE.Client.ViewModels
 
         private async void ThrowError()
         {
-            var aDevice = await Adapter.ConnectToKnownDeviceAsync(Guid.Parse("00000000-0000-0000-0000-3414b58e2c80"));
+            var aDevice = await Adapter.ConnectToKnownDeviceAsync(Guid.Parse("00000000-0000-0000-0000-3414b58e2c80"), dontThrowExceptionOnNotFound: true);
         }
 
         private void OnDeviceDisconnected(object sender, DeviceEventArgs e)

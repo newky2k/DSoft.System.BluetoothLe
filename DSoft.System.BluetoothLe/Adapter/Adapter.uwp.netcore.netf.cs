@@ -12,6 +12,7 @@ using Windows.Devices.Bluetooth.Advertisement;
 using System.BluetoothLe;
 using System.BluetoothLe.Extensions;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
+using System.BluetoothLe.Exceptions;
 
 namespace System.BluetoothLe
 {
@@ -103,12 +104,22 @@ namespace System.BluetoothLe
 
         }
 
-        public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default)
+        public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default, bool dontThrowExceptionOnNotFound = false)
         {
             //convert GUID to string and take last 12 characters as MAC address
             var guidString = deviceGuid.ToString("N").Substring(20);
             var bluetoothAddress = Convert.ToUInt64(guidString, 16);
             var nativeDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(bluetoothAddress);
+
+
+            if (nativeDevice == null)
+            {
+                if (dontThrowExceptionOnNotFound == true)
+                    return null;
+
+                throw new DeviceNotFoundException(deviceGuid);
+            }
+
             var knownDevice = new Device(this, nativeDevice, 0, deviceGuid);
 
             await ConnectToDeviceAsync(knownDevice, cancellationToken: cancellationToken);
