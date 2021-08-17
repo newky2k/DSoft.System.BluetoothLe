@@ -1,4 +1,5 @@
 ﻿using System;
+using System.BluetoothLe.Exceptions;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -210,7 +211,7 @@ namespace System.BluetoothLe
         /// </summary>
         /// <returns>The to known device async.</returns>
         /// <param name="deviceGuid">Device GUID.</param>
-        public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken), bool dontThrowExceptionOnNotFound = false)
         {
             // Wait for the PoweredOn state
             await WaitForState(CBCentralManagerState.PoweredOn, cancellationToken, true);
@@ -242,7 +243,13 @@ namespace System.BluetoothLe
                 );
 
                 if (peripherial == null)
-                    throw new Exception($"[Adapter] Device {deviceGuid} not found.");
+                {
+                    if (dontThrowExceptionOnNotFound == true)
+                        return null;
+
+                    throw new DeviceNotFoundException(deviceGuid);
+                }
+                   
             }
 
 

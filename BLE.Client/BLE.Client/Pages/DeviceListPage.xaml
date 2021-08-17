@@ -110,6 +110,9 @@
                         <Button Text="Stop Scan"
                                 Command="{Binding StopScanCommand}"
                                 HorizontalOptions="End" />
+                        <Button Text="Throw"
+                                Command="{Binding ThrowCommand}"
+                                HorizontalOptions="End" />
                         <ActivityIndicator IsRunning="{Binding IsRefreshing}"
                                            IsVisible="{Binding IsRefreshing}"
                                            HeightRequest="24"
