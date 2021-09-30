@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using System.BluetoothLe.Extensions;
+using Windows.Devices.Enumeration;
 
 namespace System.BluetoothLe
 {
@@ -33,7 +34,15 @@ namespace System.BluetoothLe
 
         internal async Task<IList<Characteristic>> GetCharacteristicsNativeAsync()
         {
-            var result = await NativeService.GetCharacteristicsAsync(BluetoothLE.CacheModeGetCharacteristics);
+            var accessRequestResponse = await NativeService.RequestAccessAsync();
+
+            // Returns Allowed
+            if (accessRequestResponse != DeviceAccessStatus.Allowed)
+            {
+                throw new Exception("Access to service " + NativeService.Uuid.ToString() + " was disallowed w/ response: " + accessRequestResponse);
+            }
+
+            var result = await NativeService.GetCharacteristicsAsync();
             result.ThrowIfError();
 
             return result.Characteristics?
