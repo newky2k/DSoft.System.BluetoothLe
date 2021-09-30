@@ -29,6 +29,7 @@
 - Update windows apis to 10.0.17763.1000
 
 </PackageReleaseNotes>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
     <PackageTags>BluetoothLe xamarin mac ios android uwp wpf netcore dotnet tizen tvos watchos</PackageTags>
     <Copyright>Copyright © 2021 DSoft</Copyright>
   </PropertyGroup>
@@ -47,6 +48,7 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\readme.md" Pack="true" PackagePath="\" />
     <Compile Include="**\*.shared.cs" />
     <Compile Include="**\*.shared.*.cs" />
   </ItemGroup>
