@@ -20,11 +20,11 @@ namespace System.BluetoothLe
 
         internal static BluetoothCacheMode CacheModeDescriptorRead { get; set; } = BluetoothCacheMode.Uncached;
 
-        internal static BluetoothCacheMode CacheModeGetDescriptors { get; set; } = BluetoothCacheMode.Cached;
+        internal static BluetoothCacheMode CacheModeGetDescriptors { get; set; } = BluetoothCacheMode.Uncached;
 
-        internal static BluetoothCacheMode CacheModeGetCharacteristics { get; set; } = BluetoothCacheMode.Cached;
+        internal static BluetoothCacheMode CacheModeGetCharacteristics { get; set; } = BluetoothCacheMode.Uncached;
 
-        internal static BluetoothCacheMode CacheModeGetServices { get; set; } = BluetoothCacheMode.Cached;
+        internal static BluetoothCacheMode CacheModeGetServices { get; set; } = BluetoothCacheMode.Uncached;
 
         private BluetoothAdapter NativeAdapter
         {
