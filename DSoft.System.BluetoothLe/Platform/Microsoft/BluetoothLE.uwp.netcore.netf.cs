@@ -2,6 +2,7 @@
 
 using System.BluetoothLe;
 using System.Threading.Tasks;
+using Windows.Devices.Radios;
 
 namespace System.BluetoothLe
 {
@@ -10,6 +11,7 @@ namespace System.BluetoothLe
         #region Fields
 
         private BluetoothAdapter _bluetoothadapter;
+        private Radio _radio;
 
         #endregion
 
@@ -59,9 +61,11 @@ namespace System.BluetoothLe
             //and thus cannot be called in this method. Thus, we are just
             //returning "On" as long as the BluetoothLEHelper is initialized
             if (_bluetoothadapter == null)
-            {
                 return BluetoothState.Unavailable;
-            }
+
+            if (_radio == null)
+                return BluetoothState.Unavailable;
+
             return BluetoothState.On;
         }
 
@@ -78,6 +82,37 @@ namespace System.BluetoothLe
         private async Task InitAdapter()
         {
             NativeAdapter = await BluetoothAdapter.GetDefaultAsync();
+
+            _radio = await NativeAdapter.GetRadioAsync();
+
+            if (_radio != null)
+            {
+                _radio.StateChanged += OnRadioStateChanged;
+            }
+
+        }
+
+        private void OnRadioStateChanged(Radio sender, object args)
+        {
+            switch (sender.State)
+            {
+                case RadioState.Off:
+                case RadioState.Disabled:
+                    {
+                        State = BluetoothState.Off;
+                    }
+                    break;
+                case RadioState.On:
+                    {
+                        State = BluetoothState.On;
+                    }
+                    break;
+                default:
+                    {
+                        State = BluetoothState.Unavailable;
+                    }
+                    break;
+            }
         }
 
         #endregion
