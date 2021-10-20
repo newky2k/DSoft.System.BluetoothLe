@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using System.BluetoothLe.Extensions;
 using Windows.Devices.Enumeration;
+using Windows.Devices.Bluetooth;
 
 namespace System.BluetoothLe
 {
@@ -42,7 +43,7 @@ namespace System.BluetoothLe
                 throw new Exception("Access to service " + NativeService.Uuid.ToString() + " was disallowed w/ response: " + accessRequestResponse);
             }
 
-            var result = await NativeService.GetCharacteristicsAsync();
+            var result = await NativeService.GetCharacteristicsAsync(BluetoothLE.CacheModeGetCharacteristics);
             result.ThrowIfError();
 
             return result.Characteristics?
@@ -53,7 +54,7 @@ namespace System.BluetoothLe
 
         public virtual void Dispose()
         {
-            
+                  
             NativeService?.Dispose();
         }
         #endregion
