@@ -52,6 +52,27 @@ namespace System.BluetoothLe
                 .ToList();
         }
 
+        internal async Task<Characteristic> GetCharacteristicNativeAsync(Guid characteristicId)
+        {
+            var accessRequestResponse = await NativeService.RequestAccessAsync();
+
+            // Returns Allowed
+            if (accessRequestResponse != DeviceAccessStatus.Allowed)
+            {
+                throw new Exception("Access to service " + NativeService.Uuid.ToString() + " was disallowed w/ response: " + accessRequestResponse);
+            }
+
+            var result = await NativeService.GetCharacteristicsForUuidAsync(characteristicId, BluetoothLE.CacheModeGetCharacteristics);
+            result.ThrowIfError();
+
+            if (!result.Characteristics.Any())
+                return null;
+
+            var first = result.Characteristics.First();
+
+            return new Characteristic(first, this);
+        }
+
         public virtual void Dispose()
         {
                   

@@ -32,6 +32,10 @@ namespace System.BluetoothLe
             return implementation;
         }
 
+        /// <summary>
+		/// Use the Old find characacteristic mode when finding known characteristics
+		/// </summary>
+		public static bool UseOldFindCharacteristicMode { get; set; } = true;
         #endregion
 
         #region Fields

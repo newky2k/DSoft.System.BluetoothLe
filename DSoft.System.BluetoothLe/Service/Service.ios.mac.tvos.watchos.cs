@@ -80,6 +80,12 @@ namespace System.BluetoothLe
                 unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
         }
 
+        internal async Task<Characteristic> GetCharacteristicNativeAsync(Guid characteristicId)
+        {
+            var characteristics = await GetCharacteristicsNativeAsync();
+            return characteristics.FirstOrDefault(c => c.Id == characteristicId);
+        }
+
         public virtual void Dispose()
         {
 
