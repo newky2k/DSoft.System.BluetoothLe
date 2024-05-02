@@ -108,6 +108,7 @@ namespace System.BluetoothLe
                 ConnectedDeviceRegistry.TryRemove(device.Id.ToString(), out _);
             }
 
+            HandleDisconnectedDevice(true, device);
         }
 
         public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default, bool dontThrowExceptionOnNotFound = false)
