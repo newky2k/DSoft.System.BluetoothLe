@@ -11,7 +11,7 @@
     <AssemblyName>BLE.Client.UWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.17763.0</TargetPlatformVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
@@ -191,13 +191,13 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\DSoft.System.BluetoothLe\DSoft.System.BluetoothLe.csproj">
-      <Project>{c763dae1-e73a-46e0-942f-be190591c259}</Project>
-      <Name>DSoft.System.BluetoothLe</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\DSoft.MvvmCross.System.BluetoothLe\DSoft.MvvmCross.System.BluetoothLe.csproj">
       <Project>{a5a90dcf-4d0b-49cb-a23b-f24158edfe34}</Project>
       <Name>DSoft.MvvmCross.System.BluetoothLe</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DSoft.System.BluetoothLeOld\DSoft.System.BluetoothLeOld.csproj">
+      <Project>{18daff03-4311-4d13-a1d0-70955b1f7c0f}</Project>
+      <Name>DSoft.System.BluetoothLeOld</Name>
     </ProjectReference>
     <ProjectReference Include="..\BLE.Client\BLE.Client.csproj">
       <Project>{dfe97be0-070b-43ad-bf37-50fd42b542d1}</Project>

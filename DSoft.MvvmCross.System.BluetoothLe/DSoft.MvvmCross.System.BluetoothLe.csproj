@@ -1,7 +1,6 @@
-<Project Sdk="MSBuild.Sdk.Extras/3.0.38">
-
+<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
   <PropertyGroup>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard2.0;Xamarin.iOS10;Xamarin.Mac20;Xamarin.TVOS10;MonoAndroid90;uap10.0.17763;</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard2.0;Xamarin.iOS10;Xamarin.Mac20;Xamarin.TVOS10;MonoAndroid90;uap10.0.18362;</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard2.0;Xamarin.iOS10;Xamarin.Mac20;Xamarin.TVOS10;MonoAndroid90;</TargetFrameworks>
     <LangVersion>7.2</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
@@ -71,6 +70,6 @@
     <Compile Include="**\*.tvos.*.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DSoft.System.BluetoothLe\DSoft.System.BluetoothLe.csproj" />
+    <ProjectReference Include="..\DSoft.System.BluetoothLeOld\DSoft.System.BluetoothLeOld.csproj" />
   </ItemGroup>
 </Project>

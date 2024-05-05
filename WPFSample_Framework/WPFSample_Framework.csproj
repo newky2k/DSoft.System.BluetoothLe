@@ -122,9 +122,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DSoft.System.BluetoothLe\DSoft.System.BluetoothLe.csproj">
-      <Project>{c763dae1-e73a-46e0-942f-be190591c259}</Project>
-      <Name>DSoft.System.BluetoothLe</Name>
+    <ProjectReference Include="..\DSoft.System.BluetoothLeOld\DSoft.System.BluetoothLeOld.csproj">
+      <Project>{18daff03-4311-4d13-a1d0-70955b1f7c0f}</Project>
+      <Name>DSoft.System.BluetoothLeOld</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
