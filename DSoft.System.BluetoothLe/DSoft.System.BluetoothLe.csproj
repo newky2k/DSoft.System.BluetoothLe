@@ -1,0 +1,104 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net8.0;net8.0-android;net8.0-ios;net8.0-maccatalyst; net8.0-macos; net8.0-tvos;</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0; net481;</TargetFrameworks>
+		<!--<TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks>-->
+		<Product>$(AssemblyName) ($(TargetFramework))</Product>
+		<Configurations>Debug;Release</Configurations>
+		<DebugType>portable</DebugType>
+		<UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+		<RootNamespace>System.BluetoothLe</RootNamespace>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<PackageId>DSoft.System.BluetoothLe</PackageId>
+		<Authors>newky2k</Authors>
+		<PackageLicenseExpression>Apache-2.0+</PackageLicenseExpression>
+		<Description>Cross-platform Bluetooth Low Energy library, based on Plugin.BLE, for Xamarin.iOS, Xamarin.Android, Mac, UWP(Preview), .Net Core 3.x, Net5.x and .Net Framework 4.6.1+(Preview - Windows 10 only - WPF and Windows.Forms), TVOS(Preview) and WatchOS(Preview), Tizen(coming soon)</Description>
+		<AssemblyName>System.BluetoothLe</AssemblyName>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>DSoft.snk</AssemblyOriginatorKeyFile>
+		<RepositoryUrl>https://github.com/newky2k/DSoft.System.BluetoothLe</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageProjectUrl>https://github.com/newky2k/DSoft.System.BluetoothLe</PackageProjectUrl>
+		<PackageReleaseNotes>
+			Migrated to .Net 8.0
+		</PackageReleaseNotes>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
+		<PackageTags>BluetoothLe xamarin mac ios android uwp wpf netcore dotnet tizen tvos watchos</PackageTags>
+		<Copyright>Copyright © 2024 DSoft</Copyright>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">14.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'mac'">14.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">11.0</SupportedOSPlatformVersion>
+		<!--<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>-->
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)'=='Release' And '$(OS)' == 'Windows_NT' ">
+		<!-- sourcelink: Declare that the Repository URL can be published to NuSpec -->
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<!-- sourcelink: Embed source files that are not tracked by the source control manager to the PDB -->
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<!-- sourcelink: Include PDB in the built .nupkg -->
+		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+	</PropertyGroup>
+
+	<ItemGroup Condition=" '$(Configuration)'=='Release' And '$(OS)' == 'Windows_NT' ">
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+	</ItemGroup>
+
+	<PropertyGroup Condition=" $(TargetFramework.StartsWith('net481')) ">
+		<UseWPF>true</UseWPF>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<None Include="..\readme.md" Pack="true" PackagePath="\" />
+		<Compile Include="**\*.shared.cs" />
+		<Compile Include="**\*.shared.*.cs" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
+		<Compile Include="**\*.netstandard.cs" />
+		<Compile Include="**\*.netstandard.*.cs" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" $(TargetFramework.Equals('net8.0-windows')) ">
+		<Compile Include="**\*.netcore.cs" />
+		<Compile Include="**\*.netcore.*.cs" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" $(TargetFramework.StartsWith('net481')) ">
+		<PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.18362.2007" />
+		<Compile Include="**\*.netf.cs" />
+		<Compile Include="**\*.netf.*.cs" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" $(TargetFramework.Equals('net8.0-android')) ">
+		<Compile Include="**\*.android.cs" />
+		<Compile Include="**\*.android.*.cs" />
+		<AndroidResource Include="Resources\xml\*.xml" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" $(TargetFramework.Equals('net8.0-ios')) ">
+		<Compile Include="**\*.ios.cs" />
+		<Compile Include="**\*.ios.*.cs" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" $(TargetFramework.Equals('net8.0-maccatalyst')) ">
+		<Compile Include="**\*.ios.cs" />
+		<Compile Include="**\*.ios.*.cs" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" $(TargetFramework.Equals('net8.0-macos')) ">
+		<Compile Include="**\*.mac.cs" />
+		<Compile Include="**\*.mac.*.cs" />
+	</ItemGroup>
+</Project>

@@ -31,7 +31,7 @@
 	</PackageReleaseNotes>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <PackageTags>BluetoothLe xamarin mac ios android uwp wpf netcore dotnet tizen tvos watchos</PackageTags>
-    <Copyright>Copyright © 2021 DSoft</Copyright>
+    <Copyright>Copyright © 2024 DSoft</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
