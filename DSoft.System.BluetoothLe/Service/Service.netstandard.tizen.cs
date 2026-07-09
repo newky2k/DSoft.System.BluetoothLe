@@ -13,6 +13,8 @@ namespace System.BluetoothLe
 
         internal Task<IList<Characteristic>> GetCharacteristicsNativeAsync() => throw new PlatformNotSupportedException();
 
+        internal Task<Characteristic> GetCharacteristicNativeAsync(Guid characteristicId) => throw new PlatformNotSupportedException();
+
         internal object NativeService => throw new PlatformNotSupportedException();
 
         public virtual void Dispose()

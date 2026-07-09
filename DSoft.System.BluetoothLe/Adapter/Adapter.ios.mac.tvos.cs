@@ -55,7 +55,7 @@ namespace System.BluetoothLe
 
                 //handle PoweredOff state
                 //notify subscribers about disconnection
-                if (_centralManager.State == CBCentralManagerState.PoweredOff)
+                if (_centralManager.State == CBManagerState.PoweredOff)
                 {
                     foreach (var device in ConnectedDeviceRegistry.Values.ToList())
                     {
@@ -152,7 +152,7 @@ namespace System.BluetoothLe
         protected async Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
         {
             // Wait for the PoweredOn state
-            await WaitForState(CBCentralManagerState.PoweredOn, scanCancellationToken).ConfigureAwait(false);
+            await WaitForState(CBManagerState.PoweredOn, scanCancellationToken).ConfigureAwait(false);
 
             if (scanCancellationToken.IsCancellationRequested)
                 throw new TaskCanceledException("StartScanningForDevicesNativeAsync cancelled");
@@ -214,7 +214,7 @@ namespace System.BluetoothLe
         public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken), bool dontThrowExceptionOnNotFound = false)
         {
             // Wait for the PoweredOn state
-            await WaitForState(CBCentralManagerState.PoweredOn, cancellationToken, true);
+            await WaitForState(CBManagerState.PoweredOn, cancellationToken, true);
 
             if (cancellationToken.IsCancellationRequested)
                 throw new TaskCanceledException("ConnectToKnownDeviceAsync cancelled");
@@ -231,16 +231,7 @@ namespace System.BluetoothLe
             {
                 var systemPeripherials = _centralManager.RetrieveConnectedPeripherals(new CBUUID[0]);
 
-#if __IOS__
-                var cbuuid = CBUUID.FromNSUuid(uuid);
-#endif
-                peripherial = systemPeripherials.SingleOrDefault(p =>
-#if __IOS__
-                p.UUID.Equals(cbuuid)
-#else
-                 p.Identifier.Equals(uuid)
-#endif
-                );
+                peripherial = systemPeripherials.SingleOrDefault(p => p.Identifier.Equals(uuid));
 
                 if (peripherial == null)
                 {
@@ -274,7 +265,7 @@ namespace System.BluetoothLe
 
         #endregion
 
-        private async Task WaitForState(CBCentralManagerState state, CancellationToken cancellationToken, bool configureAwait = false)
+        private async Task WaitForState(CBManagerState state, CancellationToken cancellationToken, bool configureAwait = false)
         {
             Trace.Message("Adapter: Waiting for state: " + state);
 

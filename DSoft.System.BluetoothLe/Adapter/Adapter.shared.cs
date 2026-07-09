@@ -112,9 +112,9 @@ namespace System.BluetoothLe
             using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
             {
                 await TaskBuilder.FromEvent<bool, EventHandler<DeviceEventArgs>, EventHandler<DeviceErrorEventArgs>>(
-                    execute: () =>
+                    execute: async () =>
                     {
-                        ConnectToDeviceNativeAsync(device, connectParameters, cts.Token);
+                        await ConnectToDeviceNativeAsync(device, connectParameters, cts.Token);
                     },
 
                     getCompleteHandler: (complete, reject) => (sender, args) =>

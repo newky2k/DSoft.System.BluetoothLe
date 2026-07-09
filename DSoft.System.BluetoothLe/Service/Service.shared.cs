@@ -51,8 +51,15 @@ namespace System.BluetoothLe
 
         public async Task<Characteristic> GetCharacteristicAsync(Guid id)
         {
-            var characteristics = await GetCharacteristicsAsync();
-            return characteristics.FirstOrDefault(c => c.Id == id);
+            if (BluetoothLE.UseOldFindCharacteristicMode)
+            {
+                var characteristics = await GetCharacteristicsAsync();
+                return characteristics.FirstOrDefault(c => c.Id == id);
+            }
+            else
+            {
+                return await GetCharacteristicNativeAsync(id);
+            }
         }
 
         #endregion

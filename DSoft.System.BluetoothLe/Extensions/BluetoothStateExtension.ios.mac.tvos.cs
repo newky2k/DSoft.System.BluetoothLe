@@ -5,21 +5,21 @@ namespace System.BluetoothLe.Extensions
 {
     public static class BluetoothStateExtension
     {
-        public static BluetoothState ToBluetoothState(this CBCentralManagerState state)
+        public static BluetoothState ToBluetoothState(this CBManagerState state)
         {
             switch (state)
             {
-                case CBCentralManagerState.Unknown:
+                case CBManagerState.Unknown:
                     return BluetoothState.Unknown;
-                case CBCentralManagerState.Resetting:
+                case CBManagerState.Resetting:
                     return BluetoothState.Unknown;
-                case CBCentralManagerState.Unsupported:
+                case CBManagerState.Unsupported:
                     return BluetoothState.Unavailable;
-                case CBCentralManagerState.Unauthorized:
+                case CBManagerState.Unauthorized:
                     return BluetoothState.Unauthorized;
-                case CBCentralManagerState.PoweredOff:
+                case CBManagerState.PoweredOff:
                     return BluetoothState.Off;
-                case CBCentralManagerState.PoweredOn:
+                case CBManagerState.PoweredOn:
                     return BluetoothState.On;
                 default:
                     return BluetoothState.Unknown;

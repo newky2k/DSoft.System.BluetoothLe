@@ -45,6 +45,11 @@ namespace System.BluetoothLe
                 .Cast<Characteristic>().ToList());
         }
 
+        internal async Task<Characteristic> GetCharacteristicNativeAsync(Guid characteristicId)
+        {
+            var characteristics = await GetCharacteristicsNativeAsync();
+            return characteristics.FirstOrDefault(c => c.Id == characteristicId);
+        }
         #endregion
 
         public virtual void Dispose()

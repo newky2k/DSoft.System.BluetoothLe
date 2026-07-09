@@ -69,8 +69,8 @@ namespace System.BluetoothLe
                         complete(characteristics);
                     }
                 },
-                subscribeComplete: handler => _device.DiscoveredCharacteristic += handler,
-                unsubscribeComplete: handler => _device.DiscoveredCharacteristic -= handler,
+                subscribeComplete: handler => _device.DiscoveredCharacteristics += handler,
+                unsubscribeComplete: handler => _device.DiscoveredCharacteristics -= handler,
                 getRejectHandler: reject => ((sender, args) =>
                 {
                     if (args.Peripheral.Identifier == _device.Identifier)
@@ -78,6 +78,12 @@ namespace System.BluetoothLe
                 }),
                 subscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral += handler,
                 unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
+        }
+
+        internal async Task<Characteristic> GetCharacteristicNativeAsync(Guid characteristicId)
+        {
+            var characteristics = await GetCharacteristicsNativeAsync();
+            return characteristics.FirstOrDefault(c => c.Id == characteristicId);
         }
 
         public virtual void Dispose()
