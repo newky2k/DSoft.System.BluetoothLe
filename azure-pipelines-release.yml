@@ -12,28 +12,45 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+- name: solution
+  value: '**/*.slnx'
+- name: buildPlatform
+  value: 'Any CPU'
+- name: buildConfiguration
+  value: 'Release'
+- name: NUGET.PLUGIN.HANDSHAKE.TIMEOUT.IN.SECONDS
+  value: 60
+- name: NUGET.PLUGIN.REQUEST.TIMEOUT.IN.SECONDS
+  value: 60
+- name: netVersion
+  value: '10.x'
+- name: releaseSuffix
+  value:  ''
 
-name: 2.0.$(date:yyMM).$(date:dd)$(rev:r)
+name: 3.0.$(date:yyMM).$(date:dd)$(rev:r)
 steps:
 
 - task: NuGetToolInstaller@1
   displayName: Install Latest Nuget
-  
-- task: NuGetCommand@2
-  displayName: Nuget Restore
-  inputs:
-    restoreSolution: '$(solution)'
 
-- task: VSBuild@1
-  displayName: Build Solution
+- task: UseDotNet@2
+  displayName: 'Install .NET sdk'
   inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:Version=$(Build.BuildNumber)$(ReleaseSuffix) /p:AssemblyVersion=$(Build.BuildNumber) /p:FileVersion=$(Build.BuildNumber)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    packageType: 'sdk'
+    version: $(netVersion)
+  
+- task: DotNetCoreCLI@2
+  displayName: dotnet restore
+  inputs:
+    command: 'restore'
+    projects: '$(solution)'
+
+- task: DotNetCoreCLI@2
+  displayName: dotnet build
+  inputs:
+    command: 'build'
+    projects: '$(solution)'
+    arguments: '--configuration $(buildConfiguration) --no-restore /p:Platform="$(buildPlatform) /p:Version=$(Build.BuildNumber)$(ReleaseSuffix) /p:AssemblyVersion=$(Build.BuildNumber) /p:FileVersion=$(Build.BuildNumber)'
 
 - task: CopyFiles@2
   displayName: Copy Files to $(build.artifactstagingdirectory)

@@ -9,23 +9,39 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+- name: solution
+  value: '**/*.slnx'
+- name: buildPlatform
+  value: 'Any CPU'
+- name: buildConfiguration
+  value: 'Release'
+- name: NUGET.PLUGIN.HANDSHAKE.TIMEOUT.IN.SECONDS
+  value: 60
+- name: NUGET.PLUGIN.REQUEST.TIMEOUT.IN.SECONDS
+  value: 60
+- name: netVersion
+  value: '10.x'
 
 steps:
+
 - task: NuGetToolInstaller@1
   displayName: Install Latest Nuget
 
-- task: NuGetCommand@2
-  displayName: Nuget Restore
+- task: UseDotNet@2
+  displayName: 'Install .NET sdk'
   inputs:
-    restoreSolution: '$(solution)'
+    packageType: 'sdk'
+    version: $(netVersion)
 
-- task: VSBuild@1
-  displayName: Build Solution
+- task: DotNetCoreCLI@2
+  displayName: dotnet restore
   inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: 'restore'
+    projects: '$(solution)'
+
+- task: DotNetCoreCLI@2
+  displayName: dotnet build
+  inputs:
+    projects: '$(solution)'
+    arguments: '--configuration=$(buildConfiguration) /p:Platform="$(buildPlatform)"'
 

@@ -12,6 +12,11 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Folder Name="/.ci/">
+    <File Path="azure-pipelines-mergetest.yml" />
+    <File Path="azure-pipelines-release.yml" />
+    <File Path="README.md" />
+  </Folder>
   <Folder Name="/Samples/">
     <Project Path="Samples/WpfSample/WpfSample.csproj">
       <BuildType Solution="Ad-Hoc|*" Project="Debug" />
