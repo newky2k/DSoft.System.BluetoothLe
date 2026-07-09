@@ -57,7 +57,7 @@ steps:
   inputs:
     command: 'build'
     projects: '$(solution)'
-    arguments: '--configuration $(buildConfiguration) --no-restore /p:Platform="$(buildPlatform) /p:Version=$(Build.BuildNumber)$(ReleaseSuffix) /p:AssemblyVersion=$(Build.BuildNumber) /p:FileVersion=$(Build.BuildNumber)'
+    arguments: '--configuration $(buildConfiguration) --no-restore /p:Platform="$(buildPlatform)" /p:Version=$(Build.BuildNumber)$(ReleaseSuffix) /p:AssemblyVersion=$(Build.BuildNumber) /p:FileVersion=$(Build.BuildNumber)'
 
 - task: CopyFiles@2
   displayName: Copy Files to $(build.artifactstagingdirectory)
