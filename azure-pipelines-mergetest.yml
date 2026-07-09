@@ -33,6 +33,13 @@ steps:
     packageType: 'sdk'
     version: $(netVersion)
 
+- task: Bash@3
+  displayName: Restore Workloads
+  inputs:
+    targetType: 'inline'
+    script: 
+      dotnet workload restore
+
 - task: DotNetCoreCLI@2
   displayName: dotnet restore
   inputs:
