@@ -128,11 +128,6 @@ namespace System.BluetoothLe
                 nativeDevice.BluetoothLEDevice?.Dispose();
             }
 
-            TryRemoveConnectedDevice(device.Id, out _);
-
-            // Raised explicitly. Previously the registry entry was removed here and the event was left to
-            // Device_ConnectionStatusChanged, which by then could no longer find the device to report - so
-            // DisconnectDeviceAsync waited for a DeviceDisconnected event that never arrived.
             HandleDisconnectedDevice(true, device);
         }
 
