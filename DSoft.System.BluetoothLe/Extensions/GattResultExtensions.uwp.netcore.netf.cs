@@ -29,7 +29,7 @@ namespace System.BluetoothLe.Extensions
                 throw new CharacteristicReadException(errorMessage);
             }
 
-            return result.Value?.ToArray() ?? new byte[0];
+            return result.Value?.ToArray() ?? Array.Empty<byte>();
         }
 
         public static void ThrowIfError(this GattCommunicationStatus status, [CallerMemberName]string tag = null, byte? protocolError = null)
@@ -37,7 +37,9 @@ namespace System.BluetoothLe.Extensions
             var errorMessage = status.GetErrorMessage(tag, protocolError);
             if (!string.IsNullOrEmpty(errorMessage))
             {
-                throw new Exception(errorMessage);
+                // A typed exception rather than a bare one, so a failed discovery on Windows is catchable as
+                // BleException alongside every other platform's GATT failures.
+                throw new GattCommunicationException(errorMessage);
             }
         }
 

@@ -6,18 +6,14 @@ namespace System.BluetoothLe
 {
     public static class KnownCharacteristics
     {
-        static KnownCharacteristics()
-        {
-            //ToDo do we need a lock here?
-            LookupTable = Characteristics.ToDictionary(c => c.Id, c => c);
-        }
-
+        /// <summary>
+        /// Finds the Bluetooth SIG's name for a characteristic UUID, or a placeholder when the UUID is not a
+        /// standard one.
+        /// </summary>
         public static KnownCharacteristic Lookup(Guid id)
         {
-            return LookupTable.ContainsKey(id) ? LookupTable[id] : new KnownCharacteristic("Unknown characteristic", Guid.Empty);
+            return LookupTable.TryGetValue(id, out var known) ? known : new KnownCharacteristic("Unknown characteristic", Guid.Empty);
         }
-
-        private static readonly Dictionary<Guid, KnownCharacteristic> LookupTable;
 
         /// <summary>
         /// https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicsHome.aspx
@@ -216,5 +212,10 @@ namespace System.BluetoothLe
             new KnownCharacteristic("RedBearLabs Biscuit VERSION_CHAR_UUID unknown", Guid.ParseExact("713d0006-503e-4c75-ba94-3148f18d941e", "d")),
             new KnownCharacteristic("RedBearLabs Biscuit TX_POWER_CHAR_UUID unknown", Guid.ParseExact("713d0007-503e-4c75-ba94-3148f18d941e", "d")),
         };
+
+        // Declared after the list it is built from: static field initialisers run in textual order, and a
+        // field initialiser rather than a static constructor leaves the type beforefieldinit, so the table is
+        // built lazily on first lookup instead of on the first touch of anything in this class.
+        private static readonly Dictionary<Guid, KnownCharacteristic> LookupTable = Characteristics.ToDictionary(c => c.Id, c => c);
     }
 }

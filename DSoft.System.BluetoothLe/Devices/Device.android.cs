@@ -9,8 +9,6 @@ using Android.Content;
 using System.BluetoothLe.Utils;
 using Trace = System.BluetoothLe.Trace;
 using System.Threading;
-using Java.Util;
-using Android.Graphics;
 using System.BluetoothLe.EventArgs;
 
 namespace System.BluetoothLe
@@ -26,9 +24,12 @@ namespace System.BluetoothLe
 
         /// <summary>
         /// we also track this because of google's weird API. the gatt callback is where
-        /// we'll get notified when services are enumerated
+        /// we'll get notified when services are enumerated.
+        /// Created on the first connect rather than in the constructor: a scan produces a Device per
+        /// advertisement, and allocating a BluetoothGattCallback - a Java peer - for every advertisement
+        /// of every device in range is pure churn for objects that will never see a GATT operation.
         /// </summary>
-        private readonly GattCallback _gattCallback;
+        private GattCallback _gattCallback;
 
         /// <summary>
         /// the registration must be disposed to avoid disconnecting after a connection
@@ -53,7 +54,6 @@ namespace System.BluetoothLe
             Update(nativeDevice, gatt);
             Rssi = rssi;
             AdvertisementRecords = ParseScanRecord(advertisementData);
-            _gattCallback = new GattCallback(adapter, this);
         }
 
         #endregion
@@ -75,16 +75,9 @@ namespace System.BluetoothLe
 
         private void ConnectToGattForceBleTransportAPI(bool autoconnect, CancellationToken cancellationToken)
         {
-            //This parameter is present from API 18 but only public from API 23
-            //So reflection is used before API 23
-            if (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop)
-            {
-                //no transport mode before lollipop, it will probably not work... gattCallBackError 133 again alas
-                var connectGatt = NativeDevice.ConnectGatt(Application.Context, autoconnect, _gattCallback);
-                _connectCancellationTokenRegistration.Dispose();
-                _connectCancellationTokenRegistration = cancellationToken.Register(() => DisconnectAndClose(connectGatt));
-            }
-            else if (Build.VERSION.SdkInt < BuildVersionCodes.M)
+            // The transport parameter exists from API 18 but only became public API at 23, so below 23 it
+            // has to be reached by reflection. The branch is still live: the package supports API 21.
+            if (!OperatingSystem.IsAndroidVersionAtLeast(23))
             {
                 var m = NativeDevice.Class.GetDeclaredMethod("connectGatt", new Java.Lang.Class[] {
                                 Java.Lang.Class.FromType(typeof(Context)),
@@ -104,7 +97,7 @@ namespace System.BluetoothLe
 
         }
 
-        private async Task<IReadOnlyList<Service>> DiscoverServicesInternal()
+        private async Task<IReadOnlyList<Service>> DiscoverServicesInternal(CancellationToken cancellationToken)
         {
             return await TaskBuilder
                 .FromEvent<IReadOnlyList<Service>, EventHandler<ServicesDiscoveredCallbackEventArgs>, EventHandler>(
@@ -114,6 +107,8 @@ namespace System.BluetoothLe
                         {
                             throw new Exception("Could not start service discovery");
                         }
+
+                        return Task.CompletedTask;
                     },
                     getCompleteHandler: (complete, reject) => ((sender, args) =>
                     {
@@ -126,7 +121,8 @@ namespace System.BluetoothLe
                         reject(new Exception($"Device {Name} disconnected while fetching services."));
                     }),
                     subscribeReject: handler => _gattCallback.ConnectionInterrupted += handler,
-                    unsubscribeReject: handler => _gattCallback.ConnectionInterrupted -= handler);
+                    unsubscribeReject: handler => _gattCallback.ConnectionInterrupted -= handler,
+                    token: cancellationToken);
         }
 
         private static List<AdvertisementRecord> ParseScanRecord(byte[] scanRecord)
@@ -136,55 +132,68 @@ namespace System.BluetoothLe
             if (scanRecord == null)
                 return records;
 
-            int index = 0;
-            while (index < scanRecord.Length)
+            // A malformed or truncated advertisement is a remote device's fault, not ours, and this runs on
+            // a scan callback thread where an escaping exception takes the process down. Keep whatever
+            // parsed cleanly and stop at the first thing that does not.
+            try
             {
-                byte length = scanRecord[index++];
-                //Done once we run out of records 
-                // 1 byte for type and length-1 bytes for data
-                if (length == 0) break;
-
-                int type = scanRecord[index];
-                //Done if our record isn't a valid type
-                if (type == 0) break;
-
-                if (!Enum.IsDefined(typeof(AdvertisementRecordType), type))
+                int index = 0;
+                while (index < scanRecord.Length)
                 {
-                    Trace.Message("Advertisment record type not defined: {0}", type);
-                    break;
-                }
+                    byte length = scanRecord[index++];
+                    //Done once we run out of records
+                    // 1 byte for type and length-1 bytes for data
+                    if (length == 0) break;
 
-                //data length is length -1 because type takes the first byte
-                byte[] data = new byte[length - 1];
-                Array.Copy(scanRecord, index + 1, data, 0, length - 1);
+                    int type = scanRecord[index];
+                    //Done if our record isn't a valid type
+                    if (type == 0) break;
 
-                // don't forget that data is little endian so reverse
-                // Supplement to Bluetooth Core Specification 1
-                // NOTE: all relevant devices are already little endian, so this is not necessary for any type except UUIDs
-                //var record = new AdvertisementRecord((AdvertisementRecordType)type, data.Reverse().ToArray());
-
-                switch ((AdvertisementRecordType)type)
-                {
-                    case AdvertisementRecordType.ServiceDataUuid32Bit:
-                    case AdvertisementRecordType.SsUuids128Bit:
-                    case AdvertisementRecordType.SsUuids16Bit:
-                    case AdvertisementRecordType.SsUuids32Bit:
-                    case AdvertisementRecordType.UuidCom32Bit:
-                    case AdvertisementRecordType.UuidsComplete128Bit:
-                    case AdvertisementRecordType.UuidsComplete16Bit:
-                    case AdvertisementRecordType.UuidsIncomple16Bit:
-                    case AdvertisementRecordType.UuidsIncomplete128Bit:
-                        Array.Reverse(data);
+                    if (!Enum.IsDefined(typeof(AdvertisementRecordType), type))
+                    {
+                        Trace.Message("Advertisement record type not defined: {0}", type);
                         break;
+                    }
+
+                    // A device may advertise a length that runs off the end of the buffer.
+                    if (index + length > scanRecord.Length) break;
+
+                    //data length is length -1 because type takes the first byte
+                    byte[] data = new byte[length - 1];
+                    Array.Copy(scanRecord, index + 1, data, 0, length - 1);
+
+                    // don't forget that data is little endian so reverse
+                    // Supplement to Bluetooth Core Specification 1
+                    // NOTE: all relevant devices are already little endian, so this is not necessary for any type except UUIDs
+                    // ServiceDataUuid32Bit is deliberately NOT in this list: it is a UUID followed by a
+                    // service-data payload, so reversing the record corrupts both halves.
+                    switch ((AdvertisementRecordType)type)
+                    {
+                        case AdvertisementRecordType.SsUuids16Bit:
+                        case AdvertisementRecordType.SsUuids32Bit:
+                        case AdvertisementRecordType.SsUuids128Bit:
+                        case AdvertisementRecordType.UuidsComplete16Bit:
+                        case AdvertisementRecordType.UuidsComplete32Bit:
+                        case AdvertisementRecordType.UuidsComplete128Bit:
+                        case AdvertisementRecordType.UuidsIncomplete16Bit:
+                        case AdvertisementRecordType.UuidsIncomplete32Bit:
+                        case AdvertisementRecordType.UuidsIncomplete128Bit:
+                            Array.Reverse(data);
+                            break;
+                    }
+                    var record = new AdvertisementRecord((AdvertisementRecordType)type, data);
+
+                    Trace.Message(record.ToString());
+
+                    records.Add(record);
+
+                    //Advance
+                    index += length;
                 }
-                var record = new AdvertisementRecord((AdvertisementRecordType)type, data);
-
-                Trace.Message(record.ToString());
-
-                records.Add(record);
-
-                //Advance
-                index += length;
+            }
+            catch (Exception ex)
+            {
+                Trace.Message("Failed to parse advertisement record, keeping {0} record(s) parsed so far: {1}", records.Count, ex.Message);
             }
 
             return records;
@@ -214,7 +223,7 @@ namespace System.BluetoothLe
             }
         }
 
-        private async Task<bool> UpdateRssiNativeAsync()
+        private async Task<bool> UpdateRssiNativeAsync(CancellationToken cancellationToken)
         {
             if (_gatt == null || _gattCallback == null)
             {
@@ -223,7 +232,7 @@ namespace System.BluetoothLe
             }
 
             return await TaskBuilder.FromEvent<bool, EventHandler<RssiReadCallbackEventArgs>, EventHandler>(
-              execute: () => _gatt.ReadRemoteRssi(),
+              execute: () => { _gatt.ReadRemoteRssi(); return Task.CompletedTask; },
               getCompleteHandler: (complete, reject) => ((sender, args) =>
               {
                   if (args.Error == null)
@@ -245,10 +254,11 @@ namespace System.BluetoothLe
                   reject(new Exception($"Device {Name} disconnected while updating rssi."));
               }),
               subscribeReject: handler => _gattCallback.ConnectionInterrupted += handler,
-              unsubscribeReject: handler => _gattCallback.ConnectionInterrupted -= handler);
+              unsubscribeReject: handler => _gattCallback.ConnectionInterrupted -= handler,
+              token: cancellationToken);
         }
 
-        private async Task<int> RequestMtuNativeAsync(int requestValue)
+        private async Task<int> RequestMtuNativeAsync(int requestValue, CancellationToken cancellationToken)
         {
             if (_gatt == null || _gattCallback == null)
             {
@@ -263,7 +273,7 @@ namespace System.BluetoothLe
             }
 
             return await TaskBuilder.FromEvent<int, EventHandler<MtuRequestCallbackEventArgs>, EventHandler>(
-              execute: () => { _gatt.RequestMtu(requestValue); },
+              execute: () => { _gatt.RequestMtu(requestValue); return Task.CompletedTask; },
               getCompleteHandler: (complete, reject) => ((sender, args) =>
               {
                   if (args.Error != null)
@@ -283,7 +293,8 @@ namespace System.BluetoothLe
                   reject(new Exception($"Device {Name} disconnected while requesting MTU."));
               }),
               subscribeReject: handler => _gattCallback.ConnectionInterrupted += handler,
-              unsubscribeReject: handler => _gattCallback.ConnectionInterrupted -= handler
+              unsubscribeReject: handler => _gattCallback.ConnectionInterrupted -= handler,
+              token: cancellationToken
             );
         }
 
@@ -297,7 +308,7 @@ namespace System.BluetoothLe
 
             if (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop)
             {
-                Trace.Message($"Update connection interval paramter in this Android API level");
+                Trace.Message($"Update connection interval parameter is not supported in this Android API level");
                 return false;
             }
 
@@ -313,7 +324,7 @@ namespace System.BluetoothLe
             }
         }
 
-        private async Task<IReadOnlyList<Service>> GetServicesNativeAsync()
+        private async Task<IReadOnlyList<Service>> GetServicesNativeAsync(CancellationToken cancellationToken)
         {
             if (_gattCallback == null || _gatt == null)
             {
@@ -326,37 +337,24 @@ namespace System.BluetoothLe
                 return _gatt.Services.Select(service => new Service(service, _gatt, _gattCallback, this)).ToList();
             }
 
-            return await DiscoverServicesInternal();
-        }
-
-        private async Task<Service> GetServiceNativeAsync(Guid id)
-        {
-            if (_gattCallback == null || _gatt == null)
-            {
-                return null;
-            }
-
-            var uuid = UUID.FromString(id.ToString("d"));
-
-            // _gatt.GetService will directly return if device service discovery was already done
-            var nativeService = _gatt.GetService(uuid);
-            if (nativeService != null)
-            {
-                return new Service(nativeService, _gatt, _gattCallback, this);
-            }
-
-            var services = await DiscoverServicesInternal();
-            return services?.FirstOrDefault(service => service.Id == id);
+            return await DiscoverServicesInternal(cancellationToken);
         }
 
         #endregion
 
         #region Methods
-        public virtual void Dispose()
-        {
-            Adapter?.DisconnectDeviceAsync(this);
-        }
 
+        partial void DisposeNative()
+        {
+            _connectCancellationTokenRegistration.Dispose();
+            _connectCancellationTokenRegistration = default;
+
+            _gatt?.Close();
+            _gatt = null;
+
+            _gattCallback?.Dispose();
+            _gattCallback = null;
+        }
 
         internal void Update(BluetoothDevice nativeDevice, BluetoothGatt gatt)
         {
@@ -374,6 +372,11 @@ namespace System.BluetoothLe
         internal void Connect(ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
             IsOperationRequested = true;
+
+            // First point at which a GATT callback is actually needed. Both branches below use it, and
+            // nothing that runs before a connect touches it - every other read site requires _gatt too,
+            // and _gatt cannot exist before this call.
+            _gattCallback ??= new GattCallback(Adapter, this);
 
             if (connectParameters.ForceBleTransport)
             {
@@ -416,8 +419,12 @@ namespace System.BluetoothLe
             _gatt?.Close();
             _gatt = null;
 
-            // ClossGatt might will get called on signal loss without Disconnect being called we have to make sure we clear the services
-            // Clear services & characteristics otherwise we will get gatt operation return FALSE when connecting to the same Device instace at a later time
+            // CloseGatt might get called on signal loss without Disconnect being called, so we have to make sure we clear the services.
+            // Clear services & characteristics otherwise we will get gatt operations returning FALSE when connecting to the same Device instance at a later time.
+            // The GattCallback is deliberately NOT disposed here. Operations that were in flight when the
+            // link dropped are still inside a finally that unsubscribes from it, and nulling the field out
+            // from under them would replace the real rejection with a NullReferenceException. It is a single
+            // object per device, reused by the next connect, and released in DisposeNative.
             ClearServices();
         }
 

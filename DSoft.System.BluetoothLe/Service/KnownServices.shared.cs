@@ -7,18 +7,16 @@ namespace System.BluetoothLe
     // Source: https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx
     public static class KnownServices
     {
-        private static readonly Dictionary<Guid, KnownService> LookupTable;
-
-        static KnownServices()
-        {
-            LookupTable = Services.ToDictionary(s => s.Id, s => s);
-        }
-
+        /// <summary>
+        /// Finds the Bluetooth SIG's name for a service UUID, or a placeholder when the UUID is not a standard
+        /// one.
+        /// </summary>
         public static KnownService Lookup(Guid id)
         {
-            return LookupTable.ContainsKey(id) ? LookupTable[id] : new KnownService("Unknown Service", Guid.Empty);
+            return LookupTable.TryGetValue(id, out var known) ? known : new KnownService("Unknown Service", Guid.Empty);
         }
 
+        /// <summary>The services this library carries names for.</summary>
         public static IReadOnlyList<KnownService> Services { get; } = new List<KnownService>
         {
             new KnownService("Alert Notification Service", Guid.ParseExact("00001811-0000-1000-8000-00805f9b34fb", "d")),
@@ -55,5 +53,10 @@ namespace System.BluetoothLe
             new KnownService("TI SensorTag OvertheAir Download", Guid.ParseExact("f000ffc0-0451-4000-b000-000000000000", "d")),
             new KnownService("TXRX_SERV_UUID RedBearLabs Biscuit Service", Guid.ParseExact("713d0000-503e-4c75-ba94-3148f18d941e", "d")),
         }.AsReadOnly();
+
+        // Declared after the list it is built from: static field initialisers run in textual order, and a
+        // field initialiser rather than a static constructor leaves the type beforefieldinit, so the table is
+        // built lazily on first lookup instead of on the first touch of anything in this class.
+        private static readonly Dictionary<Guid, KnownService> LookupTable = Services.ToDictionary(s => s.Id, s => s);
     }
 }

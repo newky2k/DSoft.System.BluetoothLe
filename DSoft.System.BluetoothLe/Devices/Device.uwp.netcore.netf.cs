@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Windows.Devices.Bluetooth;
@@ -25,20 +26,35 @@ namespace System.BluetoothLe
             Rssi = rssi;
             Id = id;
             Name = nativeDevice.Name;
-            AdvertisementRecords = advertisementRecords;
 
-            NativeDevice.OnNameChanged += (s, name) => { Name = name; };
+            // Never null: MergeOrUpdateAdvertising enumerates this on the very next advertisement.
+            AdvertisementRecords = advertisementRecords ?? Array.Empty<AdvertisementRecord>();
 
+            NativeDevice.OnNameChanged += OnNativeNameChanged;
         }
 
         #endregion
 
         #region Methods
 
-        public virtual void Dispose()
+        partial void DisposeNative()
         {
+            var native = NativeDevice;
+            NativeDevice = null;
 
-            Adapter?.DisconnectDeviceAsync(this);
+            if (native == null)
+            {
+                return;
+            }
+
+            // A closure would have made this impossible to detach, leaving the device alive for as long as
+            // the native wrapper raises name changes.
+            native.OnNameChanged -= OnNativeNameChanged;
+        }
+
+        private void OnNativeNameChanged(object sender, string name)
+        {
+            Name = name;
         }
 
         internal void Update(short btAdvRawSignalStrengthInDBm, IReadOnlyList<AdvertisementRecord> advertisementData)
@@ -46,11 +62,9 @@ namespace System.BluetoothLe
             this.Rssi = btAdvRawSignalStrengthInDBm;
 
             MergeOrUpdateAdvertising(advertisementData);
-
-            //this.AdvertisementRecords = advertisementData;
         }
 
-        internal Task<bool> UpdateRssiNativeAsync()
+        private Task<bool> UpdateRssiNativeAsync(CancellationToken cancellationToken)
         {
             //No current method to update the Rssi of a device
             //In future implementations, maybe listen for device's advertisements
@@ -60,24 +74,22 @@ namespace System.BluetoothLe
             return Task.FromResult(true);
         }
 
-        private async Task<IReadOnlyList<Service>> GetServicesNativeAsync()
+        private async Task<IReadOnlyList<Service>> GetServicesNativeAsync(CancellationToken cancellationToken)
         {
-            var result = await NativeDevice.BluetoothLEDevice.GetGattServicesAsync(BluetoothLE.CacheModeGetServices);
+            var result = await NativeDevice.BluetoothLEDevice
+                .GetGattServicesAsync(BluetoothLE.CacheModeGetServices)
+                .AsTask(cancellationToken);
+
             result.ThrowIfError();
 
-            return result.Services?
+            if (result.Services == null)
+            {
+                return Array.Empty<Service>();
+            }
+
+            return result.Services
                 .Select(nativeService => new Service(nativeService, this))
-                .Cast<Service>()
-                .ToList();
-        }
-
-        private async Task<Service> GetServiceNativeAsync(Guid id)
-        {
-            var result = await NativeDevice.BluetoothLEDevice.GetGattServicesForUuidAsync(id, BluetoothLE.CacheModeGetServices);
-            result.ThrowIfError();
-
-            var nativeService = result.Services?.FirstOrDefault();
-            return nativeService != null ? new Service(nativeService, this) : null;
+                .ToList<Service>();
         }
 
         private DeviceState GetState()
@@ -90,7 +102,7 @@ namespace System.BluetoothLe
             return NativeDevice.IsPaired ? DeviceState.Limited : DeviceState.Disconnected;
         }
 
-        private Task<int> RequestMtuNativeAsync(int requestValue)
+        private Task<int> RequestMtuNativeAsync(int requestValue, CancellationToken cancellationToken)
         {
             Trace.Message("Request MTU not supported in UWP");
             return Task.FromResult(-1);
@@ -108,10 +120,10 @@ namespace System.BluetoothLe
 
             foreach (var adv in advertisementRecords)
             {
-                var matcing = adverts.FirstOrDefault(x => x.Type.Equals(adv.Type));
+                var matching = adverts.FirstOrDefault(x => x.Type.Equals(adv.Type));
 
-                if (matcing != null)
-                    adverts.Remove(matcing);
+                if (matching != null)
+                    adverts.Remove(matching);
 
                 adverts.Add(adv);
             }

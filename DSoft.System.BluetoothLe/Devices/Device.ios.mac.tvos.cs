@@ -39,51 +39,44 @@ namespace System.BluetoothLe
             Rssi = rssi;
             AdvertisementRecords = advertisementRecords;
 
-            //// TODO figure out if this is in any way required,
-            //// https://github.com/xabre/xamarin-bluetooth-le/issues/81
-            NativeDevice.UpdatedName += OnNameUpdated;
+            // CBPeripheral.UpdatedName is deliberately not subscribed. The peripheral's own name is cached
+            // by the OS and can be stale or arrive out of order with the advertisement, and the
+            // advertisement's DataLocalNameKey - which is what the adapter passes in above - is the
+            // authoritative value. Upstream reached the same conclusion.
         }
 
         #endregion
 
         #region Methods
 
-        public virtual void Dispose()
+        partial void DisposeNative()
         {
-            Adapter?.DisconnectDeviceAsync(this);
-
-            NativeDevice.UpdatedName -= OnNameUpdated;
-            NativeDevice.Delegate = null;
+            // Tolerant of a half-constructed or already-torn-down peripheral: disposal must never be the
+            // thing that throws.
+            var native = NativeDevice;
             NativeDevice = null;
 
-        }
-
-
-        private void OnNameUpdated(object sender, System.EventArgs e)
-        {
-            Name = ((CBPeripheral)sender).Name;
-            Trace.Message("Device changed name: {0}", Name);
-        }
-
-        private Task<IReadOnlyList<Service>> GetServicesNativeAsync()
-        {
-            return GetServicesInternal();
-        }
-
-        private async Task<Service> GetServiceNativeAsync(Guid id)
-        {
-            var cbuuid = CBUUID.FromString(id.ToString());
-            var nativeService = NativeDevice.Services?.FirstOrDefault(service => service.UUID.Equals(cbuuid));
-            if (nativeService != null)
+            if (native == null)
             {
-                return new Service(nativeService, this, _bleCentralManagerDelegate);
+                return;
             }
 
-            var services = await GetServicesInternal(cbuuid);
-            return services?.FirstOrDefault();
+            try
+            {
+                native.Delegate = null;
+            }
+            catch (Exception ex)
+            {
+                Trace.Message("Exception while releasing the native peripheral for {0}: {1}", NameOrId, ex.Message);
+            }
         }
 
-        private Task<IReadOnlyList<Service>> GetServicesInternal(CBUUID id = null)
+        private Task<IReadOnlyList<Service>> GetServicesNativeAsync(CancellationToken cancellationToken)
+        {
+            return GetServicesInternal(cancellationToken);
+        }
+
+        private Task<IReadOnlyList<Service>> GetServicesInternal(CancellationToken cancellationToken, CBUUID id = null)
         {
             var exception = new Exception($"Device {Name} disconnected while fetching services.");
 
@@ -101,6 +94,8 @@ namespace System.BluetoothLe
                         {
                             NativeDevice.DiscoverServices();
                         }
+
+                        return Task.CompletedTask;
                     },
                     getCompleteHandler: (complete, reject) => (sender, args) =>
                     {
@@ -118,7 +113,7 @@ namespace System.BluetoothLe
                         {
                             var services = NativeDevice.Services
                                 .Select(nativeService => new Service(nativeService, this, _bleCentralManagerDelegate))
-                                .Cast<Service>().ToList();
+                                .ToList<Service>();
                             complete(services);
                         }
                     },
@@ -130,13 +125,14 @@ namespace System.BluetoothLe
                             reject(exception);
                     }),
                     subscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral += handler,
-                    unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
+                    unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler,
+                    token: cancellationToken);
         }
 
-        private Task<bool> UpdateRssiNativeAsync()
+        private Task<bool> UpdateRssiNativeAsync(CancellationToken cancellationToken)
         {
             return TaskBuilder.FromEvent<bool, EventHandler<CBRssiEventArgs>, EventHandler<CBPeripheralErrorEventArgs>>(
-                execute: () => NativeDevice.ReadRSSI(),
+                execute: () => { NativeDevice.ReadRSSI(); return Task.CompletedTask; },
                 getCompleteHandler: (complete, reject) => (sender, args) =>
                 {
                     if (args.Error != null)
@@ -157,7 +153,8 @@ namespace System.BluetoothLe
                         reject(new Exception($"Device {Name} disconnected while reading RSSI."));
                 }),
                 subscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral += handler,
-                unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
+                unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler,
+                token: cancellationToken);
         }
 
         private DeviceState GetState()
@@ -171,29 +168,42 @@ namespace System.BluetoothLe
                 case CBPeripheralState.Disconnected:
                     return DeviceState.Disconnected;
                 case CBPeripheralState.Disconnecting:
-                    return DeviceState.Disconnected;
+                    return DeviceState.Disconnecting;
                 default:
                     return DeviceState.Disconnected;
             }
         }
 
-        private async Task<int> RequestMtuNativeAsync(int requestValue)
+        private Task<int> RequestMtuNativeAsync(int requestValue, CancellationToken cancellationToken)
         {
-            Trace.Message($"Request MTU is not supported on iOS.");
-            return await Task.FromResult((int)NativeDevice.GetMaximumWriteValueLength(CBCharacteristicWriteType.WithoutResponse));
+            // Apple negotiates the ATT MTU itself; the best we can do is report what it settled on.
+            Trace.Message("Request MTU is not supported on Apple platforms; reporting the negotiated write length instead.");
+            return Task.FromResult((int)NativeDevice.GetMaximumWriteValueLength(CBCharacteristicWriteType.WithoutResponse));
         }
 
         private bool UpdateConnectionIntervalNative(ConnectionInterval interval)
         {
-            Trace.Message("Cannot update connection inteval on iOS.");
+            Trace.Message("Cannot update the connection interval on Apple platforms.");
             return false;
         }
 
         internal void Update(CBPeripheral nativeDevice)
         {
-            Rssi = nativeDevice.RSSI?.Int32Value ?? 0;
-            //It's maybe not the best idea to updated the name based on CBPeripherial name because this might be stale.
-            //Name = nativeDevice.Name; 
+            // The adapter can hand us a fresh peripheral object for the same identifier on a later scan,
+            // so take the new one rather than keeping a stale handle.
+            NativeDevice = nativeDevice;
+
+            // Only overwrite the RSSI when the platform actually gave us one: outside a connection
+            // CBPeripheral.RSSI is null, and treating that as 0 dBm reports a device as being closer
+            // than anything real. Read once into a local so this remains a single deprecated call site.
+            var nativeRssi = nativeDevice.RSSI;
+            if (nativeRssi != null)
+            {
+                Rssi = nativeRssi.Int32Value;
+            }
+
+            // It is maybe not the best idea to update the name based on the CBPeripheral name, because this might be stale.
+            //Name = nativeDevice.Name;
         }
 
 

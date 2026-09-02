@@ -12,7 +12,7 @@ namespace System.BluetoothLe
         /// <summary>
         ///«Incomplete List of 16-bit Service Class UUIDs»	Bluetooth Core 
         /// </summary>
-        UuidsIncomple16Bit = 0x02,
+        UuidsIncomplete16Bit = 0x02,
 
         /// <summary>
         /// «Complete List of 16-bit Service Class UUIDs»	Bluetooth Core 
@@ -27,7 +27,7 @@ namespace System.BluetoothLe
         /// <summary>
         /// «Complete List of 32-bit Service Class UUIDs»	Bluetooth Core Specification:
         /// </summary>
-        UuidCom32Bit = 0x05,
+        UuidsComplete32Bit = 0x05,
 
         /// <summary>
         /// «Incomplete List of 128-bit Service Class UUIDs»	Bluetooth Core 
@@ -57,7 +57,7 @@ namespace System.BluetoothLe
         /// <summary>
         /// «Class of Device»	Bluetooth Core Specification:
         /// </summary>
-        Deviceclass = 0x0D,
+        DeviceClass = 0x0D,
 
         /// <summary>
         /// «Simple Pairing Hash C»	Bluetooth Core Specification:

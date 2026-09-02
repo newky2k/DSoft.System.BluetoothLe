@@ -10,32 +10,90 @@
         <LangVersion>Latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
+        <!-- Compile items are listed explicitly below, and the per-platform globs are broad enough to match
+             generated sources under obj/ - the Android resource designer file contains ".Android." in its
+             name, so *.android.*.cs picks it up. Every Compile item therefore excludes the intermediate
+             output directories; without that the same file reaches the compiler twice and it reports CS2002. -->
+        <DefaultItemExcludes>$(DefaultItemExcludes);bin/**;obj/**</DefaultItemExcludes>
+        <!-- Must precede Product, which interpolates it. -->
+        <AssemblyName>System.BluetoothLe</AssemblyName>
         <Product>$(AssemblyName) ($(TargetFramework))</Product>
         <Configurations>Debug;Release</Configurations>
         <DebugType>portable</DebugType>
-        <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
         <RootNamespace>System.BluetoothLe</RootNamespace>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <NeutralLanguage>en</NeutralLanguage>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <!-- 1591 is "missing XML comment for publicly visible type or member". The public surface is being
+             documented incrementally, and suppressing it keeps the warning count a meaningful signal. -->
+        <NoWarn>$(NoWarn);1591</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- The assembly identity is pinned here rather than stamped by the build server. A strong-named
+             assembly whose version moves on every CI build forces a binding redirect on net481 for no
+             benefit; the public key token is what actually establishes identity. -->
+        <VersionPrefix>4.0.0</VersionPrefix>
+        <AssemblyVersion>4.0.0.0</AssemblyVersion>
         <PackageId>DSoft.System.BluetoothLe</PackageId>
+        <Title>DSoft.System.BluetoothLe</Title>
         <Authors>newky2k</Authors>
-        <PackageLicenseExpression>Apache-2.0+</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>Cross-platform Bluetooth Low Energy library, based on Plugin.BLE, for .NET Android, .NET iOS, .NET macOS, .NET Mac Catalyst, .NET tvOS, .NET for Windows, .NET, .NET Standard, and .NET Framework 4.8.1.</Description>
-        <AssemblyName>System.BluetoothLe</AssemblyName>
         <SignAssembly>true</SignAssembly>
         <AssemblyOriginatorKeyFile>DSoft.snk</AssemblyOriginatorKeyFile>
-		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/newky2k/DSoft.System.BluetoothLe</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageProjectUrl>https://github.com/newky2k/DSoft.System.BluetoothLe</PackageProjectUrl>
-        <PackageReleaseNotes>
-            Migrated to .NET 10.0
-        </PackageReleaseNotes>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageIcon>DSIcon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>DSIcon.png</PackageIcon>
         <PackageTags>BluetoothLe dotnet android ios macos maccatalyst windows wpf netstandard tvos</PackageTags>
         <Copyright>Copyright © 2026 DSoft</Copyright>
+        <PackageReleaseNotes>
+            4.0 - modernisation release. Contains breaking changes.
+
+            This release corrects defects carried over from the Xamarin port and reshapes the public API.
+
+            Fixed: a failed scan start no longer wedges the adapter into a permanent "already scanning" state;
+            connection failures are no longer lost as unhandled async void exceptions; CancellationToken is now
+            honoured throughout - service discovery, characteristic and descriptor reads and writes, notifications,
+            MTU and RSSI - where it was previously accepted and discarded; on Android, a pending read or write is
+            now cancelled when the link drops for any reason, a characteristic read is no longer completed by an
+            unrelated notification, and a BluetoothGattCallback is no longer allocated for every advertisement
+            received; malformed advertisements no longer crash the process from inside a native scan callback;
+            built-in tracing, which had never been wired up on any platform, now works.
+
+            Changed deliberately: starting a scan while one is running throws InvalidOperationException instead of
+            silently doing nothing, and StopScanningForDevicesAsync now genuinely waits for the scan to stop; a scan
+            that cannot start (adapter off, permission denied, unsupported) faults with AdapterScanException and
+            raises ScanFailed instead of completing empty after the full timeout; devices arriving in the tail of a
+            stopping scan are no longer reported; exceptions thrown by consumer event handlers are logged and
+            swallowed instead of terminating the app; task continuations now resume on the thread pool rather than
+            inline on the CoreBluetooth or Android GATT callback thread; Characteristic.WriteAsync returns Task and
+            throws CharacteristicWriteException instead of returning an unexplained false on two platforms and
+            throwing on the third; ConnectToKnownDeviceAsync reuses an already-discovered device instead of minting
+            a duplicate (on Android, a duplicate BluetoothGatt); Device.Dispose() no longer starts an unawaited
+            disconnect - disconnect explicitly first; on Android, 32-bit service-data advertisement records are no
+            longer byte-reversed and incomplete 32-bit UUID lists now are, and a denied BLUETOOTH_SCAN /
+            BLUETOOTH_CONNECT permission is reported as BluetoothState.Unauthorized; Device.State on iOS, macOS,
+            Mac Catalyst and tvOS reports the new DeviceState.Disconnecting while a disconnect is in progress,
+            where it previously reported Disconnected - Android and Windows still move straight to Disconnected,
+            so test for Connected rather than for Disconnected if you need portable behaviour.
+
+            Removed: BluetoothLE.UseOldFindCharacteristicMode, Adapter.ConnectedDeviceRegistry (use ConnectedDevices
+            / TryGetConnectedDevice), the fork's PlatformNotSupportedException (the BCL type is thrown instead),
+            BleCommandQueue, LEStream, the unreachable Android API-18 scan path, and several unused parameterless
+            constructors.
+
+            Added: BluetoothLE.WaitForStateAsync - await Bluetooth readiness instead of polling IsOn / IsAvailable,
+            which on Apple can bail out on a working adapter that has not yet settled. Every exception the library
+            raises deliberately now derives from BleException, so one catch clause covers them all.
+
+            The Windows (net10.0-windows10.0.19041.0) and net481 targets compile cleanly, but were not run: the
+            work was done on macOS, where those two targets build only by overriding TargetFrameworks with
+            EnableWindowsTargeting. Their behaviour should be smoke-tested on a Windows agent before release.
+        </PackageReleaseNotes>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos'">15.0</SupportedOSPlatformVersion>
@@ -44,6 +102,22 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+    </PropertyGroup>
+
+    <!-- Source Link ships in the SDK, so the PackageReference that used to sit here is redundant. These are
+         the properties that actually make it emit anything; none of them were ever set, so the package that
+         was referenced produced no symbols at all. -->
+    <PropertyGroup>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+
+    <!-- Packing on every Debug build costs time and produces artefacts nobody consumes. -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
 	<ItemGroup>
@@ -56,60 +130,55 @@
 			<PackagePath>\</PackagePath>
 		</None>
 	</ItemGroup>
-	
-    <ItemGroup Condition=" '$(Configuration)'=='Release' And '$(OS)' == 'Windows_NT' ">
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-    </ItemGroup>
 
     <PropertyGroup Condition=" $(TargetFramework.StartsWith('net481')) Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' ">
         <UseWPF>true</UseWPF>
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="**\*.shared.cs" />
-        <Compile Include="**\*.shared.*.cs" />
+        <Compile Include="**\*.shared.cs" Exclude="$(DefaultItemExcludes)" />
+        <Compile Include="**\*.shared.*.cs" Exclude="$(DefaultItemExcludes)" />
     </ItemGroup>
 
     <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) Or '$(TargetFramework)' == 'net10.0' ">
-        <Compile Include="**\*.netstandard.cs" />
-        <Compile Include="**\*.netstandard.*.cs" />
+        <Compile Include="**\*.netstandard.cs" Exclude="$(DefaultItemExcludes)" />
+        <Compile Include="**\*.netstandard.*.cs" Exclude="$(DefaultItemExcludes)" />
     </ItemGroup>
 
     <ItemGroup Condition=" $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' And !$(TargetFramework.StartsWith('net4')) ">
-        <Compile Include="**\*.netcore.cs" />
-        <Compile Include="**\*.netcore.*.cs" />
+        <Compile Include="**\*.netcore.cs" Exclude="$(DefaultItemExcludes)" />
+        <Compile Include="**\*.netcore.*.cs" Exclude="$(DefaultItemExcludes)" />
     </ItemGroup>
 
     <ItemGroup Condition=" $(TargetFramework.StartsWith('net481')) ">
         <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.18362.2007" />
-        <Compile Include="**\*.netf.cs" />
-        <Compile Include="**\*.netf.*.cs" />
+        <Compile Include="**\*.netf.cs" Exclude="$(DefaultItemExcludes)" />
+        <Compile Include="**\*.netf.*.cs" Exclude="$(DefaultItemExcludes)" />
     </ItemGroup>
 
     <ItemGroup Condition=" $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' ">
-        <Compile Include="**\*.android.cs" />
-        <Compile Include="**\*.android.*.cs" />
-        <AndroidResource Include="Resources\xml\*.xml" />
+        <Compile Include="**\*.android.cs" Exclude="$(DefaultItemExcludes)" />
+        <Compile Include="**\*.android.*.cs" Exclude="$(DefaultItemExcludes)" />
     </ItemGroup>
 
     <ItemGroup Condition=" $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' ">
-        <Compile Include="**\*.ios.cs" />
-        <Compile Include="**\*.ios.*.cs" />
+        <Compile Include="**\*.ios.cs" Exclude="$(DefaultItemExcludes)" />
+        <Compile Include="**\*.ios.*.cs" Exclude="$(DefaultItemExcludes)" />
     </ItemGroup>
 
     <ItemGroup Condition=" $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst' ">
-        <Compile Include="**\*.ios.cs" />
-        <Compile Include="**\*.ios.*.cs" />
+        <Compile Include="**\*.ios.cs" Exclude="$(DefaultItemExcludes)" />
+        <Compile Include="**\*.ios.*.cs" Exclude="$(DefaultItemExcludes)" />
     </ItemGroup>
 
     <ItemGroup Condition=" $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos' ">
-        <Compile Include="**\*.mac.cs" />
-        <Compile Include="**\*.mac.*.cs" />
+        <Compile Include="**\*.mac.cs" Exclude="$(DefaultItemExcludes)" />
+        <Compile Include="**\*.mac.*.cs" Exclude="$(DefaultItemExcludes)" />
     </ItemGroup>
 
     <ItemGroup Condition=" $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos' ">
-        <Compile Include="**\*.tvos.cs" />
-        <Compile Include="**\*.tvos.*.cs" />
+        <Compile Include="**\*.tvos.cs" Exclude="$(DefaultItemExcludes)" />
+        <Compile Include="**\*.tvos.*.cs" Exclude="$(DefaultItemExcludes)" />
     </ItemGroup>
 
 </Project>

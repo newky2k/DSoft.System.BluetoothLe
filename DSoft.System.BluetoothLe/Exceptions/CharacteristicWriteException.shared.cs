@@ -1,13 +1,18 @@
-﻿using System;
+using System;
 
 namespace System.BluetoothLe
 {
     /// <summary>
-    /// Thrown when reading a characteristic, or enabling notifications on one, fails.
+    /// Thrown when writing to a characteristic fails.
     /// </summary>
-    public class CharacteristicReadException : BleException
+    /// <remarks>
+    /// Before 4.0 a failed write reported itself inconsistently: Apple and Windows returned <c>false</c> from
+    /// <c>WriteAsync</c> with no reason attached, while Android threw <see cref="CharacteristicReadException"/>
+    /// from the write path. Both are now this type on every platform.
+    /// </remarks>
+    public class CharacteristicWriteException : BleException
     {
-        /// <summary>The characteristic the operation was attempted on, where it is known.</summary>
+        /// <summary>The characteristic the write was attempted on, where it is known.</summary>
         public Guid CharacteristicId { get; }
 
         /// <summary>The service owning <see cref="CharacteristicId"/>, where it is known.</summary>
@@ -19,16 +24,16 @@ namespace System.BluetoothLe
         /// </summary>
         public int? NativeStatus { get; }
 
-        /// <inheritdoc cref="CharacteristicReadException(string, Guid, Guid, int?)"/>
-        public CharacteristicReadException(string message) : base(message)
+        /// <inheritdoc cref="CharacteristicWriteException(string, Guid, Guid, int?)"/>
+        public CharacteristicWriteException(string message) : base(message)
         {
         }
 
         /// <summary>
         /// Creates the exception with the identifying detail a consumer needs to work out which of several
-        /// concurrent reads failed.
+        /// concurrent writes failed.
         /// </summary>
-        public CharacteristicReadException(string message, Guid characteristicId, Guid serviceId, int? nativeStatus = null)
+        public CharacteristicWriteException(string message, Guid characteristicId, Guid serviceId, int? nativeStatus = null)
             : base(message)
         {
             CharacteristicId = characteristicId;
