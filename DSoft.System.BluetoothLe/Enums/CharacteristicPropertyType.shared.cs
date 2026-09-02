@@ -11,6 +11,12 @@ namespace System.BluetoothLe
     public enum CharacteristicPropertyType
     {
         /// <summary>
+        /// No properties are set. A flags enum needs an explicit zero so that HasFlag comparisons and
+        /// default-initialised values are expressible without resorting to a cast.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// Characteristic value can be broadcasted.
         /// </summary>
         Broadcast = 1,

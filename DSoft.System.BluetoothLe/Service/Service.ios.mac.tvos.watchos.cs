@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CoreBluetooth;
 
@@ -38,7 +39,7 @@ namespace System.BluetoothLe
 
 
         #region Methods
-        internal Task<IList<Characteristic>> GetCharacteristicsNativeAsync()
+        internal Task<IList<Characteristic>> GetCharacteristicsNativeAsync(CancellationToken cancellationToken)
         {
             var exception = new Exception($"Device '{Device.Id}' disconnected while fetching characteristics for service with {Id}.");
 
@@ -49,9 +50,16 @@ namespace System.BluetoothLe
                         throw exception;
 
                     _device.DiscoverCharacteristics(NativeService);
+
+                    return Task.CompletedTask;
                 },
                 getCompleteHandler: (complete, reject) => (sender, args) =>
                 {
+                    // CoreBluetooth raises this delegate callback for every service being discovered on the
+                    // peripheral, so a callback for a different service must not complete this one's task.
+                    if (args.Service != null && args.Service.Handle != NativeService.Handle)
+                        return;
+
                     if (args.Error != null)
                     {
                         reject(new Exception($"Discover characteristics error: {args.Error.Description}"));
@@ -65,7 +73,7 @@ namespace System.BluetoothLe
                     {
                         var characteristics = args.Service.Characteristics
                                                   .Select(characteristic => new Characteristic(characteristic, _device, this, _bleCentralManagerDelegate))
-                                                  .Cast<Characteristic>().ToList();
+                                                  .ToList();
                         complete(characteristics);
                     }
                 },
@@ -77,18 +85,8 @@ namespace System.BluetoothLe
                         reject(exception);
                 }),
                 subscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral += handler,
-                unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
-        }
-
-        internal async Task<Characteristic> GetCharacteristicNativeAsync(Guid characteristicId)
-        {
-            var characteristics = await GetCharacteristicsNativeAsync();
-            return characteristics.FirstOrDefault(c => c.Id == characteristicId);
-        }
-
-        public virtual void Dispose()
-        {
-
+                unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler,
+                token: cancellationToken);
         }
 
         #endregion

@@ -19,7 +19,7 @@ namespace System.BluetoothLe.Extensions
             switch (scanMode)
             {
                 case ScanMode.Passive:
-                    if (Build.VERSION.SdkInt < BuildVersionCodes.M)
+                    if (!OperatingSystem.IsAndroidVersionAtLeast(23))
                     {
                         Trace.Message("Scanmode Passive is not supported on API lvl < 23. Falling back to LowPower.");
                         return AndroidScanMode.LowPower;

@@ -8,24 +8,29 @@ using System.Threading.Tasks;
 
 namespace System.BluetoothLe
 {
+    // There is no Bluetooth stack behind this target framework at all; it exists so that a shared library can
+    // reference the package without multi-targeting. Every member throws the BCL's PlatformNotSupportedException
+    // rather than the fork's now-deleted namesake, which a consumer's catch of the BCL type never caught.
     public partial class Characteristic
     {
-        public Guid NativeGuid => throw new PlatformNotSupportedException();
-        public string NativeUuid => throw new PlatformNotSupportedException();
-        public byte[] NativeValue => throw new PlatformNotSupportedException();
-        public CharacteristicPropertyType NativeProperties => throw new PlatformNotSupportedException();
-        public object NativeCharacteristic => throw new PlatformNotSupportedException();
+        protected Guid NativeGuid => throw new System.PlatformNotSupportedException(NotSupported);
+        protected string NativeUuid => throw new System.PlatformNotSupportedException(NotSupported);
+        protected byte[] NativeValue => throw new System.PlatformNotSupportedException(NotSupported);
+        protected CharacteristicPropertyType NativeProperties => throw new System.PlatformNotSupportedException(NotSupported);
+        protected object NativeCharacteristic => throw new System.PlatformNotSupportedException(NotSupported);
 
-        public string NativeName => KnownCharacteristics.Lookup(Id).Name;
+        protected string NativeName => throw new System.PlatformNotSupportedException(NotSupported);
 
-        protected Task<IReadOnlyList<Descriptor>> GetDescriptorsNativeAsync() => throw new PlatformNotSupportedException();
+        private const string NotSupported = "Bluetooth LE is not available on this target framework. Reference a platform build of DSoft.System.BluetoothLe (Android, iOS, macOS, Mac Catalyst, tvOS or Windows) from the head project.";
 
-        protected Task<byte[]> ReadNativeAsync() => throw new PlatformNotSupportedException();
+        protected Task<IReadOnlyList<Descriptor>> GetDescriptorsNativeAsync(CancellationToken cancellationToken) => throw new System.PlatformNotSupportedException(NotSupported);
 
-        protected Task<bool> WriteNativeAsync(byte[] data, CharacteristicWriteType writeType) => throw new PlatformNotSupportedException();
+        protected Task<byte[]> ReadNativeAsync(CancellationToken cancellationToken) => throw new System.PlatformNotSupportedException(NotSupported);
 
-        protected Task StartUpdatesNativeAsync() => throw new PlatformNotSupportedException();
+        protected Task WriteNativeAsync(byte[] data, CharacteristicWriteType writeType, CancellationToken cancellationToken) => throw new System.PlatformNotSupportedException(NotSupported);
 
-        protected Task StopUpdatesNativeAsync() => throw new PlatformNotSupportedException();
+        protected Task StartUpdatesNativeAsync(CharacteristicUpdateMode mode, CancellationToken cancellationToken) => throw new System.PlatformNotSupportedException(NotSupported);
+
+        protected Task StopUpdatesNativeAsync(CancellationToken cancellationToken) => throw new System.PlatformNotSupportedException(NotSupported);
     }
 }

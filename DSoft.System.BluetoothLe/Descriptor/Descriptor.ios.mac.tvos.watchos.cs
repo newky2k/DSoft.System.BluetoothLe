@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using CoreBluetooth;
 using System.BluetoothLe;
@@ -14,7 +15,7 @@ namespace System.BluetoothLe
 
         protected CBDescriptor NativeDescriptor { get; private set; }
 
-        public byte[] NativeValue
+        protected byte[] NativeValue
         {
             get
             {
@@ -37,7 +38,7 @@ namespace System.BluetoothLe
         private readonly CBPeripheral _parentDevice;
         private readonly IBleCentralManagerDelegate _bleCentralManagerDelegate;
 
-        public Descriptor(CBDescriptor nativeDescriptor, CBPeripheral parentDevice, Characteristic characteristic, IBleCentralManagerDelegate bleCentralManagerDelegate) : this(characteristic)
+        internal Descriptor(CBDescriptor nativeDescriptor, CBPeripheral parentDevice, Characteristic characteristic, IBleCentralManagerDelegate bleCentralManagerDelegate) : this(characteristic)
         {
             NativeDescriptor = nativeDescriptor;
 
@@ -45,9 +46,9 @@ namespace System.BluetoothLe
             _bleCentralManagerDelegate = bleCentralManagerDelegate;
         }
 
-        protected Task<byte[]> ReadNativeAsync()
+        protected Task<byte[]> ReadNativeAsync(CancellationToken cancellationToken)
         {
-            var exception = new Exception($"Device '{Characteristic.Service.Device.Id}' disconnected while reading descriptor with {Id}.");
+            var exception = new DescriptorReadException($"Device '{Characteristic.Service.Device.Id}' disconnected while reading descriptor with {Id}.", Id);
 
             return TaskBuilder.FromEvent<byte[], EventHandler<CBDescriptorEventArgs>, EventHandler<CBPeripheralErrorEventArgs>>(
                    execute: () =>
@@ -56,14 +57,16 @@ namespace System.BluetoothLe
                            throw exception;
 
                        _parentDevice.ReadValue(NativeDescriptor);
+
+                       return Task.CompletedTask;
                    },
                    getCompleteHandler: (complete, reject) => (sender, args) =>
                    {
-                       if (args.Descriptor.UUID != NativeDescriptor.UUID)
+                       if (!IsSameDescriptor(args.Descriptor))
                            return;
 
                        if (args.Error != null)
-                           reject(new Exception($"Read descriptor async error: {args.Error.Description}"));
+                           reject(new DescriptorReadException($"Read descriptor async error: {args.Error.Description}", Id, (int)args.Error.Code));
                        else
                            complete(Value);
                    },
@@ -75,27 +78,31 @@ namespace System.BluetoothLe
                            reject(exception);
                    }),
                    subscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral += handler,
-                   unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
+                   unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler,
+                   token: cancellationToken);
         }
 
-        protected Task WriteNativeAsync(byte[] data)
+        protected Task WriteNativeAsync(byte[] data, CancellationToken cancellationToken)
         {
-            var exception = new Exception($"Device '{Characteristic.Service.Device.Id}' disconnected while writing descriptor with {Id}.");
+            var exception = new DescriptorWriteException($"Device '{Characteristic.Service.Device.Id}' disconnected while writing descriptor with {Id}.", Id);
 
             return TaskBuilder.FromEvent<bool, EventHandler<CBDescriptorEventArgs>, EventHandler<CBPeripheralErrorEventArgs>>(
                     execute: () =>
                     {
                         if (_parentDevice.State != CBPeripheralState.Connected)
                             throw exception;
+
                         _parentDevice.WriteValue(NSData.FromArray(data), NativeDescriptor);
+
+                        return Task.CompletedTask;
                     },
                     getCompleteHandler: (complete, reject) => (sender, args) =>
                     {
-                        if (args.Descriptor.UUID != NativeDescriptor.UUID)
+                        if (!IsSameDescriptor(args.Descriptor))
                             return;
 
                         if (args.Error != null)
-                            reject(new Exception(args.Error.Description));
+                            reject(new DescriptorWriteException(args.Error.Description, Id, (int)args.Error.Code));
                         else
                             complete(true);
                     },
@@ -107,7 +114,19 @@ namespace System.BluetoothLe
                             reject(exception);
                     }),
                     subscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral += handler,
-                    unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler);
+                    unsubscribeReject: handler => _bleCentralManagerDelegate.DisconnectedPeripheral -= handler,
+                    token: cancellationToken);
         }
+
+        /// <summary>
+        /// Decides whether a delegate callback is about this descriptor and not merely one sharing its UUID.
+        /// </summary>
+        /// <remarks>
+        /// Every notifiable characteristic carries a 0x2902 descriptor, so matching on UUID alone let one
+        /// characteristic's subscription be completed by another's callback. The native handle identifies the
+        /// attribute exactly.
+        /// </remarks>
+        private bool IsSameDescriptor(CBDescriptor other)
+            => other != null && NativeDescriptor != null && other.Handle == NativeDescriptor.Handle;
     }
 }

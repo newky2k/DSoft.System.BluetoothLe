@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Bluetooth;
 using System.BluetoothLe;
@@ -38,23 +39,15 @@ namespace System.BluetoothLe
 
         #region Methods
 
-        internal Task<IList<Characteristic>> GetCharacteristicsNativeAsync()
+        internal Task<IList<Characteristic>> GetCharacteristicsNativeAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             return Task.FromResult<IList<Characteristic>>(
                 NativeService.Characteristics.Select(characteristic => new Characteristic(characteristic, _gatt, _gattCallback, this))
-                .Cast<Characteristic>().ToList());
+                .ToList());
         }
 
-        internal async Task<Characteristic> GetCharacteristicNativeAsync(Guid characteristicId)
-        {
-            var characteristics = await GetCharacteristicsNativeAsync();
-            return characteristics.FirstOrDefault(c => c.Id == characteristicId);
-        }
         #endregion
-
-        public virtual void Dispose()
-        {
-
-        }
     }
 }

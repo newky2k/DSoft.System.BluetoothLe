@@ -7,16 +7,13 @@ namespace System.BluetoothLe
     // Source: https://developer.bluetooth.org/gatt/descriptors/Pages/DescriptorsHomePage.aspx
     public static class KnownDescriptors
     {
-        private static readonly Dictionary<Guid, KnownDescriptor> LookupTable;
-
-        static KnownDescriptors()
-        {
-            LookupTable = Descriptors.ToDictionary(d => d.Id, d => d);
-        }
-
+        /// <summary>
+        /// Finds the Bluetooth SIG's name for a descriptor UUID, or a placeholder when the UUID is not a
+        /// standard one.
+        /// </summary>
         public static KnownDescriptor Lookup(Guid id)
         {
-            return LookupTable.ContainsKey(id) ? LookupTable[id] : new KnownDescriptor("Unknown descriptor", Guid.Empty);
+            return LookupTable.TryGetValue(id, out var known) ? known : new KnownDescriptor("Unknown descriptor", Guid.Empty);
         }
 
         private static readonly IList<KnownDescriptor> Descriptors = new List<KnownDescriptor>()
@@ -31,5 +28,10 @@ namespace System.BluetoothLe
             new KnownDescriptor("External Report Reference", Guid.ParseExact("00002907-0000-1000-8000-00805f9b34fb", "d")),
             new KnownDescriptor("Export Reference", Guid.ParseExact("00002908-0000-1000-8000-00805f9b34fb", "d")),
         };
+
+        // Declared after the list it is built from: static field initialisers run in textual order, and a
+        // field initialiser rather than a static constructor leaves the type beforefieldinit, so the table is
+        // built lazily on first lookup instead of on the first touch of anything in this class.
+        private static readonly Dictionary<Guid, KnownDescriptor> LookupTable = Descriptors.ToDictionary(d => d.Id, d => d);
     }
 }

@@ -33,9 +33,12 @@ namespace System.BluetoothLe
             {
                 _bluetoothadapter = value;
 
+                // The early return was missing, so a machine with no Bluetooth adapter set Unavailable and
+                // then immediately overwrote it with On - reporting a working radio on hardware that has none.
                 if (_bluetoothadapter == null)
                 {
                     State = BluetoothState.Unavailable;
+                    return;
                 }
 
                 State = BluetoothState.On;
@@ -72,14 +75,40 @@ namespace System.BluetoothLe
         }
 
 
-        internal async void InitializeNative()
+        internal void InitializeNative()
         {
-            await InitAdapter();
+            // Fire and forget by necessity: the shared Initialize() is synchronous, while the only way Windows
+            // exposes radio state is an asynchronous adapter query. What has changed is that the continuation
+            // is now guarded. The previous signature was async void, so a machine with no Bluetooth radio - or
+            // an app without the capability declared - raised an unhandled exception on the thread pool from
+            // inside the BluetoothLE.Current property getter, taking the process down.
+            _ = InitAdapterSafeAsync();
+        }
+
+        private async Task InitAdapterSafeAsync()
+        {
+            try
+            {
+                await InitAdapter();
+            }
+            catch (Exception ex)
+            {
+                Trace.Message("BluetoothLE: Windows adapter initialisation failed: {0}", ex.Message);
+                State = BluetoothState.Unavailable;
+            }
         }
 
         private async Task InitAdapter()
         {
             NativeAdapter = await BluetoothAdapter.GetDefaultAsync();
+
+            // GetDefaultAsync returns null when the machine has no Bluetooth adapter at all. Calling
+            // GetRadioAsync on that threw a NullReferenceException out of the async void above.
+            if (NativeAdapter == null)
+            {
+                State = BluetoothState.Unavailable;
+                return;
+            }
 
             _radio = await NativeAdapter.GetRadioAsync();
 
@@ -90,6 +119,17 @@ namespace System.BluetoothLe
 
             State = GetInitialStateNative();
 
+        }
+
+        partial void DisposeNative()
+        {
+            if (_radio != null)
+            {
+                _radio.StateChanged -= OnRadioStateChanged;
+                _radio = null;
+            }
+
+            _bluetoothadapter = null;
         }
 
         private void OnRadioStateChanged(Radio sender, object args)

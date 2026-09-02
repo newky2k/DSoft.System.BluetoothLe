@@ -8,12 +8,31 @@ namespace System.BluetoothLe
     public interface IGattCallback
     {
         event EventHandler<ServicesDiscoveredCallbackEventArgs> ServicesDiscovered;
+
+        /// <summary>
+        /// Raised for a completed explicit read, and only for that.
+        /// </summary>
+        /// <remarks>
+        /// Before 4.0 reads and notifications shared one event, so a notification arriving while a read was in
+        /// flight completed the read with the notification's bytes. Separating them is what makes a read return
+        /// its own data.
+        /// </remarks>
+        event EventHandler<CharacteristicReadCallbackEventArgs> CharacteristicValueRead;
+
+        /// <summary>Raised for a server-initiated notification or indication, and only for that.</summary>
         event EventHandler<CharacteristicReadCallbackEventArgs> CharacteristicValueUpdated;
+
         event EventHandler<CharacteristicWriteCallbackEventArgs> CharacteristicValueWritten;
         event EventHandler<DescriptorCallbackEventArgs> DescriptorValueWritten;
         event EventHandler<DescriptorCallbackEventArgs> DescriptorValueRead;
         event EventHandler<RssiReadCallbackEventArgs> RemoteRssiRead;
+
+        /// <summary>
+        /// Raised whenever the link goes down, for any reason, so that operations waiting on a callback that
+        /// can no longer arrive fail instead of hanging.
+        /// </summary>
         event EventHandler ConnectionInterrupted;
+
         event EventHandler<MtuRequestCallbackEventArgs> MtuRequested;
     }
 
@@ -22,6 +41,7 @@ namespace System.BluetoothLe
         private readonly Adapter _adapter;
         private readonly Device _device;
         public event EventHandler<ServicesDiscoveredCallbackEventArgs> ServicesDiscovered;
+        public event EventHandler<CharacteristicReadCallbackEventArgs> CharacteristicValueRead;
         public event EventHandler<CharacteristicReadCallbackEventArgs> CharacteristicValueUpdated;
         public event EventHandler<CharacteristicWriteCallbackEventArgs> CharacteristicValueWritten;
         public event EventHandler<RssiReadCallbackEventArgs> RemoteRssiRead;
@@ -46,9 +66,6 @@ namespace System.BluetoothLe
                 return;
             }
 
-            //ToDo ignore just for me
-            Trace.Message($"References of parent device and gatt callback device equal? {ReferenceEquals(_device.NativeDevice, gatt.Device).ToString().ToUpper()}");
-
             Trace.Message($"OnConnectionStateChange: GattStatus: {status}");
 
             switch (newState)
@@ -59,6 +76,12 @@ namespace System.BluetoothLe
                     // Close GATT regardless, else we can accumulate zombie gatts.
                     CloseGattInstances(gatt);
 
+                    // Raised for every disconnected path, not only the unsolicited one. Before 4.0 a
+                    // user-initiated disconnect, or a clean close by the peripheral (status 19), returned from
+                    // the block below without raising this, so a read or write already waiting on a GATT
+                    // callback waited for the lifetime of the process.
+                    ConnectionInterrupted?.Invoke(this, System.EventArgs.Empty);
+
                     // If status == 19, then connection was closed by the peripheral device (clean disconnect), consider this as a DeviceDisconnected
                     if (_device.IsOperationRequested || (int)status == 19)
                     {
@@ -66,7 +89,7 @@ namespace System.BluetoothLe
 
                         //Found so we can remove it
                         _device.IsOperationRequested = false;
-                        _adapter.ConnectedDeviceRegistry.TryRemove(gatt.Device.Address, out _);
+                        _adapter.TryRemoveConnectedDevice(_device.Id, out _);
 
                         if (status != GattStatus.Success && (int)status != 19)
                         {
@@ -86,11 +109,8 @@ namespace System.BluetoothLe
                     //connection must have been lost, because the callback was not triggered by calling disconnect
                     Trace.Message($"Disconnected '{_device.Name}' by lost connection");
 
-                    _adapter.ConnectedDeviceRegistry.TryRemove(gatt.Device.Address, out _);
+                    _adapter.TryRemoveConnectedDevice(_device.Id, out _);
                     _adapter.HandleDisconnectedDevice(false, _device);
-
-                    // inform pending tasks
-                    ConnectionInterrupted?.Invoke(this, System.EventArgs.Empty);
                     break;
                 // connecting
                 case ProfileState.Connecting:
@@ -126,7 +146,7 @@ namespace System.BluetoothLe
                     }
                     else
                     {
-                        _adapter.ConnectedDeviceRegistry[gatt.Device.Address] = _device;
+                        _adapter.RegisterConnectedDevice(_device);
                         _adapter.HandleConnectedDevice(_device);
                     }
 
@@ -140,9 +160,6 @@ namespace System.BluetoothLe
 
         private void CloseGattInstances(BluetoothGatt gatt)
         {
-            //ToDO just for me
-            Trace.Message($"References of parent device gatt and callback gatt equal? {ReferenceEquals(_device._gatt, gatt).ToString().ToUpper()}");
-
             if (!ReferenceEquals(gatt, _device._gatt))
             {
                 gatt.Close();
@@ -165,18 +182,26 @@ namespace System.BluetoothLe
         {
             base.OnCharacteristicRead(gatt, characteristic, status);
 
-            Trace.Message("OnCharacteristicRead: value {0}; status {1}", characteristic.GetValue().ToHexString(), status);
+            // Read here, inside the callback, and carried on the event args. Android hands back the same
+            // characteristic object for every operation, so a handler reading GetValue() later can see a
+            // subsequent operation's bytes.
+            var value = characteristic.GetValue();
 
-            CharacteristicValueUpdated?.Invoke(this, new CharacteristicReadCallbackEventArgs(characteristic));
+            Trace.Message("OnCharacteristicRead: value {0}; status {1}", value.ToHexString(), status);
+
+            CharacteristicValueRead?.Invoke(this, new CharacteristicReadCallbackEventArgs(characteristic, value, status));
         }
 
         public override void OnCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic)
         {
             base.OnCharacteristicChanged(gatt, characteristic);
 
-            Trace.Message("OnCharacteristicChanged: value {0}", characteristic.GetValue().ToHexString());
+            var value = characteristic.GetValue();
 
-            CharacteristicValueUpdated?.Invoke(this, new CharacteristicReadCallbackEventArgs(characteristic));
+            Trace.Message("OnCharacteristicChanged: value {0}", value.ToHexString());
+
+            // A notification carries no status of its own; it only ever arrives on success.
+            CharacteristicValueUpdated?.Invoke(this, new CharacteristicReadCallbackEventArgs(characteristic, value, GattStatus.Success));
         }
 
         public override void OnCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, GattStatus status)
@@ -185,7 +210,7 @@ namespace System.BluetoothLe
 
             Trace.Message("OnCharacteristicWrite: value {0} status {1}", characteristic.GetValue().ToHexString(), status);
 
-            CharacteristicValueWritten?.Invoke(this, new CharacteristicWriteCallbackEventArgs(characteristic, GetExceptionFromGattStatus(status)));
+            CharacteristicValueWritten?.Invoke(this, new CharacteristicWriteCallbackEventArgs(characteristic, status, GetExceptionFromGattStatus(status)));
         }
 
         public override void OnReliableWriteCompleted(BluetoothGatt gatt, GattStatus status)
@@ -219,7 +244,7 @@ namespace System.BluetoothLe
 
             Trace.Message("OnDescriptorWrite: {0}", descriptor.GetValue()?.ToHexString());
 
-            DescriptorValueWritten?.Invoke(this, new DescriptorCallbackEventArgs(descriptor, GetExceptionFromGattStatus(status)));
+            DescriptorValueWritten?.Invoke(this, new DescriptorCallbackEventArgs(descriptor, status, GetExceptionFromGattStatus(status)));
         }
 
         public override void OnDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, GattStatus status)
@@ -228,7 +253,7 @@ namespace System.BluetoothLe
 
             Trace.Message("OnDescriptorRead: {0}", descriptor.GetValue()?.ToHexString());
 
-            DescriptorValueRead?.Invoke(this, new DescriptorCallbackEventArgs(descriptor, GetExceptionFromGattStatus(status)));
+            DescriptorValueRead?.Invoke(this, new DescriptorCallbackEventArgs(descriptor, status, GetExceptionFromGattStatus(status)));
         }
 
         private Exception GetExceptionFromGattStatus(GattStatus status)

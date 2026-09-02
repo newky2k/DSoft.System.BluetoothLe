@@ -1,7 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,26 +7,33 @@ namespace System.BluetoothLe
 {
     public partial class Adapter
     {
-        protected Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken) => throw new PlatformNotSupportedException();
+        // The message names what to do about it. A developer reaching this build has almost always referenced
+        // the package from a project whose target framework has no platform, or from a platform TFM more
+        // specific than any lib folder in the package, and "not supported" on its own does not say that.
+        private const string NotSupportedMessage =
+            "Bluetooth Low Energy is not implemented for this target framework. Reference DSoft.System.BluetoothLe "
+            + "from a platform-specific target framework (net10.0-android, net10.0-ios, net10.0-maccatalyst, "
+            + "net10.0-macos, net10.0-tvos, net10.0-windows or net481).";
 
-        protected void StopScanNative() => throw new PlatformNotSupportedException();
+        internal Adapter()
+        {
+        }
 
-        protected Task ConnectToDeviceNativeAsync(Device device, ConnectParameters connectParameters, CancellationToken cancellationToken) => throw new PlatformNotSupportedException();
+        protected Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken) => throw new System.PlatformNotSupportedException(NotSupportedMessage);
 
-        protected void DisconnectDeviceNative(Device device) => throw new PlatformNotSupportedException();
+        protected void StopScanNative() => throw new System.PlatformNotSupportedException(NotSupportedMessage);
+
+        protected Task ConnectToDeviceNativeAsync(Device device, ConnectParameters connectParameters, CancellationToken cancellationToken) => throw new System.PlatformNotSupportedException(NotSupportedMessage);
+
+        protected void DisconnectDeviceNative(Device device) => throw new System.PlatformNotSupportedException(NotSupportedMessage);
 
         /// <summary>
-        /// Connects to a known device asynchronously.
+        /// Retrieves a device the platform already knows about, without connecting it.
         /// </summary>
-        /// <param name="deviceGuid">The device unique identifier.</param>
-        /// <param name="connectParameters">The connection parameters.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="dontThrowExceptionOnNotFound">if set to <c>true</c> [dont throw exception on not found].</param>
-        /// <returns></returns>
-        /// <exception cref="PlatformNotSupportedException"></exception>
-        public Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default(CancellationToken), bool dontThrowExceptionOnNotFound = false) => throw new PlatformNotSupportedException();
+        /// <exception cref="System.PlatformNotSupportedException">Always, on this target framework.</exception>
+        protected Task<Device> ConnectToKnownDeviceNativeAsync(Guid deviceGuid, ConnectParameters connectParameters, CancellationToken cancellationToken) => throw new System.PlatformNotSupportedException(NotSupportedMessage);
 
-        public IReadOnlyList<Device> GetSystemConnectedOrPairedDevices(Guid[] services = null) => throw new PlatformNotSupportedException();
-
+        /// <inheritdoc cref="System.PlatformNotSupportedException"/>
+        public IReadOnlyList<Device> GetSystemConnectedOrPairedDevices(Guid[] services = null) => throw new System.PlatformNotSupportedException(NotSupportedMessage);
     }
 }
