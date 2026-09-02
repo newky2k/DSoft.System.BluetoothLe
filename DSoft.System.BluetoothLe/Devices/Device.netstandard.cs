@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,29 +8,31 @@ namespace System.BluetoothLe
 {
     public partial class Device
     {
+        // This partial backs netstandard2.0 and the platform-neutral net10.0 target. Neither has a
+        // Bluetooth stack to talk to, so every native member fails loudly rather than pretending.
+        private const string NotSupportedMessage =
+            "Bluetooth LE is not available on this target framework. Reference a platform-specific build (android, ios, maccatalyst, macos, tvos or windows).";
+
         #region Properties
-        internal object NativeDevice => throw new PlatformNotSupportedException();
+        internal object NativeDevice => throw new System.PlatformNotSupportedException(NotSupportedMessage);
         #endregion
 
         #region Methods
 
-        public virtual void Dispose()
+        partial void DisposeNative()
         {
-
-            Adapter?.DisconnectDeviceAsync(this);
+            // Nothing native was ever acquired on this target.
         }
 
-        private Task<bool> UpdateRssiNativeAsync() => throw new PlatformNotSupportedException();
+        private Task<bool> UpdateRssiNativeAsync(CancellationToken cancellationToken) => throw new System.PlatformNotSupportedException(NotSupportedMessage);
 
-        private DeviceState GetState() => throw new PlatformNotSupportedException();
+        private DeviceState GetState() => throw new System.PlatformNotSupportedException(NotSupportedMessage);
 
-        private Task<IReadOnlyList<Service>> GetServicesNativeAsync() => throw new PlatformNotSupportedException();
+        private Task<IReadOnlyList<Service>> GetServicesNativeAsync(CancellationToken cancellationToken) => throw new System.PlatformNotSupportedException(NotSupportedMessage);
 
-        private Task<Service> GetServiceNativeAsync(Guid id) => throw new PlatformNotSupportedException();
+        private Task<int> RequestMtuNativeAsync(int requestValue, CancellationToken cancellationToken) => throw new System.PlatformNotSupportedException(NotSupportedMessage);
 
-        private Task<int> RequestMtuNativeAsync(int requestValue) => throw new PlatformNotSupportedException();
-
-        private bool UpdateConnectionIntervalNative(ConnectionInterval interval) => throw new PlatformNotSupportedException();
+        private bool UpdateConnectionIntervalNative(ConnectionInterval interval) => throw new System.PlatformNotSupportedException(NotSupportedMessage);
 
         #endregion
     }

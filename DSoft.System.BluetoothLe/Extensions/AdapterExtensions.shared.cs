@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,7 +7,14 @@ using System.BluetoothLe.Utils;
 
 namespace System.BluetoothLe
 {
-    public static class AdapterExtenstion
+    /// <summary>
+    /// Convenience overloads over <see cref="Adapter"/>.
+    /// </summary>
+    /// <remarks>
+    /// Renamed from <c>AdapterExtenstion</c> in 4.0. The old name was a misspelling, and the type is
+    /// referenced by name in every consumer that writes an explicit call rather than an extension-method call.
+    /// </remarks>
+    public static class AdapterExtensions
     {
         /// <summary>
         /// Starts scanning for BLE devices.
@@ -45,11 +52,18 @@ namespace System.BluetoothLe
             return adapter.StartScanningForDevicesAsync(deviceFilter: deviceFilter, cancellationToken: cancellationToken);
         }
 
+        /// <summary>
+        /// Scans until the device with <paramref name="deviceId"/> is discovered, and returns it.
+        /// </summary>
         public static Task<Device> DiscoverDeviceAsync(this Adapter adapter, Guid deviceId, CancellationToken cancellationToken = default)
         {
             return DiscoverDeviceAsync(adapter, device => device.Id == deviceId, cancellationToken);
         }
 
+        /// <summary>
+        /// Scans until a device the <paramref name="deviceFilter"/> accepts is discovered, and returns it.
+        /// </summary>
+        /// <exception cref="DeviceDiscoverException">The scan timed out without discovering a matching device.</exception>
         public static async Task<Device> DiscoverDeviceAsync(this Adapter adapter, Func<Device, bool> deviceFilter, CancellationToken cancellationToken = default)
         {
             var device = adapter.DiscoveredDevices.FirstOrDefault(deviceFilter);
@@ -60,7 +74,9 @@ namespace System.BluetoothLe
 
             if (adapter.IsScanning)
             {
-                await adapter.StopScanningForDevicesAsync();
+                // Now genuinely waits for the running scan to stop, which is what makes the start below safe:
+                // from 4.0 onwards, starting a scan while one is running throws.
+                await adapter.StopScanningForDevicesAsync().ConfigureAwait(false);
             }
 
             return await TaskBuilder.FromEvent<Device, EventHandler<DeviceEventArgs>, EventHandler>(
@@ -69,7 +85,12 @@ namespace System.BluetoothLe
                 getCompleteHandler: (complete, reject) => ((sender, args) =>
                 {
                     complete(args.Device);
-                    adapter.StopScanningForDevicesAsync();
+
+                    // Deliberately not awaited, and the discard records that. This is an event handler running
+                    // on the platform's scan callback thread; the task it returns does not complete until the
+                    // scan that raised this event has finished tearing down, so awaiting it here would block
+                    // the very callback the teardown has to unwind through.
+                    _ = adapter.StopScanningForDevicesAsync();
                 }),
                 subscribeComplete: handler => adapter.DeviceDiscovered += handler,
                 unsubscribeComplete: handler => adapter.DeviceDiscovered -= handler,
@@ -78,7 +99,7 @@ namespace System.BluetoothLe
                 subscribeReject: handler => adapter.ScanTimeoutElapsed += handler,
                 unsubscribeReject: handler => adapter.ScanTimeoutElapsed -= handler,
 
-                token: cancellationToken);
+                token: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -92,7 +113,7 @@ namespace System.BluetoothLe
         /// <exception cref="DeviceConnectionException">Thrown if the device connection fails.</exception>
         public static Task ConnectToDeviceAsync(this Adapter adapter, Device device, ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
-            return adapter.ConnectToDeviceAsync(device, connectParameters:connectParameters, cancellationToken: cancellationToken);
+            return adapter.ConnectToDeviceAsync(device, connectParameters: connectParameters, cancellationToken: cancellationToken);
         }
     }
 }

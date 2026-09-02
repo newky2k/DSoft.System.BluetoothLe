@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -7,12 +6,8 @@ using System.Threading.Tasks;
 using Android.Bluetooth;
 using Android.Bluetooth.LE;
 using Android.OS;
-using Java.Util;
 using System.BluetoothLe.Extensions;
 using Trace = System.BluetoothLe.Trace;
-using Android.App;
-using Java.Lang;
-using System.BluetoothLe.Exceptions;
 
 namespace System.BluetoothLe
 {
@@ -20,14 +15,14 @@ namespace System.BluetoothLe
     {
         private readonly BluetoothManager _bluetoothManager;
         private readonly BluetoothAdapter _bluetoothAdapter;
-        private readonly Api18BleScanCallback _api18ScanCallback;
         private readonly Api21BleScanCallback _api21ScanCallback;
 
-        public Adapter(BluetoothManager bluetoothManager)
+        // Internal to match the Apple partial. An adapter is only ever constructed by BluetoothLE, which is the
+        // only thing that holds a BluetoothManager to hand it.
+        internal Adapter(BluetoothManager bluetoothManager)
         {
             _bluetoothManager = bluetoothManager;
-            _bluetoothAdapter = bluetoothManager.Adapter;
-
+            _bluetoothAdapter = bluetoothManager?.Adapter;
 
             // TODO: bonding
             //var bondStatusBroadcastReceiver = new BondStatusBroadcastReceiver();
@@ -40,46 +35,14 @@ namespace System.BluetoothLe
             //    //DeviceBondStateChanged(this, args);
             //};
 
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
-            {
-                _api21ScanCallback = new Api21BleScanCallback(this);
-            }
-            else
-            {
-                _api18ScanCallback = new Api18BleScanCallback(this);
-            }
+            _api21ScanCallback = new Api21BleScanCallback(this);
         }
 
         protected Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
         {
-            if (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop)
-            {
-                StartScanningOld(serviceUuids);
-            }
-            else
-            {
-                StartScanningNew(serviceUuids);
-            }
+            // allowDuplicatesKey has no equivalent on Android: the platform scanner reports every advertisement
+            // it receives and there is no setting to coalesce them.
 
-            return Task.FromResult(true);
-        }
-
-        private void StartScanningOld(Guid[] serviceUuids)
-        {
-            var hasFilter = serviceUuids?.Any() ?? false;
-            UUID[] uuids = null;
-            if (hasFilter)
-            {
-                uuids = serviceUuids.Select(u => UUID.FromString(u.ToString())).ToArray();
-            }
-            Trace.Message("Adapter < 21: Starting a scan for devices.");
-#pragma warning disable 618
-            _bluetoothAdapter.StartLeScan(uuids, _api18ScanCallback);
-#pragma warning restore 618
-        }
-
-        private void StartScanningNew(Guid[] serviceUuids)
-        {
             var hasFilter = serviceUuids?.Any() ?? false;
             List<ScanFilter> scanFilters = null;
 
@@ -96,76 +59,135 @@ namespace System.BluetoothLe
 
             var ssb = new ScanSettings.Builder();
             ssb.SetScanMode(ScanMode.ToNative());
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(26))
             {
                 // enable Bluetooth 5 Advertisement Extensions on Android 8.0 and above
                 ssb.SetLegacy(false);
             }
             //ssb.SetCallbackType(ScanCallbackType.AllMatches);
 
-            if (_bluetoothAdapter.BluetoothLeScanner != null)
+            var scanner = _bluetoothAdapter?.BluetoothLeScanner;
+            if (scanner == null)
             {
-                Trace.Message($"Adapter >=21: Starting a scan for devices. ScanMode: {ScanMode}");
-                if (hasFilter)
-                {
-                    Trace.Message($"ScanFilters: {string.Join(", ", serviceUuids)}");
-                }
-                _bluetoothAdapter.BluetoothLeScanner.StartScan(scanFilters, ssb.Build(), _api21ScanCallback);
+                // A null scanner means the radio is off or there is no BLE hardware. Previously this traced and
+                // returned, so the caller waited out the full ScanTimeout and then reported an empty room.
+                Trace.Message("Adapter: Scan failed, the Bluetooth adapter is unavailable or switched off.");
+                HandleScanFailed(ScanFailureReason.AdapterOff);
+                return Task.CompletedTask;
             }
-            else
+
+            Trace.Message($"Adapter: Starting a scan for devices. ScanMode: {ScanMode}");
+            if (hasFilter)
             {
-                Trace.Message("Adapter >= 21: Scan failed. Bluetooth is probably off");
+                Trace.Message($"ScanFilters: {string.Join(", ", serviceUuids)}");
             }
+
+            scanner.StartScan(scanFilters, ssb.Build(), _api21ScanCallback);
+
+            return Task.CompletedTask;
         }
 
         protected void StopScanNative()
         {
-            if (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop)
-            {
-                Trace.Message("Adapter < 21: Stopping the scan for devices.");
-#pragma warning disable 618
-                _bluetoothAdapter.StopLeScan(_api18ScanCallback);
-#pragma warning restore 618
-            }
-            else
-            {
-                Trace.Message("Adapter >= 21: Stopping the scan for devices.");
-                _bluetoothAdapter.BluetoothLeScanner?.StopScan(_api21ScanCallback);
-            }
+            Trace.Message("Adapter: Stopping the scan for devices.");
+            _bluetoothAdapter?.BluetoothLeScanner?.StopScan(_api21ScanCallback);
         }
 
         protected Task ConnectToDeviceNativeAsync(Device device, ConnectParameters connectParameters,
             CancellationToken cancellationToken)
         {
-            ((Device)device).Connect(connectParameters, cancellationToken);
+            device.Connect(connectParameters, cancellationToken);
             return Task.CompletedTask;
         }
 
         protected void DisconnectDeviceNative(Device device)
         {
             //make sure everything is disconnected
-            ((Device)device).Disconnect();
+            device.Disconnect();
         }
 
-        public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default(ConnectParameters), CancellationToken cancellationToken = default(CancellationToken), bool dontThrowExceptionOnNotFound = false)
+        /// <summary>
+        /// Produces a device for an identifier the scan has not seen, without connecting it. The shared layer
+        /// owns the connection, so this must not connect.
+        /// </summary>
+        protected Task<Device> ConnectToKnownDeviceNativeAsync(Guid deviceGuid, ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
+            // The library encodes an Android MAC address in the last six bytes of the device Guid.
             var macBytes = deviceGuid.ToByteArray().Skip(10).Take(6).ToArray();
-            var nativeDevice = _bluetoothAdapter.GetRemoteDevice(macBytes);
+
+            BluetoothDevice nativeDevice;
+            try
+            {
+                nativeDevice = _bluetoothAdapter?.GetRemoteDevice(macBytes);
+            }
+            catch (Java.Lang.IllegalArgumentException ex)
+            {
+                // Android rejects an address it cannot parse rather than returning null, and that exception
+                // used to escape unhandled from a method documented as throwing DeviceNotFoundException.
+                Trace.Message("Adapter: {0} is not a valid Android device address: {1}", deviceGuid, ex.Message);
+                return Task.FromResult<Device>(null);
+            }
 
             if (nativeDevice == null)
             {
-                if (dontThrowExceptionOnNotFound == true)
-                    return null;
-
-                throw new DeviceNotFoundException(deviceGuid);
+                return Task.FromResult<Device>(null);
             }
 
-            var device = new Device(this, nativeDevice, null, 0, new byte[] { });
+            // Where the system already holds a BluetoothDevice for this address - bonded, or connected by
+            // another profile - use that one. It carries the cached name and bond state, which a device
+            // fabricated from raw address bytes does not.
+            var systemDevice = FindSystemDevice(nativeDevice.Address);
+            if (systemDevice != null)
+            {
+                return Task.FromResult(new Device(this, systemDevice, null, 0, []));
+            }
 
-            await ConnectToDeviceAsync(device, connectParameters, cancellationToken);
-            return device;
+            // DELIBERATE DEVIATION FROM THE PLAN, recorded here because it is a behaviour decision: an address
+            // the system has no record of is NOT reported as not-found. Android connects happily to an address
+            // it has never seen, and refusing here would break the common pattern of storing a device id and
+            // reconnecting on the next launch without scanning first. On Android the only genuine "not found"
+            // is a malformed address, handled above; a device that is not really there fails the connection
+            // attempt instead, with a DeviceConnectionException that says so.
+            Trace.Message("Adapter: {0} is not bonded and not connected; connecting to the address directly.", deviceGuid);
+
+            return Task.FromResult(new Device(this, nativeDevice, null, 0, []));
         }
 
+        private BluetoothDevice FindSystemDevice(string address)
+        {
+            if (string.IsNullOrEmpty(address))
+            {
+                return null;
+            }
+
+            try
+            {
+                var connected = _bluetoothManager?.GetConnectedDevices(ProfileType.Gatt)
+                    ?.FirstOrDefault(d => string.Equals(d.Address, address, StringComparison.OrdinalIgnoreCase));
+
+                if (connected != null)
+                {
+                    return connected;
+                }
+
+                return _bluetoothAdapter?.BondedDevices
+                    ?.FirstOrDefault(d => string.Equals(d.Address, address, StringComparison.OrdinalIgnoreCase));
+            }
+            catch (Exception ex)
+            {
+                // Enumerating bonded devices needs BLUETOOTH_CONNECT on Android 12 and later, and throws a
+                // SecurityException without it. That is not a reason to fail the connection attempt.
+                Trace.Message("Adapter: Could not enumerate system devices: {0}", ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// The devices the system knows about without this adapter having scanned for them: on Android, those
+        /// bonded to the system plus those another profile currently has connected.
+        /// </summary>
+        /// <param name="services">Ignored on Android; the platform offers no way to filter by service here.</param>
         public IReadOnlyList<Device> GetSystemConnectedOrPairedDevices(Guid[] services = null)
         {
             if (services != null)
@@ -178,7 +200,21 @@ namespace System.BluetoothLe
 
             var bondedDevices = _bluetoothAdapter.BondedDevices.Where(d => d.Type == BluetoothDeviceType.Le || d.Type == BluetoothDeviceType.Dual);
 
-            return connectedDevices.Union(bondedDevices, new DeviceComparer()).Select(d => new Device(this, d, null, 0)).Cast<Device>().ToList();
+            return connectedDevices.Union(bondedDevices, new DeviceComparer()).Select(d => new Device(this, d, null, 0)).ToList();
+        }
+
+        partial void DisposeNative()
+        {
+            try
+            {
+                _bluetoothAdapter?.BluetoothLeScanner?.StopScan(_api21ScanCallback);
+            }
+            catch (Exception ex)
+            {
+                Trace.Message("Adapter: Stopping the scanner during disposal failed: {0}", ex.Message);
+            }
+
+            _api21ScanCallback?.Dispose();
         }
 
         private class DeviceComparer : IEqualityComparer<BluetoothDevice>
@@ -194,28 +230,10 @@ namespace System.BluetoothLe
             }
         }
 
-
-        public class Api18BleScanCallback : Java.Lang.Object, BluetoothAdapter.ILeScanCallback
-        {
-            private readonly Adapter _adapter;
-
-            public Api18BleScanCallback(Adapter adapter)
-            {
-                _adapter = adapter;
-            }
-
-            public void OnLeScan(BluetoothDevice bleDevice, int rssi, byte[] scanRecord)
-            {
-                Trace.Message("Adapter.LeScanCallback: " + bleDevice.Name);
-
-                _adapter.HandleDiscoveredDevice(new Device(_adapter, bleDevice, null, rssi, scanRecord));
-            }
-        }
-
-
         public class Api21BleScanCallback : ScanCallback
         {
             private readonly Adapter _adapter;
+
             public Api21BleScanCallback(Adapter adapter)
             {
                 _adapter = adapter;
@@ -224,60 +242,50 @@ namespace System.BluetoothLe
             public override void OnScanFailed(ScanFailure errorCode)
             {
                 Trace.Message("Adapter: Scan failed with code {0}", errorCode);
+
                 base.OnScanFailed(errorCode);
+
+                _adapter.HandleScanFailed(Translate(errorCode));
             }
 
             public override void OnScanResult(ScanCallbackType callbackType, ScanResult result)
             {
                 base.OnScanResult(callbackType, result);
 
-                /* Might want to transition to parsing the API21+ ScanResult, but sort of a pain for now 
-                List<AdvertisementRecord> records = new List<AdvertisementRecord>();
-                records.Add(new AdvertisementRecord(AdvertisementRecordType.Flags, BitConverter.GetBytes(result.ScanRecord.AdvertiseFlags)));
-                if (!string.IsNullOrEmpty(result.ScanRecord.DeviceName))
+                // This runs on a binder thread inside the Android BLE stack. An exception escaping here does not
+                // reach any consumer code - it kills the process from a native frame - so everything the
+                // adapter does with an advertisement is contained.
+                try
                 {
-                    records.Add(new AdvertisementRecord(AdvertisementRecordType.CompleteLocalName, Encoding.UTF8.GetBytes(result.ScanRecord.DeviceName)));
+                    var scanRecord = result?.ScanRecord?.GetBytes();
+                    if (result?.Device == null)
+                    {
+                        return;
+                    }
+
+                    var device = new Device(_adapter, result.Device, null, result.Rssi, scanRecord);
+
+                    _adapter.HandleDiscoveredDevice(device);
                 }
-                for (int i = 0; i < result.ScanRecord.ManufacturerSpecificData.Size(); i++)
+                catch (Exception ex)
                 {
-                    int key = result.ScanRecord.ManufacturerSpecificData.KeyAt(i);
-                    var arr = result.ScanRecord.GetManufacturerSpecificData(key);
-                    byte[] data = new byte[arr.Length + 2];
-                    BitConverter.GetBytes((ushort)key).CopyTo(data,0);
-                    arr.CopyTo(data, 2);
-                    records.Add(new AdvertisementRecord(AdvertisementRecordType.ManufacturerSpecificData, data));
+                    Trace.Message("Adapter: Failed to handle a scan result: {0}", ex);
                 }
-
-                foreach(var uuid in result.ScanRecord.ServiceUuids)
-                {
-                    records.Add(new AdvertisementRecord(AdvertisementRecordType.UuidsIncomplete128Bit, uuid.Uuid.));
-                }
-
-                foreach(var key in result.ScanRecord.ServiceData.Keys)
-                {
-                    records.Add(new AdvertisementRecord(AdvertisementRecordType.ServiceData, result.ScanRecord.ServiceData));
-                }*/
-
-                var device = new Device(_adapter, result.Device, null, result.Rssi, result.ScanRecord.GetBytes());
-
-                //Device device;
-                //if (result.ScanRecord.ManufacturerSpecificData.Size() > 0)
-                //{
-                //    int key = result.ScanRecord.ManufacturerSpecificData.KeyAt(0);
-                //    byte[] mdata = result.ScanRecord.GetManufacturerSpecificData(key);
-                //    byte[] mdataWithKey = new byte[mdata.Length + 2];
-                //    BitConverter.GetBytes((ushort)key).CopyTo(mdataWithKey, 0);
-                //    mdata.CopyTo(mdataWithKey, 2);
-                //    device = new Device(result.Device, null, null, result.Rssi, mdataWithKey);
-                //}
-                //else
-                //{
-                //    device = new Device(result.Device, null, null, result.Rssi, new byte[0]);
-                //}
-
-                _adapter.HandleDiscoveredDevice(device);
-
             }
+
+            /// <summary>
+            /// Maps Android's scan failure codes onto the reasons a consumer can actually act on.
+            /// </summary>
+            private static ScanFailureReason Translate(ScanFailure errorCode) => errorCode switch
+            {
+                ScanFailure.FeatureUnsupported => ScanFailureReason.NotSupported,
+
+                // Android reports a missing BLUETOOTH_SCAN permission, and a scan client the system refuses to
+                // register, through the same code. Both are fixed by the user granting a permission.
+                ScanFailure.ApplicationRegistrationFailed => ScanFailureReason.PermissionDenied,
+
+                _ => ScanFailureReason.InternalError,
+            };
         }
     }
 }

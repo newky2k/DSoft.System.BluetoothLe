@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -12,7 +12,6 @@ using Windows.Devices.Bluetooth.Advertisement;
 using System.BluetoothLe;
 using System.BluetoothLe.Extensions;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
-using System.BluetoothLe.Exceptions;
 
 namespace System.BluetoothLe
 {
@@ -24,10 +23,17 @@ namespace System.BluetoothLe
 
         private bool HasFilter => _serviceUuids?.Any() ?? false;
 
-        private List<Guid> _foundIds;
+        // Windows needs no native manager handed to it, but the shared parameterless constructor was removed
+        // in 4.0 because on every other platform it produced an adapter that could not work. This one is
+        // internal for the same reason: only BluetoothLE may create it.
+        internal Adapter()
+        {
+        }
 
         protected Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
         {
+            // allowDuplicatesKey has no equivalent on Windows: the watcher reports every advertisement it
+            // receives, and DeviceAdvertised is raised for each of them.
 
             _serviceUuids = serviceUuids;
 
@@ -35,30 +41,37 @@ namespace System.BluetoothLe
 
             Trace.Message("Starting a scan for devices.");
 
-            _foundIds = new List<Guid>();
-
             _bleWatcher.Received -= DeviceFoundAsync;
             _bleWatcher.Received += DeviceFoundAsync;
 
             _bleWatcher.Start();
-            return Task.FromResult(true);
+
+            return Task.CompletedTask;
         }
 
         protected void StopScanNative()
         {
-            if (_bleWatcher != null)
+            var watcher = _bleWatcher;
+
+            if (watcher != null)
             {
                 Trace.Message("Stopping the scan for devices");
-                _bleWatcher.Stop();
-                _bleWatcher = null;
 
-                _foundIds = null;
+                // Unsubscribed before Stop, not after. The watcher delivers advertisements it has already
+                // queued for a short while after Stop returns, and each of those kept a reference to this
+                // adapter alive through the handler for as long as the watcher lived.
+                watcher.Received -= DeviceFoundAsync;
+                watcher.Stop();
+
+                _bleWatcher = null;
             }
+
+            _serviceUuids = null;
         }
 
         protected async Task ConnectToDeviceNativeAsync(Device device, ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
-            Trace.Message($"Connecting to device with ID:  {device.Id.ToString()}");
+            Trace.Message($"Connecting to device with ID:  {device.Id}");
 
             if (!(device.NativeDevice is ObservableBluetoothLEDevice nativeDevice))
                 return;
@@ -66,7 +79,7 @@ namespace System.BluetoothLe
             nativeDevice.PropertyChanged -= Device_ConnectionStatusChanged;
             nativeDevice.PropertyChanged += Device_ConnectionStatusChanged;
 
-            ConnectedDeviceRegistry[device.Id.ToString()] = device;
+            RegisterConnectedDevice(device);
 
             await nativeDevice.ConnectAsync();
         }
@@ -83,14 +96,17 @@ namespace System.BluetoothLe
                 return;
             }
 
-            var address = ParseDeviceId(nativeDevice.BluetoothLEDevice.BluetoothAddress).ToString();
-            if (nativeDevice.IsConnected && ConnectedDeviceRegistry.TryGetValue(address, out var connectedDevice))
+            var address = ParseDeviceId(nativeDevice.BluetoothLEDevice.BluetoothAddress);
+
+            if (nativeDevice.IsConnected && TryGetConnectedDevice(address, out var connectedDevice))
             {
                 HandleConnectedDevice(connectedDevice);
                 return;
             }
 
-            if (!nativeDevice.IsConnected && ConnectedDeviceRegistry.TryRemove(address, out var disconnectedDevice))
+            // Only the unsolicited case reaches here: a disconnect the caller asked for is raised by
+            // DisconnectDeviceNative, which unsubscribes this handler before it does so.
+            if (!nativeDevice.IsConnected && TryRemoveConnectedDevice(address, out var disconnectedDevice))
             {
                 HandleDisconnectedDevice(false, disconnectedDevice);
             }
@@ -98,47 +114,75 @@ namespace System.BluetoothLe
 
         protected void DisconnectDeviceNative(Device device)
         {
-            // Windows doesn't support disconnecting, so currently just dispose of the device
-            Trace.Message($"Disconnected from device with ID:  {device.Id.ToString()}");
+            // Windows has no explicit disconnect: the link drops when the last reference to the
+            // BluetoothLEDevice is released.
+            Trace.Message($"Disconnecting from device with ID:  {device.Id}");
 
-            ((Device)device).ClearServices();
+            device.ClearServices();
+
             if (device.NativeDevice is ObservableBluetoothLEDevice nativeDevice)
             {
-                nativeDevice.BluetoothLEDevice.Dispose();
-                ConnectedDeviceRegistry.TryRemove(device.Id.ToString(), out _);
+                // Unsubscribed first, so that disposing the native device below cannot re-enter
+                // Device_ConnectionStatusChanged and report this as a connection that was lost.
+                nativeDevice.PropertyChanged -= Device_ConnectionStatusChanged;
+                nativeDevice.BluetoothLEDevice?.Dispose();
             }
 
             HandleDisconnectedDevice(true, device);
         }
 
-        public async Task<Device> ConnectToKnownDeviceAsync(Guid deviceGuid, ConnectParameters connectParameters = default, CancellationToken cancellationToken = default, bool dontThrowExceptionOnNotFound = false)
+        /// <summary>
+        /// Produces a device for an identifier the scan has not seen, without connecting it.
+        /// </summary>
+        protected async Task<Device> ConnectToKnownDeviceNativeAsync(Guid deviceGuid, ConnectParameters connectParameters, CancellationToken cancellationToken)
         {
             //convert GUID to string and take last 12 characters as MAC address
             var guidString = deviceGuid.ToString("N").Substring(20);
             var bluetoothAddress = Convert.ToUInt64(guidString, 16);
-            var nativeDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(bluetoothAddress);
-
+            var nativeDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(bluetoothAddress).AsTask(cancellationToken);
 
             if (nativeDevice == null)
             {
-                if (dontThrowExceptionOnNotFound == true)
-                    return null;
-
-                throw new DeviceNotFoundException(deviceGuid);
+                return null;
             }
 
-            var knownDevice = new Device(this, nativeDevice, 0, deviceGuid);
-
-            await ConnectToDeviceAsync(knownDevice, cancellationToken: cancellationToken);
-            return knownDevice;
+            return new Device(this, nativeDevice, 0, deviceGuid);
         }
 
+        /// <summary>
+        /// Windows offers no synchronous way to enumerate paired or system-connected devices, so this returns
+        /// only the devices this application has connected.
+        /// </summary>
+        /// <param name="services">Ignored on Windows.</param>
         public IReadOnlyList<Device> GetSystemConnectedOrPairedDevices(Guid[] services = null)
         {
             //currently no way to retrieve paired and connected devices on windows without using an
-            //async method. 
+            //async method.
             Trace.Message("Returning devices connected by this app only");
             return ConnectedDevices;
+        }
+
+        partial void DisposeNative()
+        {
+            var watcher = _bleWatcher;
+
+            if (watcher != null)
+            {
+                watcher.Received -= DeviceFoundAsync;
+
+                try
+                {
+                    watcher.Stop();
+                }
+                catch (Exception ex)
+                {
+                    Trace.Message("Adapter: Stopping the advertisement watcher during disposal failed: {0}", ex.Message);
+                }
+
+                _bleWatcher = null;
+            }
+
+            _serviceUuids = null;
         }
 
         /// <summary>
@@ -147,7 +191,7 @@ namespace System.BluetoothLe
         /// </summary>
         /// <param name="adv">The advertisement to parse</param>
         /// <returns>List of generic advertisement records</returns>
-        public static List<AdvertisementRecord> ParseAdvertisementData(BluetoothLEAdvertisement adv)
+        internal static List<AdvertisementRecord> ParseAdvertisementData(BluetoothLEAdvertisement adv)
         {
             var advList = adv.DataSections;
 
@@ -161,59 +205,71 @@ namespace System.BluetoothLe
         /// <param name="btAdv">The advertisement recieved by the watcher</param>
         private async void DeviceFoundAsync(BluetoothLEAdvertisementWatcher watcher, BluetoothLEAdvertisementReceivedEventArgs btAdv)
         {
-            var deviceId = ParseDeviceId(btAdv.BluetoothAddress);
+            // This is an async void handler on a system callback: nothing observes the task, so an exception
+            // escaping it is an unhandled exception on a thread-pool thread and terminates the process.
+            try
+            {
+                var deviceId = ParseDeviceId(btAdv.BluetoothAddress);
 
-            if (DiscoveredDevicesRegistry.TryGetValue(deviceId, out var device))
-            {
-                Trace.Message("AdvertisedPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
-                (device as Device)?.Update(btAdv.RawSignalStrengthInDBm, ParseAdvertisementData(btAdv.Advertisement));
-                this.HandleDiscoveredDevice(device);
-            }
-            else
-            {
-                var bluetoothLeDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(btAdv.BluetoothAddress);
-                if (bluetoothLeDevice != null) //make sure advertisement bluetooth address actually returns a device
+                // The service filter is applied to the advertisement, before anything is resolved from the
+                // address. Previously it ran only for newly seen devices and it queried the device's GATT
+                // services to do it, which forms a connection - during a scan, for every unknown device in
+                // range. It also let a device advertising no services at all through a non-empty filter.
+                if (!MatchesServiceFilter(btAdv))
                 {
-
-                    //if there is a filter on devices find the services for the device
-                    if (HasFilter)
-                    {
-                        var services = await bluetoothLeDevice.GetGattServicesAsync();
-
-                        if (services.Services.Any())
-                        {
-                           
-                            //compare the list of services provided with the _serviceIds being listened for
-                            var items = (from x in services.Services
-                                         join y in _serviceUuids on x.Uuid equals y
-                                         select x)
-                                         .ToList();
-
-                            //if no services then ignore
-                            if (!items.Any())
-                                return;
-                        }
-                        
-
-                    }
-                    
-
-                    device = new Device(this, bluetoothLeDevice, btAdv.RawSignalStrengthInDBm, deviceId, ParseAdvertisementData(btAdv.Advertisement));
-
-                    if (DiscoveredDevicesRegistry.ContainsKey(device.Id))
-                    {
-                        //try and merge advertising data
-                        var existingDevice = DiscoveredDevicesRegistry[device.Id];
-
-                        existingDevice.MergeOrUpdateAdvertising(device.AdvertisementRecords);
-
-                        return;
-                    }
-
-                    Trace.Message("DiscoveredPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
-                    this.HandleDiscoveredDevice(device);
+                    return;
                 }
+
+                if (DiscoveredDevicesRegistry.TryGetValue(deviceId, out var device))
+                {
+                    Trace.Message("AdvertisedPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
+                    device.Update(btAdv.RawSignalStrengthInDBm, ParseAdvertisementData(btAdv.Advertisement));
+                    HandleDiscoveredDevice(device);
+                    return;
+                }
+
+                var bluetoothLeDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(btAdv.BluetoothAddress);
+                if (bluetoothLeDevice == null)
+                {
+                    //make sure advertisement bluetooth address actually returns a device
+                    return;
+                }
+
+                device = new Device(this, bluetoothLeDevice, btAdv.RawSignalStrengthInDBm, deviceId, ParseAdvertisementData(btAdv.Advertisement));
+
+                if (DiscoveredDevicesRegistry.TryGetValue(device.Id, out var existingDevice))
+                {
+                    // Another advertisement for the same device resolved while this one was awaiting.
+                    existingDevice.MergeOrUpdateAdvertising(device.AdvertisementRecords);
+                    return;
+                }
+
+                Trace.Message("DiscoveredPeripheral: {0} Id: {1}, Rssi: {2}", device.Name, device.Id, btAdv.RawSignalStrengthInDBm);
+                HandleDiscoveredDevice(device);
             }
+            catch (Exception ex)
+            {
+                Trace.Message("Adapter: Failed to handle a received advertisement: {0}", ex);
+            }
+        }
+
+        private bool MatchesServiceFilter(BluetoothLEAdvertisementReceivedEventArgs btAdv)
+        {
+            if (!HasFilter)
+            {
+                return true;
+            }
+
+            var advertised = btAdv.Advertisement?.ServiceUuids;
+
+            // A device advertising no services fails a non-empty filter. The previous code took the opposite
+            // view and let it through, so a filtered scan reported devices that could not possibly match.
+            if (advertised == null || advertised.Count == 0)
+            {
+                return false;
+            }
+
+            return advertised.Any(uuid => _serviceUuids.Contains(uuid));
         }
 
         /// <summary>

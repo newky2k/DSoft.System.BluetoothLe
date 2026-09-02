@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using System.BluetoothLe.Extensions;
@@ -33,51 +34,33 @@ namespace System.BluetoothLe
 
         #region Methods
 
-        internal async Task<IList<Characteristic>> GetCharacteristicsNativeAsync()
+        internal async Task<IList<Characteristic>> GetCharacteristicsNativeAsync(CancellationToken cancellationToken)
         {
-            var accessRequestResponse = await NativeService.RequestAccessAsync();
+            var accessRequestResponse = await NativeService.RequestAccessAsync().AsTask(cancellationToken);
 
-            // Returns Allowed
+            // Windows gates service access on a per-application consent prompt, so a refusal here is a normal
+            // runtime outcome rather than a programming error, and it is reported as one the consumer can catch.
             if (accessRequestResponse != DeviceAccessStatus.Allowed)
             {
-                throw new Exception("Access to service " + NativeService.Uuid.ToString() + " was disallowed w/ response: " + accessRequestResponse);
+                throw new GattCommunicationException(
+                    $"Access to service {NativeService.Uuid} was disallowed with response: {accessRequestResponse}.");
             }
 
-            var result = await NativeService.GetCharacteristicsAsync(BluetoothLE.CacheModeGetCharacteristics);
+            var result = await NativeService.GetCharacteristicsAsync(BluetoothLE.CacheModeGetCharacteristics).AsTask(cancellationToken);
             result.ThrowIfError();
 
+            // An empty list rather than null: a service with no characteristics is unusual but legal, and
+            // returning null made the shared cache rediscover on every call and forced null checks on callers.
             return result.Characteristics?
                 .Select(nativeChar => new Characteristic(nativeChar, this))
-                .Cast<Characteristic>()
-                .ToList();
+                .ToList() ?? (IList<Characteristic>)Array.Empty<Characteristic>();
         }
 
-        internal async Task<Characteristic> GetCharacteristicNativeAsync(Guid characteristicId)
+        partial void DisposeNative()
         {
-            var accessRequestResponse = await NativeService.RequestAccessAsync();
-
-            // Returns Allowed
-            if (accessRequestResponse != DeviceAccessStatus.Allowed)
-            {
-                throw new Exception("Access to service " + NativeService.Uuid.ToString() + " was disallowed w/ response: " + accessRequestResponse);
-            }
-
-            var result = await NativeService.GetCharacteristicsForUuidAsync(characteristicId, BluetoothLE.CacheModeGetCharacteristics);
-            result.ThrowIfError();
-
-            if (!result.Characteristics.Any())
-                return null;
-
-            var first = result.Characteristics.First();
-
-            return new Characteristic(first, this);
-        }
-
-        public virtual void Dispose()
-        {
-                  
             NativeService?.Dispose();
         }
+
         #endregion
     }
 }

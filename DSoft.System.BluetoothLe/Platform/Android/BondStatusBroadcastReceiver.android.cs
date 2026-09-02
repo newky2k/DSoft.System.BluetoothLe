@@ -23,15 +23,15 @@ namespace System.BluetoothLe.BroadcastReceivers
             switch (bondState)
             {
                 case Bond.None:
-                    BondStateChanged(this, new DeviceBondStateChangedEventArgs() { Device = device, State = DeviceBondState.NotBonded });
+                    BondStateChanged(this, new DeviceBondStateChangedEventArgs(device, DeviceBondState.NotBonded));
                     break;
 
                 case Bond.Bonding:
-                    BondStateChanged(this, new DeviceBondStateChangedEventArgs() { Device = device, State = DeviceBondState.Bonding });
+                    BondStateChanged(this, new DeviceBondStateChangedEventArgs(device, DeviceBondState.Bonding));
                     break;
 
                 case Bond.Bonded:
-                    BondStateChanged(this, new DeviceBondStateChangedEventArgs() { Device = device, State = DeviceBondState.Bonded });
+                    BondStateChanged(this, new DeviceBondStateChangedEventArgs(device, DeviceBondState.Bonded));
                     break;
 
             }

@@ -27,7 +27,7 @@ variables:
 - name: releaseSuffix
   value:  ''
 
-name: 3.0.$(date:yyMM).$(date:dd)$(rev:r)
+name: 4.0.$(date:yyMM).$(date:dd)$(rev:r)
 steps:
 
 - task: NuGetToolInstaller@1
@@ -57,13 +57,18 @@ steps:
   inputs:
     command: 'build'
     projects: '$(solution)'
-    arguments: '--configuration $(buildConfiguration) --no-restore /p:Platform="$(buildPlatform)" /p:Version=$(Build.BuildNumber)$(ReleaseSuffix) /p:AssemblyVersion=$(Build.BuildNumber) /p:FileVersion=$(Build.BuildNumber)'
+    # AssemblyVersion is deliberately not overridden here. It is pinned in the csproj, because a strong-named
+    # assembly whose identity moves on every CI build forces consumers on net481 to carry a binding redirect.
+    # FileVersion still carries the build number, which is what a support engineer reads off a shipped file.
+    arguments: '--configuration $(buildConfiguration) --no-restore /p:Platform="$(buildPlatform)" /p:Version=$(Build.BuildNumber)$(ReleaseSuffix) /p:FileVersion=$(Build.BuildNumber)'
 
 - task: CopyFiles@2
   displayName: Copy Files to $(build.artifactstagingdirectory)
   inputs:
     SourceFolder: '$(system.defaultworkingdirectory)'
-    Contents: '**/DSoft.*.nupkg'
+    Contents: |
+      **/DSoft.*.nupkg
+      **/DSoft.*.snupkg
     TargetFolder: '$(build.artifactstagingdirectory)'
     flattenFolders: true
 
