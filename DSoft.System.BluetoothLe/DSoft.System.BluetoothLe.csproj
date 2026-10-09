@@ -33,7 +33,7 @@
         <!-- The assembly identity is pinned here rather than stamped by the build server. A strong-named
              assembly whose version moves on every CI build forces a binding redirect on net481 for no
              benefit; the public key token is what actually establishes identity. -->
-        <VersionPrefix>4.0.0</VersionPrefix>
+        <VersionPrefix>4.0.1</VersionPrefix>
         <AssemblyVersion>4.0.0.0</AssemblyVersion>
         <PackageId>DSoft.System.BluetoothLe</PackageId>
         <Title>DSoft.System.BluetoothLe</Title>
@@ -51,6 +51,11 @@
         <PackageTags>BluetoothLe dotnet android ios macos maccatalyst windows wpf netstandard tvos</PackageTags>
         <Copyright>Copyright © 2026 DSoft</Copyright>
         <PackageReleaseNotes>
+            4.0.1 - restores the stand-in seam that 4.0 removed. Device and Service can again be derived outside
+            the library: protected Device(Guid id, string name, int rssi = 0) replaces the parameterless
+            protected Device() that 3.x exposed, and Service(Device) is protected again. Device.Id stays
+            settable only by the library; a stand-in passes its identity to the constructor instead.
+
             4.0 - modernisation release. Contains breaking changes.
 
             This release corrects defects carried over from the Xamarin port and reshapes the public API.

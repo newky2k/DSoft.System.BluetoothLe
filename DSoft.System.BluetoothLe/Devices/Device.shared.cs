@@ -125,6 +125,37 @@ namespace System.BluetoothLe
         {
             Adapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
         }
+
+        /// <summary>
+        /// Initialises a stand-in device that is not backed by a platform peripheral.
+        /// </summary>
+        /// <param name="id">The identity the stand-in reports through <see cref="Id"/>.</param>
+        /// <param name="name">The name the stand-in reports through <see cref="Name"/>. May be <see langword="null"/>.</param>
+        /// <param name="rssi">The signal strength the stand-in reports through <see cref="Rssi"/>.</param>
+        /// <remarks>
+        /// <para>
+        /// This is the seam for deriving a simulated or test double device outside the library - for a
+        /// device picker that must work without a radio, or for unit tests of code that takes a
+        /// <see cref="Device"/>. It is the only sanctioned way for code outside the library to give a device
+        /// its identity: <see cref="Id"/> remains settable only by the library for real devices.
+        /// </para>
+        /// <para>
+        /// A device built this way has no <see cref="Adapter"/> and no native peripheral, so members that
+        /// reach the platform - <see cref="State"/>, connection, service discovery and everything below it -
+        /// fail as they do on a target without Bluetooth support. <see cref="AdvertisementRecords"/> starts
+        /// empty. Disposing a stand-in is safe.
+        /// </para>
+        /// <para>
+        /// This replaces the parameterless <c>protected Device()</c> that 3.x exposed.
+        /// </para>
+        /// </remarks>
+        protected Device(Guid id, string name, int rssi = 0)
+        {
+            _id = id;
+            _name = name;
+            _rssi = rssi;
+            _advertisementRecords = Array.Empty<AdvertisementRecord>();
+        }
         #endregion
 
         #region Methods
@@ -291,8 +322,9 @@ namespace System.BluetoothLe
 
             // The adapter holds this instance in both of its registries, and those references outlive the
             // device unless it drops them here: a disposed device would otherwise stay reachable - and
-            // returnable - through Adapter.DiscoveredDevices and Adapter.ConnectedDevices.
-            Adapter.RemoveDeviceFromRegistries(this);
+            // returnable - through Adapter.DiscoveredDevices and Adapter.ConnectedDevices. A stand-in built
+            // through the protected constructor has no adapter and is in no registry.
+            Adapter?.RemoveDeviceFromRegistries(this);
 
             DisposeNative();
         }
