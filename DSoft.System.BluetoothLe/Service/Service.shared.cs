@@ -52,7 +52,7 @@ namespace System.BluetoothLe
         /// <exception cref="ArgumentNullException"><paramref name="device"/> is <see langword="null"/>.</exception>
         /// <remarks>
         /// This is the seam for deriving a simulated or test double service outside the library, paired with
-        /// a device built through <see cref="Device(Guid, string, int)"/>. A service built this way has no
+        /// a device built through <see cref="Device.Device(Guid, string, int)"/>. A service built this way has no
         /// native service, so characteristic discovery fails as it does on a target without Bluetooth support.
         /// </remarks>
         protected Service(Device device)
