@@ -60,6 +60,10 @@
             was renamed to UuidsIncomplete16Bit. A deliberate spelling correction, but a compile-breaking rename
             for a 3.x consumer that read that record type.
 
+            Also on Windows: an advertisement is resolved to a device with the address type the advertisement
+            carries, and a device glyph that cannot be loaded - or a host with no WPF Application - no longer
+            raises an unobserved exception from inside the scan callback.
+
             4.0 - modernisation release. Contains breaking changes.
 
             This release corrects defects carried over from the Xamarin port and reshapes the public API.
@@ -160,7 +164,9 @@
     </ItemGroup>
 
     <ItemGroup Condition=" $(TargetFramework.StartsWith('net481')) ">
-        <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.18362.2007" />
+        <!-- Aligned with the net10.0-windows10.0.19041.0 target so both Windows builds see the same metadata.
+             Members newer than the 17763 minimum are guarded with ApiInformation at the call site. -->
+        <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.2" />
         <Compile Include="**\*.netf.cs" Exclude="$(DefaultItemExcludes)" />
         <Compile Include="**\*.netf.*.cs" Exclude="$(DefaultItemExcludes)" />
     </ItemGroup>
