@@ -56,6 +56,10 @@
             protected Device() that 3.x exposed, and Service(Device) is protected again. Device.Id stays
             settable only by the library; a stand-in passes its identity to the constructor instead.
 
+            Also recorded from 4.0, where the release notes omitted it: AdvertisementRecordType.UuidsIncomple16Bit
+            was renamed to UuidsIncomplete16Bit. A deliberate spelling correction, but a compile-breaking rename
+            for a 3.x consumer that read that record type.
+
             4.0 - modernisation release. Contains breaking changes.
 
             This release corrects defects carried over from the Xamarin port and reshapes the public API.

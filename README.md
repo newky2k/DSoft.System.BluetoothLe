@@ -229,6 +229,7 @@ await adapter.DisconnectDeviceAsync(device);
 - Every event this library raises is raised on a native callback thread - the Android GATT callback thread or the CoreBluetooth delegate queue - and is not marshalled to your UI thread. Marshal in your handler.
 - `Trace.TraceImplementation` receives every diagnostic message the library emits. It writes to `System.Diagnostics.Trace` by default; assign your own delegate to bridge it to your logging framework, or set it to `null` to silence the library.
 - `Device` and `Service` can be derived outside the library to build a stand-in peripheral where no radio is present, for a device picker or for unit tests of code that takes a `Device`. Derive from `Device` and call `protected Device(Guid id, string name, int rssi = 0)`; derive from `Service` and call `protected Service(Device device)`. A stand-in has no adapter or native peripheral, so members that reach the platform fail as they do on a target without Bluetooth support. In 4.0 this constructor replaces the parameterless `protected Device()` that 3.x exposed, and `Device.Id` is no longer assignable from outside the library - pass the identity to the constructor instead.
+- Upgrading from 3.x: `AdvertisementRecordType.UuidsIncomple16Bit` was renamed to `UuidsIncomplete16Bit` in 4.0, a spelling correction that breaks compilation of any code that read that record type. Rename the reference; the value (`0x02`) is unchanged.
 
 ## Building From Source
 
