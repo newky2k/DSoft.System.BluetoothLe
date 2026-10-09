@@ -507,15 +507,33 @@ namespace System.BluetoothLe
         /// </summary>
         private async void LoadGlyph()
         {
-            await Application.Current.Dispatcher.InvokeAsync(async () =>
+            // This runs from the constructor, which the adapter calls from its advertisement callback for
+            // every device a scan resolves. It is async void, so an exception escaping it is unobserved and
+            // terminates the process; the glyph is cosmetic, so a failure to load it is logged and ignored.
+            try
             {
-                var deviceThumbnail = await DeviceInfo.GetGlyphThumbnailAsync();
-                var glyphBitmapImage = new BitmapImage();
-                glyphBitmapImage.StreamSource = deviceThumbnail.AsStream();
-                Glyph = glyphBitmapImage;
-            }, Windows.Threading.DispatcherPriority.Normal);
+                var dispatcher = Application.Current?.Dispatcher;
 
+                if (dispatcher == null)
+                {
+                    // Not a WPF host: there is no UI thread to create the bitmap on and nothing to show it in.
+                    return;
+                }
 
+                // InvokeAsync returns once the lambda has yielded, not once it has finished. Unwrapping the
+                // inner task brings its failure - a device whose thumbnail cannot be fetched - into this catch.
+                await dispatcher.InvokeAsync(async () =>
+                {
+                    var deviceThumbnail = await DeviceInfo.GetGlyphThumbnailAsync();
+                    var glyphBitmapImage = new BitmapImage();
+                    glyphBitmapImage.StreamSource = deviceThumbnail.AsStream();
+                    Glyph = glyphBitmapImage;
+                }, Windows.Threading.DispatcherPriority.Normal).Task.Unwrap();
+            }
+            catch (Exception ex)
+            {
+                Trace.Message("ObservableBluetoothLEDevice: Loading the glyph for {0} failed: {1}", DeviceInfo?.Id, ex.Message);
+            }
         }
 
     }

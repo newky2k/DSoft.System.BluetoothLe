@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Advertisement;
+#if !NET
+using Windows.Foundation.Metadata;
+#endif
 
 using System.BluetoothLe;
 using System.BluetoothLe.Extensions;
@@ -22,6 +25,18 @@ namespace System.BluetoothLe
         private Guid[] _serviceUuids;
 
         private bool HasFilter => _serviceUuids?.Any() ?? false;
+
+        // BluetoothLEAdvertisementReceivedEventArgs.BluetoothAddressType arrived in Windows 10 2004 (19041);
+        // the supported minimum is 1809 (17763), where touching it would throw. On .NET the attribute tells
+        // the platform-compatibility analyzer that this field is the guard; net481 has neither the analyzer
+        // nor OperatingSystem.IsWindowsVersionAtLeast, so it asks the runtime for the member instead.
+#if NET
+        [Runtime.Versioning.SupportedOSPlatformGuard("windows10.0.19041.0")]
+        private static readonly bool AdvertisementCarriesAddressType = OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041);
+#else
+        private static readonly bool AdvertisementCarriesAddressType = ApiInformation.IsPropertyPresent(
+            "Windows.Devices.Bluetooth.Advertisement.BluetoothLEAdvertisementReceivedEventArgs", "BluetoothAddressType");
+#endif
 
         // Windows needs no native manager handed to it, but the shared parameterless constructor was removed
         // in 4.0 because on every other platform it produced an adapter that could not work. This one is
@@ -228,7 +243,15 @@ namespace System.BluetoothLe
                     return;
                 }
 
-                var bluetoothLeDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(btAdv.BluetoothAddress);
+                // The advertisement says whether the address is public or random, so where the OS reports
+                // it the system is told rather than left to infer it. The one-argument overload has to work
+                // out the address type for itself, and when it cannot the call faults instead of returning null.
+                var addressType = AdvertisementCarriesAddressType ? btAdv.BluetoothAddressType : BluetoothAddressType.Unspecified;
+
+                var bluetoothLeDevice = addressType == BluetoothAddressType.Unspecified
+                    ? await BluetoothLEDevice.FromBluetoothAddressAsync(btAdv.BluetoothAddress)
+                    : await BluetoothLEDevice.FromBluetoothAddressAsync(btAdv.BluetoothAddress, addressType);
+
                 if (bluetoothLeDevice == null)
                 {
                     //make sure advertisement bluetooth address actually returns a device
@@ -249,7 +272,10 @@ namespace System.BluetoothLe
             }
             catch (Exception ex)
             {
-                Trace.Message("Adapter: Failed to handle a received advertisement: {0}", ex);
+                // Resolving an address the stack has already forgotten, or one belonging to a device that
+                // stopped advertising between the callback and the await, surfaces here as a COMException
+                // (E_INVALIDARG, E_UNEXPECTED). The advertisement is dropped; the next one is handled afresh.
+                Trace.Message("Adapter: Failed to handle an advertisement from {0:X12}: {1}", btAdv.BluetoothAddress, ex);
             }
         }
 
