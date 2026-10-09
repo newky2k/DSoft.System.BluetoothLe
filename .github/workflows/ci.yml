@@ -1,0 +1,34 @@
+# Pull request validation: builds Release for every target framework. Publishes nothing.
+# There is no unit test project; WpfSample is a manual sample and is built with the solution.
+name: CI
+
+on:
+  pull_request:
+    branches: [master, development]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore workloads
+        run: dotnet workload restore DSoft.System.BluetoothLe/DSoft.System.BluetoothLe.csproj
+
+      - name: Restore
+        run: dotnet restore DSoft.System.BluetoothLe.slnx
+
+      - name: Build
+        run: dotnet build DSoft.System.BluetoothLe.slnx --configuration Release --no-restore

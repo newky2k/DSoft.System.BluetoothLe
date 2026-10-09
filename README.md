@@ -243,6 +243,13 @@ dotnet build DSoft.System.BluetoothLe.slnx --no-restore
 `net10.0-windows10.0.19041.0` and `net481` are only built when the host is Windows; on macOS and Linux the
 remaining seven target frameworks build and the two Windows ones are skipped.
 
+### Continuous integration
+
+GitHub Actions (`.github/workflows/`):
+
+- `ci.yml`: runs on pull requests to `master` and `development`. Builds Release for every target framework. Publishes nothing.
+- `release.yml`: runs on every push to `master` (changes only to Markdown or workflow files are skipped; run it by hand to test a workflow change). Builds Release as `4.0.yyMM.<run number>` plus `RELEASE_SUFFIX` (empty for a stable version; set it to `-prerelease` in the workflow to publish a prerelease), uploads the package as the `drop` artifact and pushes it to nuget.org with Trusted Publishing (OIDC, `NUGET_USER` secret, `nuget` environment), then tags the commit `v<version>` and creates a GitHub release with the package attached. `AssemblyVersion` is not stamped by CI: it stays pinned in the project file (see "Strong naming").
+
 ### Strong naming
 
 The assembly is strong-named with `DSoft.snk`, which is committed to this repository on purpose. A strong
