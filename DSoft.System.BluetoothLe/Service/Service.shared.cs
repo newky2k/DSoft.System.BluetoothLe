@@ -11,7 +11,8 @@ namespace System.BluetoothLe
     /// </summary>
     /// <remarks>
     /// A service caches the characteristics it discovers, so every lookup of the same characteristic returns
-    /// the same object. Do not construct one directly.
+    /// the same object. Real services are constructed by the library during discovery; the protected
+    /// constructor exists so a stand-in service can be derived outside the library.
     /// </remarks>
     public partial class Service : IDisposable
     {
@@ -44,7 +45,17 @@ namespace System.BluetoothLe
 
         #region Constructors
 
-        private Service(Device device)
+        /// <summary>
+        /// Initialises a service belonging to <paramref name="device"/>.
+        /// </summary>
+        /// <param name="device">The device the service belongs to.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="device"/> is <see langword="null"/>.</exception>
+        /// <remarks>
+        /// This is the seam for deriving a simulated or test double service outside the library, paired with
+        /// a device built through <see cref="Device.Device(Guid, string, int)"/>. A service built this way has no
+        /// native service, so characteristic discovery fails as it does on a target without Bluetooth support.
+        /// </remarks>
+        protected Service(Device device)
         {
             Device = device ?? throw new ArgumentNullException(nameof(device));
         }
