@@ -1,4 +1,4 @@
-# Release: on every push to master, builds Release and pushes the DSoft.*.nupkg
+# Release: on every push to main, builds Release and pushes the DSoft.*.nupkg
 # package (with its .snupkg symbols) to nuget.org as 4.0.yyMM.<run number>, then
 # tags the commit and creates a GitHub release with the package attached.
 # RELEASE_SUFFIX is empty for a stable version; set it to a suffix such as
@@ -8,7 +8,7 @@ name: Release
 
 on:
   push:
-    branches: [master]
+    branches: [main]
     paths-ignore:
       - '**.md'
       - '.github/workflows/**'
