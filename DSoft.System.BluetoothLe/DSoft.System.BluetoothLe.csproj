@@ -58,6 +58,10 @@
             Device.CreateBondAsync and Device.RemoveBondAsync request and remove a bond on Android; removal is
             best effort, through a hidden platform method, and reports false where Android refuses it. Both
             return false on Apple platforms and Windows.
+            CharacteristicReadException, CharacteristicWriteException, DescriptorReadException and
+            DescriptorWriteException carry the GATT status in GattStatus, classified as GattFailure, so an app can
+            recognise Insufficient Authentication (0x05) and Insufficient Encryption (0x0F) on Android, Apple
+            platforms and Windows. All four implement IGattStatusException. NativeStatus and messages are unchanged.
 
             4.0.1 - restores the stand-in seam that 4.0 removed. Device and Service can again be derived outside
             the library: protected Device(Guid id, string name, int rssi = 0) replaces the parameterless
