@@ -51,6 +51,11 @@
         <PackageTags>BluetoothLe dotnet android ios macos maccatalyst windows wpf netstandard tvos</PackageTags>
         <Copyright>Copyright © 2026 DSoft</Copyright>
         <PackageReleaseNotes>
+            Unreleased - Device.BondState reports a device's bond (pairing) state, and on Android
+            Adapter.DeviceBondStateChanged is raised when it changes. DeviceBondState gains Unknown, declared last
+            so existing values are unchanged, which Apple platforms always report because CoreBluetooth does not
+            expose bonding. BondStatusBroadcastReceiver is now registered by the Android adapter.
+
             4.0.1 - restores the stand-in seam that 4.0 removed. Device and Service can again be derived outside
             the library: protected Device(Guid id, string name, int rssi = 0) replaces the parameterless
             protected Device() that 3.x exposed, and Service(Device) is protected again. Device.Id stays

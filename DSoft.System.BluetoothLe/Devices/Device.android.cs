@@ -61,10 +61,16 @@ namespace System.BluetoothLe
         #region Methods
 
         #region Private
-        private Guid ParseDeviceId()
+        private Guid ParseDeviceId() => ParseDeviceId(NativeDevice.Address);
+
+        /// <summary>
+        /// The id a device with this MAC address is given: the address in the last six bytes of an otherwise
+        /// zero GUID. Shared with the adapter, which has only an address when the system reports a bond change.
+        /// </summary>
+        internal static Guid ParseDeviceId(string address)
         {
             var deviceGuid = new byte[16];
-            var macWithoutColons = NativeDevice.Address.Replace(":", "");
+            var macWithoutColons = address.Replace(":", "");
             var macBytes = Enumerable.Range(0, macWithoutColons.Length)
                 .Where(x => x % 2 == 0)
                 .Select(x => Convert.ToByte(macWithoutColons.Substring(x, 2), 16))
@@ -220,6 +226,34 @@ namespace System.BluetoothLe
                 case ProfileState.Disconnecting:
                 default:
                     return DeviceState.Disconnected;
+            }
+        }
+
+        private DeviceBondState GetBondState()
+        {
+            // No native device: a stand-in built through the protected constructor.
+            if (NativeDevice == null)
+            {
+                return DeviceBondState.Unknown;
+            }
+
+            // Throws SecurityException on Android 12 and later without BLUETOOTH_CONNECT; BondState reports
+            // that as Unknown.
+            return ToBondState(NativeDevice.BondState);
+        }
+
+        internal static DeviceBondState ToBondState(Bond bond)
+        {
+            switch (bond)
+            {
+                case Bond.None:
+                    return DeviceBondState.NotBonded;
+                case Bond.Bonding:
+                    return DeviceBondState.Bonding;
+                case Bond.Bonded:
+                    return DeviceBondState.Bonded;
+                default:
+                    return DeviceBondState.Unknown;
             }
         }
 

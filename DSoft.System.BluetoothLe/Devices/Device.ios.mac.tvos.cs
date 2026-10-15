@@ -157,6 +157,10 @@ namespace System.BluetoothLe
                 token: cancellationToken);
         }
 
+        // CoreBluetooth has no API for the bond state: pairing happens on demand, driven by the OS, the first
+        // time an encrypted characteristic is accessed.
+        private DeviceBondState GetBondState() => DeviceBondState.Unknown;
+
         private DeviceState GetState()
         {
             switch (NativeDevice.State)

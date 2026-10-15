@@ -92,6 +92,19 @@ namespace System.BluetoothLe
                 .ToList<Service>();
         }
 
+        // Windows exposes whether the device is paired, but not a pairing in progress.
+        private DeviceBondState GetBondState()
+        {
+            var native = NativeDevice;
+
+            if (native == null)
+            {
+                return DeviceBondState.Unknown;
+            }
+
+            return native.IsPaired ? DeviceBondState.Bonded : DeviceBondState.NotBonded;
+        }
+
         private DeviceState GetState()
         {
             if (NativeDevice.IsConnected)
