@@ -98,7 +98,7 @@ namespace System.BluetoothLe
 
                     if (args.Error != null)
                     {
-                        reject(new CharacteristicReadException($"Discover descriptors error: {args.Error.Description}", Id, Service.Id, (int)args.Error.Code));
+                        reject(new CharacteristicReadException($"Discover descriptors error: {args.Error.Description}", Id, Service.Id, (int)args.Error.Code, args.Error.GetAttStatus()));
                     }
                     else
                     {
@@ -140,7 +140,7 @@ namespace System.BluetoothLe
 
                         if (args.Error != null)
                         {
-                            reject(new CharacteristicReadException($"Read async error: {args.Error.Description}", Id, Service.Id, (int)args.Error.Code));
+                            reject(new CharacteristicReadException($"Read async error: {args.Error.Description}", Id, Service.Id, (int)args.Error.Code, args.Error.GetAttStatus()));
                         }
                         else
                         {
@@ -190,7 +190,7 @@ namespace System.BluetoothLe
                             return;
 
                         if (args.Error != null)
-                            reject(new CharacteristicWriteException($"Write async error: {args.Error.Description}", Id, Service.Id, (int)args.Error.Code));
+                            reject(new CharacteristicWriteException($"Write async error: {args.Error.Description}", Id, Service.Id, (int)args.Error.Code, args.Error.GetAttStatus()));
                         else
                             complete(true);
                     },
@@ -295,7 +295,7 @@ namespace System.BluetoothLe
 
                       if (args.Error != null)
                       {
-                          reject(new CharacteristicReadException($"Start Notifications: Error {args.Error.Description}", Id, Service.Id, (int)args.Error.Code));
+                          reject(new CharacteristicReadException($"Start Notifications: Error {args.Error.Description}", Id, Service.Id, (int)args.Error.Code, args.Error.GetAttStatus()));
                       }
                       else
                       {
@@ -338,7 +338,7 @@ namespace System.BluetoothLe
 
                     if (args.Error != null)
                     {
-                        reject(new CharacteristicReadException($"Stop Notifications: Error {args.Error.Description}", Id, Service.Id, (int)args.Error.Code));
+                        reject(new CharacteristicReadException($"Stop Notifications: Error {args.Error.Description}", Id, Service.Id, (int)args.Error.Code, args.Error.GetAttStatus()));
                     }
                     else
                     {

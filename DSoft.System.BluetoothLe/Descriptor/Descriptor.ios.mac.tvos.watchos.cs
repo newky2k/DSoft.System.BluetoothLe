@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreBluetooth;
 using System.BluetoothLe;
 using Foundation;
+using System.BluetoothLe.Extensions;
 using System.BluetoothLe.Utils;
 
 namespace System.BluetoothLe
@@ -66,7 +67,7 @@ namespace System.BluetoothLe
                            return;
 
                        if (args.Error != null)
-                           reject(new DescriptorReadException($"Read descriptor async error: {args.Error.Description}", Id, (int)args.Error.Code));
+                           reject(new DescriptorReadException($"Read descriptor async error: {args.Error.Description}", Id, (int)args.Error.Code, args.Error.GetAttStatus()));
                        else
                            complete(Value);
                    },
@@ -102,7 +103,7 @@ namespace System.BluetoothLe
                             return;
 
                         if (args.Error != null)
-                            reject(new DescriptorWriteException(args.Error.Description, Id, (int)args.Error.Code));
+                            reject(new DescriptorWriteException(args.Error.Description, Id, (int)args.Error.Code, args.Error.GetAttStatus()));
                         else
                             complete(true);
                     },

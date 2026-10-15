@@ -26,7 +26,8 @@ namespace System.BluetoothLe.Extensions
             var errorMessage = result.Status.GetErrorMessage(tag, result.ProtocolError);
             if (!string.IsNullOrEmpty(errorMessage))
             {
-                throw new CharacteristicReadException(errorMessage);
+                // The message is unchanged; the ATT protocol error, where Windows reported one, is now attached.
+                throw new CharacteristicReadException(errorMessage, Guid.Empty, Guid.Empty, result.ProtocolError, result.ProtocolError);
             }
 
             return result.Value?.ToArray() ?? Array.Empty<byte>();

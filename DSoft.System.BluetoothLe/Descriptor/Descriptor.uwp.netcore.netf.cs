@@ -38,6 +38,7 @@ namespace System.BluetoothLe
                 throw new DescriptorReadException(
                     $"Read descriptor {Id} failed with status {readResult.Status}{ProtocolErrorDetail(readResult.ProtocolError)}.",
                     Id,
+                    readResult.ProtocolError,
                     readResult.ProtocolError);
             }
 
@@ -55,6 +56,7 @@ namespace System.BluetoothLe
                 throw new DescriptorWriteException(
                     $"Write descriptor {Id} failed with status {result.Status}{ProtocolErrorDetail(result.ProtocolError)}.",
                     Id,
+                    result.ProtocolError,
                     result.ProtocolError);
             }
         }
