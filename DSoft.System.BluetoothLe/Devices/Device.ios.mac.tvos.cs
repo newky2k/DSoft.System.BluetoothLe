@@ -161,6 +161,11 @@ namespace System.BluetoothLe
         // time an encrypted characteristic is accessed.
         private DeviceBondState GetBondState() => DeviceBondState.Unknown;
 
+        // Nor can an app request or remove a bond: the OS pairs on demand, and only the user can forget a device.
+        private Task<bool> CreateBondNativeAsync(CancellationToken cancellationToken) => Task.FromResult(false);
+
+        private Task<bool> RemoveBondNativeAsync(CancellationToken cancellationToken) => Task.FromResult(false);
+
         private DeviceState GetState()
         {
             switch (NativeDevice.State)

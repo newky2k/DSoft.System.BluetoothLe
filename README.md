@@ -221,6 +221,8 @@ await adapter.DisconnectDeviceAsync(device);
 - `Descriptor.ReadAsync`, `WriteAsync`: interact with descriptors.
 - `Device.BondState`: the device's bond (pairing) state, as the platform reports it.
 - `Adapter.DeviceBondStateChanged`: raised on Android when a device's bond state changes.
+- `IGattStatusException.GattStatus`, `GattFailure`: the GATT status on a failed read or write.
+- `Device.CreateBondAsync`, `RemoveBondAsync`: request or remove a bond on Android.
 
 ## Bonding
 
@@ -236,6 +238,30 @@ A peripheral that requires an encrypted link only answers a central it is bonded
 **Apple platforms.** CoreBluetooth gives an app no way to read or request a bond. The operating system pairs on demand: the first time the app reads, writes or subscribes to a characteristic the peripheral protects, iOS shows the pairing prompt itself, and once the user accepts the link is encrypted for that and later operations. If the user declines, or the peripheral has lost its keys (for example after a factory reset), the operation fails, and the user has to remove the device in Settings > Bluetooth before pairing again. Design the app around attempting the protected operation and handling its failure, not around checking the bond first.
 
 **Android.** On Android 12 and later, reading the bond state and receiving bond changes both need the `BLUETOOTH_CONNECT` permission. Without it `BondState` reports `Unknown` and the event is not raised. Android, like Apple platforms, normally starts bonding by itself the first time a protected characteristic is accessed; `DeviceBondStateChanged` reports the outcome.
+
+**Requesting and removing a bond (Android).** `Device.CreateBondAsync` starts bonding, showing the system pairing prompt where the peripheral asks for one, and completes with `true` once the device is bonded or `false` if bonding fails or is refused. Use it for an explicit "Pair" action instead of waiting for the first protected operation. `Device.RemoveBondAsync` forgets a stale bond, for example after the peripheral has been factory reset. Android has no public API for removal, so it is **best effort**: it calls a hidden platform method that newer Android versions may refuse, and returns `false` when it cannot remove the bond. In that case, send the user to the system Bluetooth settings. Both methods return `false` on Apple platforms and Windows. A cancellation token stops the wait, but not bonding the system has already started.
+
+```csharp
+if (device.BondState != DeviceBondState.Bonded && !await device.CreateBondAsync(cancellationToken))
+{
+    // Not bonded: tell the user to pair, or to forget the device in Settings and try again.
+}
+```
+
+**Recognising a security failure.** A peripheral that requires a bonded, encrypted link refuses an unbonded central with ATT error Insufficient Authentication (0x05) or Insufficient Encryption (0x0F). The read and write exceptions (`CharacteristicReadException`, `CharacteristicWriteException`, `DescriptorReadException` and `DescriptorWriteException`) carry that status in `GattStatus`, classified in `GattFailure`, on Android, Apple platforms and Windows. All four implement `IGattStatusException`, so one catch covers them:
+
+```csharp
+try
+{
+    await characteristic.WriteAsync(data, cancellationToken);
+}
+catch (BleException ex) when (ex is IGattStatusException { GattFailure: GattFailure.InsufficientAuthentication or GattFailure.InsufficientEncryption })
+{
+    // Ask the user to pair, or to forget the device in Settings and pair again.
+}
+```
+
+Subscribing with `StartUpdatesAsync` fails as a `DescriptorWriteException` on Android, where it writes the configuration descriptor itself, and as a `CharacteristicReadException` on Apple platforms. `GattStatus` is `null`, and `GattFailure` is `None`, when no GATT status was reported: the operation could not start, the device disconnected, or on Apple platforms the error was not an ATT error. `NativeStatus` and the exception messages are unchanged.
 
 `BondState` never throws: it reports `Unknown` wherever the state cannot be read, including for a stand-in device and after the device has been disposed.
 

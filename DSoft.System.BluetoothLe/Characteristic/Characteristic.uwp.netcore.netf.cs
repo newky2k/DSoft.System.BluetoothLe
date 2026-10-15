@@ -122,6 +122,7 @@ namespace System.BluetoothLe
                 $"Write characteristic {Id} failed with status {result.Status}{detail}.",
                 Id,
                 Service.Id,
+                result.ProtocolError,
                 result.ProtocolError);
         }
 
