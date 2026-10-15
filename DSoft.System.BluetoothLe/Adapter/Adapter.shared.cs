@@ -96,6 +96,25 @@ namespace System.BluetoothLe
         /// </summary>
         public event EventHandler<ScanFailedEventArgs> ScanFailed;
 
+        /// <summary>
+        /// Raised when the system reports that a device's bond (pairing) state has changed: bonding started,
+        /// the device bonded, or the bond was removed or failed.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Raised on Android only, on the main thread, for every Bluetooth device the system reports - including
+        /// devices this adapter has not discovered, and changes made outside the app, for example in the system
+        /// Bluetooth settings. The device in the arguments is the instance this adapter already tracks where
+        /// there is one, so its <see cref="Device.BondState"/> change is also raised through
+        /// <see cref="Device.PropertyChanged"/>. On Android 12 and later the system delivers the change only to
+        /// an app holding the BLUETOOTH_CONNECT permission.
+        /// </para>
+        /// <para>
+        /// Never raised on Apple platforms, which do not expose bonding, or on Windows.
+        /// </para>
+        /// </remarks>
+        public event EventHandler<DeviceBondStateChangedEventArgs> DeviceBondStateChanged;
+
         #endregion
 
         #region Properties
@@ -565,6 +584,18 @@ namespace System.BluetoothLe
                     Trace.Message("Removed device from discovered devices list: {0}", device.NameOrId);
                 }
             }
+        }
+
+        /// <summary>
+        /// Reports a bond state change for <paramref name="device"/>: raises <see cref="Device.PropertyChanged"/>
+        /// for <see cref="Device.BondState"/>, then <see cref="DeviceBondStateChanged"/>.
+        /// </summary>
+        internal void HandleBondStateChanged(Device device, DeviceBondState state)
+        {
+            Trace.Message("Adapter: Bond state of {0} changed to {1}", device.NameOrId, state);
+
+            device.RaiseBondStateChanged();
+            Raise(DeviceBondStateChanged, new DeviceBondStateChangedEventArgs(device, state), nameof(DeviceBondStateChanged));
         }
 
         internal void HandleConnectionFail(Device device, string errorMessage)

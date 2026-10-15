@@ -26,6 +26,9 @@ namespace System.BluetoothLe
 
         private Task<bool> UpdateRssiNativeAsync(CancellationToken cancellationToken) => throw new System.PlatformNotSupportedException(NotSupportedMessage);
 
+        // Reported rather than thrown: BondState is documented never to throw.
+        private DeviceBondState GetBondState() => DeviceBondState.Unknown;
+
         private DeviceState GetState() => throw new System.PlatformNotSupportedException(NotSupportedMessage);
 
         private Task<IReadOnlyList<Service>> GetServicesNativeAsync(CancellationToken cancellationToken) => throw new System.PlatformNotSupportedException(NotSupportedMessage);

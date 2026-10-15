@@ -92,6 +92,48 @@ namespace System.BluetoothLe
         }
 
         /// <summary>
+        /// Gets the bond (pairing) state of the device, as the platform reports it now.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Android reads it from the system on every call. Windows reports <see cref="DeviceBondState.Bonded"/>
+        /// or <see cref="DeviceBondState.NotBonded"/> from the device's pairing information, and never
+        /// <see cref="DeviceBondState.Bonding"/>. Apple platforms always report
+        /// <see cref="DeviceBondState.Unknown"/>: CoreBluetooth pairs on demand, the first time an encrypted
+        /// characteristic is accessed, and does not let an app ask whether a bond exists.
+        /// </para>
+        /// <para>
+        /// <see cref="DeviceBondState.Unknown"/> is also reported where the state cannot be read - on Android 12
+        /// and later without the BLUETOOTH_CONNECT permission, on a target without Bluetooth, for a stand-in
+        /// device, and once the device has been disposed. Reading this property never throws.
+        /// </para>
+        /// <para>
+        /// On Android, <see cref="Adapter.DeviceBondStateChanged"/> reports changes, and
+        /// <see cref="PropertyChanged"/> is raised for this property on the instance the adapter tracks.
+        /// </para>
+        /// </remarks>
+        public DeviceBondState BondState
+        {
+            get
+            {
+                if (_isDisposed)
+                {
+                    return DeviceBondState.Unknown;
+                }
+
+                try
+                {
+                    return GetBondState();
+                }
+                catch (Exception ex)
+                {
+                    Trace.Message("Device: Reading the bond state of {0} failed: {1}", NameOrId, ex.Message);
+                    return DeviceBondState.Unknown;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets whether this instance has ever completed a connection.
         /// </summary>
         /// <remarks>
@@ -338,6 +380,12 @@ namespace System.BluetoothLe
         /// about connection changes, not the device, so the adapter has to drive the notification.
         /// </summary>
         internal void RaiseStateChanged() => NotifyPropertyChanged(nameof(State));
+
+        /// <summary>
+        /// Raises <see cref="PropertyChanged"/> for <see cref="BondState"/>. The platform announces bond
+        /// changes system-wide, so the adapter has to drive the notification.
+        /// </summary>
+        internal void RaiseBondStateChanged() => NotifyPropertyChanged(nameof(BondState));
 
         #endregion
 

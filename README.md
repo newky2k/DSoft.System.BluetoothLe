@@ -219,6 +219,25 @@ await adapter.DisconnectDeviceAsync(device);
 - `Service.GetCharacteristicsAsync`: discover GATT characteristics.
 - `Characteristic.ReadAsync`, `WriteAsync`, `StartUpdatesAsync`, `StopUpdatesAsync`: interact with characteristic values.
 - `Descriptor.ReadAsync`, `WriteAsync`: interact with descriptors.
+- `Device.BondState`: the device's bond (pairing) state, as the platform reports it.
+- `Adapter.DeviceBondStateChanged`: raised on Android when a device's bond state changes.
+
+## Bonding
+
+A peripheral that requires an encrypted link only answers a central it is bonded (paired) with. What an app can see of that bond depends on the platform.
+
+| Platform | `Device.BondState` | `Adapter.DeviceBondStateChanged` |
+| --- | --- | --- |
+| Android | `NotBonded`, `Bonding` or `Bonded`, read from the system on every call | Raised on the main thread for every bond change the system broadcasts, including changes made in the system Bluetooth settings |
+| iOS, macOS, Mac Catalyst, tvOS | Always `Unknown` | Never raised |
+| Windows | `Bonded` or `NotBonded`, from the device's pairing information | Never raised |
+| `net10.0` / `netstandard2.0` | Always `Unknown` | Never raised |
+
+**Apple platforms.** CoreBluetooth gives an app no way to read or request a bond. The operating system pairs on demand: the first time the app reads, writes or subscribes to a characteristic the peripheral protects, iOS shows the pairing prompt itself, and once the user accepts the link is encrypted for that and later operations. If the user declines, or the peripheral has lost its keys (for example after a factory reset), the operation fails, and the user has to remove the device in Settings > Bluetooth before pairing again. Design the app around attempting the protected operation and handling its failure, not around checking the bond first.
+
+**Android.** On Android 12 and later, reading the bond state and receiving bond changes both need the `BLUETOOTH_CONNECT` permission. Without it `BondState` reports `Unknown` and the event is not raised. Android, like Apple platforms, normally starts bonding by itself the first time a protected characteristic is accessed; `DeviceBondStateChanged` reports the outcome.
+
+`BondState` never throws: it reports `Unknown` wherever the state cannot be read, including for a stand-in device and after the device has been disposed.
 
 ## Notes
 
