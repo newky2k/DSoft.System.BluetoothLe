@@ -33,7 +33,7 @@
         <!-- The assembly identity is pinned here rather than stamped by the build server. A strong-named
              assembly whose version moves on every CI build forces a binding redirect on net481 for no
              benefit; the public key token is what actually establishes identity. -->
-        <VersionPrefix>4.0.1</VersionPrefix>
+        <VersionPrefix>4.1.0</VersionPrefix>
         <AssemblyVersion>4.0.0.0</AssemblyVersion>
         <PackageId>DSoft.System.BluetoothLe</PackageId>
         <Title>DSoft.System.BluetoothLe</Title>
@@ -51,7 +51,7 @@
         <PackageTags>BluetoothLe dotnet android ios macos maccatalyst windows wpf netstandard tvos</PackageTags>
         <Copyright>Copyright © 2026 DSoft</Copyright>
         <PackageReleaseNotes>
-            Unreleased - Device.BondState reports a device's bond (pairing) state, and on Android
+            4.1 - adds bonding and the GATT status on failures. Device.BondState reports a device's bond (pairing) state, and on Android
             Adapter.DeviceBondStateChanged is raised when it changes. DeviceBondState gains Unknown, declared last
             so existing values are unchanged, which Apple platforms always report because CoreBluetooth does not
             expose bonding. BondStatusBroadcastReceiver is now registered by the Android adapter.

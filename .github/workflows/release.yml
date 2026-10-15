@@ -1,5 +1,5 @@
 # Release: on every push to main, builds Release and pushes the DSoft.*.nupkg
-# package (with its .snupkg symbols) to nuget.org as 4.0.yyMM.<run number + 100>, then
+# package (with its .snupkg symbols) to nuget.org as 4.1.yyMM.<run number + 100>, then
 # tags the commit and creates a GitHub release with the package attached.
 # RELEASE_SUFFIX is empty for a stable version; set it to a suffix such as
 # '-prerelease' to publish a prerelease.
@@ -45,7 +45,7 @@ jobs:
           # The run number is offset by 100 so the first GitHub release sorts above 4.0.2610.91, the
           # last version Azure Pipelines published. The run number never resets, so the offset is
           # permanent and harmless.
-          version="4.0.$(date -u +%y%m).$(( ${{ github.run_number }} + 100 ))"
+          version="4.1.$(date -u +%y%m).$(( ${{ github.run_number }} + 100 ))"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "package=$version$RELEASE_SUFFIX" >> "$GITHUB_OUTPUT"
           echo "Version: $version$RELEASE_SUFFIX"
