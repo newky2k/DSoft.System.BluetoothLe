@@ -61,10 +61,16 @@ namespace System.BluetoothLe
         #region Methods
 
         #region Private
-        private Guid ParseDeviceId()
+        private Guid ParseDeviceId() => ParseDeviceId(NativeDevice.Address);
+
+        /// <summary>
+        /// The id a device with this MAC address is given: the address in the last six bytes of an otherwise
+        /// zero GUID. Shared with the adapter, which has only an address when the system reports a bond change.
+        /// </summary>
+        internal static Guid ParseDeviceId(string address)
         {
             var deviceGuid = new byte[16];
-            var macWithoutColons = NativeDevice.Address.Replace(":", "");
+            var macWithoutColons = address.Replace(":", "");
             var macBytes = Enumerable.Range(0, macWithoutColons.Length)
                 .Where(x => x % 2 == 0)
                 .Select(x => Convert.ToByte(macWithoutColons.Substring(x, 2), 16))
@@ -220,6 +226,154 @@ namespace System.BluetoothLe
                 case ProfileState.Disconnecting:
                 default:
                     return DeviceState.Disconnected;
+            }
+        }
+
+        private DeviceBondState GetBondState()
+        {
+            // No native device: a stand-in built through the protected constructor.
+            if (NativeDevice == null)
+            {
+                return DeviceBondState.Unknown;
+            }
+
+            // Throws SecurityException on Android 12 and later without BLUETOOTH_CONNECT; BondState reports
+            // that as Unknown.
+            return ToBondState(NativeDevice.BondState);
+        }
+
+        private Task<bool> CreateBondNativeAsync(CancellationToken cancellationToken)
+        {
+            if (NativeDevice == null || Adapter == null)
+            {
+                return Task.FromResult(false);
+            }
+
+            var current = ToBondState(NativeDevice.BondState);
+
+            if (current == DeviceBondState.Bonded)
+            {
+                return Task.FromResult(true);
+            }
+
+            // Already bonding - started by the system on access to a protected characteristic, or by an earlier
+            // call: wait for that rather than asking again, which Android refuses while one is in progress.
+            var alreadyBonding = current == DeviceBondState.Bonding;
+
+            return AwaitBondOutcomeAsync(
+                start: () => alreadyBonding || NativeDevice.CreateBond(),
+                success: DeviceBondState.Bonded,
+                failure: DeviceBondState.NotBonded,
+                cancellationToken);
+        }
+
+        private Task<bool> RemoveBondNativeAsync(CancellationToken cancellationToken)
+        {
+            if (NativeDevice == null || Adapter == null)
+            {
+                return Task.FromResult(false);
+            }
+
+            if (ToBondState(NativeDevice.BondState) == DeviceBondState.NotBonded)
+            {
+                return Task.FromResult(true);
+            }
+
+            return AwaitBondOutcomeAsync(
+                start: InvokeRemoveBond,
+                success: DeviceBondState.NotBonded,
+                failure: null,
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Calls the hidden <c>BluetoothDevice.removeBond()</c>. Any refusal - the method missing, blocked as a
+        /// non-SDK interface, or denied for lack of a privileged permission - is reported as false.
+        /// </summary>
+        private bool InvokeRemoveBond()
+        {
+            try
+            {
+                var method = NativeDevice.Class.GetMethod("removeBond");
+                var result = method.Invoke(NativeDevice);
+
+                return result is Java.Lang.Boolean started && started.BooleanValue();
+            }
+            catch (Exception ex)
+            {
+                Trace.Message("Device: removeBond is not available for {0}: {1}", NameOrId, ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Starts a bond operation and waits for the adapter to report this device reaching
+        /// <paramref name="success"/> (true) or <paramref name="failure"/> (false).
+        /// </summary>
+        private async Task<bool> AwaitBondOutcomeAsync(Func<bool> start, DeviceBondState success, DeviceBondState? failure, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var outcome = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            void OnBondStateChanged(object sender, DeviceBondStateChangedEventArgs args)
+            {
+                if (args.Device.Id != Id)
+                {
+                    return;
+                }
+
+                if (args.State == success)
+                {
+                    outcome.TrySetResult(true);
+                }
+                else if (args.State == failure)
+                {
+                    outcome.TrySetResult(false);
+                }
+            }
+
+            // Subscribed before starting, so a fast outcome cannot be missed.
+            Adapter.DeviceBondStateChanged += OnBondStateChanged;
+
+            try
+            {
+                if (!start())
+                {
+                    return false;
+                }
+
+                // The outcome may already have been reached between reading the state and subscribing. Only the
+                // success state is checked here: straight after createBond the system can still report NotBonded
+                // for a moment, and taking that as a failure would end the wait before bonding has begun.
+                if (ToBondState(NativeDevice.BondState) == success)
+                {
+                    return true;
+                }
+
+                using (cancellationToken.Register(() => outcome.TrySetCanceled(cancellationToken)))
+                {
+                    return await outcome.Task;
+                }
+            }
+            finally
+            {
+                Adapter.DeviceBondStateChanged -= OnBondStateChanged;
+            }
+        }
+
+        internal static DeviceBondState ToBondState(Bond bond)
+        {
+            switch (bond)
+            {
+                case Bond.None:
+                    return DeviceBondState.NotBonded;
+                case Bond.Bonding:
+                    return DeviceBondState.Bonding;
+                case Bond.Bonded:
+                    return DeviceBondState.Bonded;
+                default:
+                    return DeviceBondState.Unknown;
             }
         }
 

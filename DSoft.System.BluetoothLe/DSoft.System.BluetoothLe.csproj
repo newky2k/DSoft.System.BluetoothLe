@@ -33,7 +33,7 @@
         <!-- The assembly identity is pinned here rather than stamped by the build server. A strong-named
              assembly whose version moves on every CI build forces a binding redirect on net481 for no
              benefit; the public key token is what actually establishes identity. -->
-        <VersionPrefix>4.0.1</VersionPrefix>
+        <VersionPrefix>4.1.0</VersionPrefix>
         <AssemblyVersion>4.0.0.0</AssemblyVersion>
         <PackageId>DSoft.System.BluetoothLe</PackageId>
         <Title>DSoft.System.BluetoothLe</Title>
@@ -51,6 +51,18 @@
         <PackageTags>BluetoothLe dotnet android ios macos maccatalyst windows wpf netstandard tvos</PackageTags>
         <Copyright>Copyright © 2026 DSoft</Copyright>
         <PackageReleaseNotes>
+            4.1 - adds bonding and the GATT status on failures. Device.BondState reports a device's bond (pairing) state, and on Android
+            Adapter.DeviceBondStateChanged is raised when it changes. DeviceBondState gains Unknown, declared last
+            so existing values are unchanged, which Apple platforms always report because CoreBluetooth does not
+            expose bonding. BondStatusBroadcastReceiver is now registered by the Android adapter.
+            Device.CreateBondAsync and Device.RemoveBondAsync request and remove a bond on Android; removal is
+            best effort, through a hidden platform method, and reports false where Android refuses it. Both
+            return false on Apple platforms and Windows.
+            CharacteristicReadException, CharacteristicWriteException, DescriptorReadException and
+            DescriptorWriteException carry the GATT status in GattStatus, classified as GattFailure, so an app can
+            recognise Insufficient Authentication (0x05) and Insufficient Encryption (0x0F) on Android, Apple
+            platforms and Windows. All four implement IGattStatusException. NativeStatus and messages are unchanged.
+
             4.0.1 - restores the stand-in seam that 4.0 removed. Device and Service can again be derived outside
             the library: protected Device(Guid id, string name, int rssi = 0) replaces the parameterless
             protected Device() that 3.x exposed, and Service(Device) is protected again. Device.Id stays

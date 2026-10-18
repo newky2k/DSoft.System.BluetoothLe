@@ -36,7 +36,7 @@ namespace System.BluetoothLe
                        return;
 
                    if (args.Exception != null)
-                       reject(new DescriptorWriteException($"Write descriptor {Id} failed with GATT status {args.Status}.", Id, (int)args.Status));
+                       reject(new DescriptorWriteException($"Write descriptor {Id} failed with GATT status {args.Status}.", Id, (int)args.Status, (int)args.Status));
                    else
                        complete(true);
                }),
@@ -71,7 +71,7 @@ namespace System.BluetoothLe
 
                       if (args.Exception != null)
                       {
-                          reject(new DescriptorReadException($"Read descriptor {Id} failed with GATT status {args.Status}.", Id, (int)args.Status));
+                          reject(new DescriptorReadException($"Read descriptor {Id} failed with GATT status {args.Status}.", Id, (int)args.Status, (int)args.Status));
                           return;
                       }
 

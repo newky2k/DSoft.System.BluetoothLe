@@ -92,6 +92,48 @@ namespace System.BluetoothLe
         }
 
         /// <summary>
+        /// Gets the bond (pairing) state of the device, as the platform reports it now.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Android reads it from the system on every call. Windows reports <see cref="DeviceBondState.Bonded"/>
+        /// or <see cref="DeviceBondState.NotBonded"/> from the device's pairing information, and never
+        /// <see cref="DeviceBondState.Bonding"/>. Apple platforms always report
+        /// <see cref="DeviceBondState.Unknown"/>: CoreBluetooth pairs on demand, the first time an encrypted
+        /// characteristic is accessed, and does not let an app ask whether a bond exists.
+        /// </para>
+        /// <para>
+        /// <see cref="DeviceBondState.Unknown"/> is also reported where the state cannot be read - on Android 12
+        /// and later without the BLUETOOTH_CONNECT permission, on a target without Bluetooth, for a stand-in
+        /// device, and once the device has been disposed. Reading this property never throws.
+        /// </para>
+        /// <para>
+        /// On Android, <see cref="Adapter.DeviceBondStateChanged"/> reports changes, and
+        /// <see cref="PropertyChanged"/> is raised for this property on the instance the adapter tracks.
+        /// </para>
+        /// </remarks>
+        public DeviceBondState BondState
+        {
+            get
+            {
+                if (_isDisposed)
+                {
+                    return DeviceBondState.Unknown;
+                }
+
+                try
+                {
+                    return GetBondState();
+                }
+                catch (Exception ex)
+                {
+                    Trace.Message("Device: Reading the bond state of {0} failed: {1}", NameOrId, ex.Message);
+                    return DeviceBondState.Unknown;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets whether this instance has ever completed a connection.
         /// </summary>
         /// <remarks>
@@ -229,6 +271,79 @@ namespace System.BluetoothLe
         /// <summary>
         /// Reads the current RSSI from a connected device and updates <see cref="Rssi"/>.
         /// </summary>
+        /// <summary>
+        /// Asks the platform to bond (pair) with the device, and completes when bonding finishes.
+        /// </summary>
+        /// <param name="cancellationToken">
+        /// Stops waiting for the outcome. It does not abort bonding the system has already started.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> when the device is bonded, including when it already was;
+        /// <see langword="false"/> when bonding failed or was refused, could not be started, or the platform
+        /// does not support requesting it.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// Android only. It calls <c>BluetoothDevice.createBond</c>, which shows the system pairing prompt
+        /// where the peripheral asks for one, and waits for <see cref="BondState"/> to reach
+        /// <see cref="DeviceBondState.Bonded"/> or return to <see cref="DeviceBondState.NotBonded"/>. If
+        /// bonding is already in progress it waits for that instead of starting another. On Android 12 and
+        /// later it needs the BLUETOOTH_CONNECT permission, and throws <c>Java.Lang.SecurityException</c>
+        /// without it. The outcome is observed through <see cref="Adapter.DeviceBondStateChanged"/>.
+        /// </para>
+        /// <para>
+        /// Returns <see langword="false"/> on Apple platforms, which pair on demand and offer no way to
+        /// request it (see <see cref="BondState"/>), on Windows, and for a stand-in device. Throws
+        /// <see cref="PlatformNotSupportedException"/> on the platform-neutral targets, as other native
+        /// members do.
+        /// </para>
+        /// </remarks>
+        /// <exception cref="ObjectDisposedException">The device has been disposed.</exception>
+        /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was cancelled first.</exception>
+        public async Task<bool> CreateBondAsync(CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+
+            using (var source = this.GetCombinedSource(cancellationToken))
+            {
+                return await CreateBondNativeAsync(source.Token);
+            }
+        }
+
+        /// <summary>
+        /// Asks the platform to remove the bond with the device, best effort, and completes when it is gone.
+        /// </summary>
+        /// <param name="cancellationToken">Stops waiting for the outcome.</param>
+        /// <returns>
+        /// <see langword="true"/> when the device is no longer bonded, including when it was not bonded to
+        /// begin with; <see langword="false"/> when the platform does not allow the app to remove the bond.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// <b>Best effort, Android only.</b> Android has no public API for this. The method calls the hidden
+        /// <c>BluetoothDevice.removeBond</c> by reflection, which the platform may refuse - newer Android
+        /// versions restrict it to system apps - and which may stop working in any Android release. Every
+        /// such refusal is reported as <see langword="false"/>, never thrown. When it returns
+        /// <see langword="false"/>, send the user to the system Bluetooth settings to forget the device.
+        /// </para>
+        /// <para>
+        /// Returns <see langword="false"/> on Apple platforms, where only the user can remove a bond (in
+        /// Settings), on Windows, and for a stand-in device. Throws <see cref="PlatformNotSupportedException"/>
+        /// on the platform-neutral targets.
+        /// </para>
+        /// </remarks>
+        /// <exception cref="ObjectDisposedException">The device has been disposed.</exception>
+        /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was cancelled first.</exception>
+        public async Task<bool> RemoveBondAsync(CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+
+            using (var source = this.GetCombinedSource(cancellationToken))
+            {
+                return await RemoveBondNativeAsync(source.Token);
+            }
+        }
+
         public async Task<bool> UpdateRssiAsync(CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
@@ -338,6 +453,12 @@ namespace System.BluetoothLe
         /// about connection changes, not the device, so the adapter has to drive the notification.
         /// </summary>
         internal void RaiseStateChanged() => NotifyPropertyChanged(nameof(State));
+
+        /// <summary>
+        /// Raises <see cref="PropertyChanged"/> for <see cref="BondState"/>. The platform announces bond
+        /// changes system-wide, so the adapter has to drive the notification.
+        /// </summary>
+        internal void RaiseBondStateChanged() => NotifyPropertyChanged(nameof(BondState));
 
         #endregion
 

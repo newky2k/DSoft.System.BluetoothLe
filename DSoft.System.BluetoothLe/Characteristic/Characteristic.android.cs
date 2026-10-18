@@ -69,7 +69,7 @@ namespace System.BluetoothLe
 
                     if (args.Status != GattStatus.Success)
                     {
-                        reject(new CharacteristicReadException($"Read characteristic {Id} failed with GATT status {args.Status}.", Id, Service.Id, (int)args.Status));
+                        reject(new CharacteristicReadException($"Read characteristic {Id} failed with GATT status {args.Status}.", Id, Service.Id, (int)args.Status, (int)args.Status));
                         return;
                     }
 
@@ -113,7 +113,7 @@ namespace System.BluetoothLe
 
                        if (args.Exception != null)
                        {
-                           reject(new CharacteristicWriteException($"Write characteristic {Id} failed with GATT status {args.Status}.", Id, Service.Id, (int)args.Status));
+                           reject(new CharacteristicWriteException($"Write characteristic {Id} failed with GATT status {args.Status}.", Id, Service.Id, (int)args.Status, (int)args.Status));
                            return;
                        }
 

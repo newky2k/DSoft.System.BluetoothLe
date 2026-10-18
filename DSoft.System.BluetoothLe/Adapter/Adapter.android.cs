@@ -5,7 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Bluetooth;
 using Android.Bluetooth.LE;
+using Android.Content;
 using Android.OS;
+using System.BluetoothLe.BroadcastReceivers;
 using System.BluetoothLe.Extensions;
 using Trace = System.BluetoothLe.Trace;
 
@@ -24,18 +26,65 @@ namespace System.BluetoothLe
             _bluetoothManager = bluetoothManager;
             _bluetoothAdapter = bluetoothManager?.Adapter;
 
-            // TODO: bonding
-            //var bondStatusBroadcastReceiver = new BondStatusBroadcastReceiver();
-            //Application.Context.RegisterReceiver(bondStatusBroadcastReceiver,
-            //    new IntentFilter(BluetoothDevice.ActionBondStateChanged));
-
-            ////forward events from broadcast receiver
-            //bondStatusBroadcastReceiver.BondStateChanged += (s, args) =>
-            //{
-            //    //DeviceBondStateChanged(this, args);
-            //};
-
             _api21ScanCallback = new Api21BleScanCallback(this);
+
+            RegisterBondStateReceiver();
+        }
+
+        private BondStatusBroadcastReceiver _bondStatusReceiver;
+
+        private void RegisterBondStateReceiver()
+        {
+            // No adapter means no Bluetooth hardware: there will be no bond changes to report.
+            if (_bluetoothAdapter == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var receiver = new BondStatusBroadcastReceiver(this);
+                var filter = new IntentFilter(BluetoothDevice.ActionBondStateChanged);
+
+                // From API 33 a context-registered receiver must say whether other apps may send to it. This one
+                // receives only a protected system broadcast, which is delivered to a non-exported receiver.
+                if (OperatingSystem.IsAndroidVersionAtLeast(33))
+                {
+                    Android.App.Application.Context.RegisterReceiver(receiver, filter, ReceiverFlags.NotExported);
+                }
+                else
+                {
+                    Android.App.Application.Context.RegisterReceiver(receiver, filter);
+                }
+
+                _bondStatusReceiver = receiver;
+            }
+            catch (Exception ex)
+            {
+                // Bond state changes are an addition to the adapter, not a condition of it working.
+                Trace.Message("Adapter: Registering for bond state changes failed: {0}", ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// The device for <paramref name="nativeDevice"/>: the instance this adapter already tracks - connected
+        /// first, then discovered - or a new one when it tracks none.
+        /// </summary>
+        internal Device ResolveDevice(BluetoothDevice nativeDevice)
+        {
+            var id = Device.ParseDeviceId(nativeDevice.Address);
+
+            if (TryGetConnectedDevice(id, out var connected))
+            {
+                return connected;
+            }
+
+            if (DiscoveredDevicesRegistry.TryGetValue(id, out var discovered))
+            {
+                return discovered;
+            }
+
+            return new Device(this, nativeDevice, null, 0);
         }
 
         protected Task StartScanningForDevicesNativeAsync(Guid[] serviceUuids, bool allowDuplicatesKey, CancellationToken scanCancellationToken)
@@ -205,6 +254,23 @@ namespace System.BluetoothLe
 
         partial void DisposeNative()
         {
+            var bondStatusReceiver = _bondStatusReceiver;
+            _bondStatusReceiver = null;
+
+            if (bondStatusReceiver != null)
+            {
+                try
+                {
+                    Android.App.Application.Context.UnregisterReceiver(bondStatusReceiver);
+                }
+                catch (Exception ex)
+                {
+                    Trace.Message("Adapter: Unregistering the bond state receiver failed: {0}", ex.Message);
+                }
+
+                bondStatusReceiver.Dispose();
+            }
+
             try
             {
                 _bluetoothAdapter?.BluetoothLeScanner?.StopScan(_api21ScanCallback);
