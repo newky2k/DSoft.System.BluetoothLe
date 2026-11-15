@@ -9,7 +9,7 @@ The library started as a fork/repackage of [Plugin.BLE](https://github.com/dotne
 | Target | Minimum OS |
 | --- | --- |
 | `net10.0-android` | Android API 21 |
-| `net11.0-android` | Android API 21 |
+| `net11.0-android` | Android API 24 |
 | `net10.0-ios` | iOS 15.0 |
 | `net11.0-ios` | iOS 15.0 |
 | `net10.0-maccatalyst` | Mac Catalyst 15.0 |
