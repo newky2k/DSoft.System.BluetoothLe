@@ -9,13 +9,19 @@ The library started as a fork/repackage of [Plugin.BLE](https://github.com/dotne
 | Target | Minimum OS |
 | --- | --- |
 | `net10.0-android` | Android API 21 |
+| `net11.0-android` | Android API 21 |
 | `net10.0-ios` | iOS 15.0 |
+| `net11.0-ios` | iOS 15.0 |
 | `net10.0-maccatalyst` | Mac Catalyst 15.0 |
+| `net11.0-maccatalyst` | Mac Catalyst 15.0 |
 | `net10.0-macos` | macOS 15.0 |
+| `net11.0-macos` | macOS 15.0 |
 | `net10.0-tvos` | tvOS 15.0 |
+| `net11.0-tvos` | tvOS 15.0 |
 | `net10.0-windows10.0.19041.0` | Windows 10 1809 |
+| `net11.0-windows10.0.19041.0` | Windows 10 1809 |
 | `net481` | Windows 10 1809 |
-| `net10.0` / `netstandard2.0` | API surface only; platform Bluetooth calls throw on unsupported platforms |
+| `net10.0` / `net11.0` / `netstandard2.0` | API surface only; platform Bluetooth calls throw on unsupported platforms |
 
 ## Install
 
@@ -233,7 +239,7 @@ A peripheral that requires an encrypted link only answers a central it is bonded
 | Android | `NotBonded`, `Bonding` or `Bonded`, read from the system on every call | Raised on the main thread for every bond change the system broadcasts, including changes made in the system Bluetooth settings |
 | iOS, macOS, Mac Catalyst, tvOS | Always `Unknown` | Never raised |
 | Windows | `Bonded` or `NotBonded`, from the device's pairing information | Never raised |
-| `net10.0` / `netstandard2.0` | Always `Unknown` | Never raised |
+| `net10.0` / `net11.0` / `netstandard2.0` | Always `Unknown` | Never raised |
 
 **Apple platforms.** CoreBluetooth gives an app no way to read or request a bond. The operating system pairs on demand: the first time the app reads, writes or subscribes to a characteristic the peripheral protects, iOS shows the pairing prompt itself, and once the user accepts the link is encrypted for that and later operations. If the user declines, or the peripheral has lost its keys (for example after a factory reset), the operation fails, and the user has to remove the device in Settings > Bluetooth before pairing again. Design the app around attempting the protected operation and handling its failure, not around checking the bond first.
 

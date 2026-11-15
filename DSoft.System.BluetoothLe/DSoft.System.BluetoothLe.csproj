@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net10.0;net10.0-android;net10.0-ios;net10.0-maccatalyst;net10.0-macos;net10.0-tvos;</TargetFrameworks>
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0;net481;</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net10.0;net10.0-android;net10.0-ios;net10.0-maccatalyst;net10.0-macos;net10.0-tvos;net11.0;net11.0-android;net11.0-ios;net11.0-maccatalyst;net11.0-macos;net11.0-tvos;</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0;net11.0-windows10.0.19041.0;net481;</TargetFrameworks>
         <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
         <!-- <TargetFrameworks>$(TargetFrameworks);net10.0-tizen</TargetFrameworks> -->
 <!--        <UseMaui>true</UseMaui>-->
@@ -51,6 +51,8 @@
         <PackageTags>BluetoothLe dotnet android ios macos maccatalyst windows wpf netstandard tvos</PackageTags>
         <Copyright>Copyright © 2026 DSoft</Copyright>
         <PackageReleaseNotes>
+            Adds net11.0 targets (net11.0, android, ios, maccatalyst, macos, tvos and windows) alongside net10.0.
+
             4.1 - adds bonding and the GATT status on failures. Device.BondState reports a device's bond (pairing) state, and on Android
             Adapter.DeviceBondStateChanged is raised when it changes. DeviceBondState gains Unknown, declared last
             so existing values are unchanged, which Apple platforms always report because CoreBluetooth does not
@@ -165,7 +167,7 @@
         <Compile Include="**\*.shared.*.cs" Exclude="$(DefaultItemExcludes)" />
     </ItemGroup>
 
-    <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) Or '$(TargetFramework)' == 'net10.0' ">
+    <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) Or '$(TargetFramework)' == 'net10.0' Or '$(TargetFramework)' == 'net11.0' ">
         <Compile Include="**\*.netstandard.cs" Exclude="$(DefaultItemExcludes)" />
         <Compile Include="**\*.netstandard.*.cs" Exclude="$(DefaultItemExcludes)" />
     </ItemGroup>
@@ -176,7 +178,7 @@
     </ItemGroup>
 
     <ItemGroup Condition=" $(TargetFramework.StartsWith('net481')) ">
-        <!-- Aligned with the net10.0-windows10.0.19041.0 target so both Windows builds see the same metadata.
+        <!-- Aligned with the net10.0/net11.0-windows10.0.19041.0 targets so the Windows builds see the same metadata.
              Members newer than the 17763 minimum are guarded with ApiInformation at the call site. -->
         <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.2" />
         <Compile Include="**\*.netf.cs" Exclude="$(DefaultItemExcludes)" />
